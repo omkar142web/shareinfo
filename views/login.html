@@ -751,6 +751,16 @@
         margin-bottom: 1.2rem;
       }
 
+      @media (max-width: 400px) {
+        .card-footer {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 1.2rem;
+          flex-direction: column;
+          gap: 7px;
+        }
+      }
+
       .card-footer a {
         /* color: var(--primary); */
         color: var(--error-pink);
@@ -936,7 +946,28 @@
       </form>
 
       <div class="card-footer">
-        No account yet? <a href="/register">Create Account &rarr;</a>
+        No account yet?
+        <a href="/register"
+          >Create Account
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            style="margin-left: 2px; vertical-align: -1.5px"
+          >
+            <path d="M15 3h6v6"></path>
+            <path d="M10 14 21 3"></path>
+            <path
+              d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+            ></path>
+          </svg>
+        </a>
       </div>
 
       <div class="status-tag-footer">STATUS: SECURE_CONN // TLS_1.3</div>
