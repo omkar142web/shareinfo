@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>500 // Core Meltdown</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #020617;
+        --line: #1e1030;
+        --primary: #a855f7;
+        --error: #ef4444;
+        --text: #f1f5f9;
+        --terminal-bg: rgba(10, 5, 25, 0.92);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: "Space Grotesk", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 0;
+        /* Fallbacks for modern viewport units */
+        height: 100vh;
+        height: 100dvh;
+      }
+
+      /* Apply to the whole page */
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        position: fixed;
+        touch-action: none;
+
+        /* 1. For Firefox */
+        scrollbar-width: none;
+
+        /* 2. For Internet Explorer & Old Edge */
+        -ms-overflow-style: none;
+      }
+
+      /* 3. For Chrome, Safari, and modern Edge (WebKit) */
+      body::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+
+      /* Radial burst behind the card */
+      .burst {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 120vw;
+        height: 120vh;
+        max-width: 900px;
+        max-height: 900px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at center,
+          rgba(168, 85, 247, 0.15) 0%,
+          rgba(239, 68, 68, 0.08) 35%,
+          transparent 65%
+        );
+        pointer-events: none;
+        animation: pulse-burst 4s ease-in-out infinite alternate;
+      }
+
+      @keyframes pulse-burst {
+        from {
+          transform: translate(-50%, -50%) scale(0.9);
+          opacity: 0.7;
+        }
+        to {
+          transform: translate(-50%, -50%) scale(1.1);
+          opacity: 1;
+        }
+      }
+
+      /* Grid floor — purple tint */
+      .grid-floor {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        left: 0;
+        background-image:
+          linear-gradient(rgba(168, 85, 247, 0.15) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(168, 85, 247, 0.15) 1px, transparent 1px);
+        background-size: 60px 60px;
+        transform: perspective(1000px) rotateX(65deg) scale(2);
+        transform-origin: bottom;
+        z-index: -1;
+        opacity: 0.5;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+        pointer-events: none;
+      }
+
+      /* Falling sparks / ember particles */
+      .sparks {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .spark {
+        position: absolute;
+        top: -10px;
+        width: 2px;
+        border-radius: 2px;
+        animation: fall linear infinite;
+        opacity: 0;
+      }
+
+      @keyframes fall {
+        0% {
+          transform: translateY(0) scaleY(1);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 0.6;
+        }
+        100% {
+          transform: translateY(110vh) scaleY(3);
+          opacity: 0;
+        }
+      }
+
+      /* Terminal card */
+      .terminal {
+        background: var(--terminal-bg);
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 3.5rem;
+        position: relative;
+        max-width: 560px;
+        width: 90%;
+        text-align: center;
+        box-shadow:
+          0 0 70px rgba(0, 0, 0, 0.6),
+          0 0 30px rgba(168, 85, 247, 0.08),
+          inset 0 0 60px rgba(168, 85, 247, 0.03);
+        clip-path: polygon(40px 0, 100% 0, 100% 100%, 0 100%, 0 40px);
+        transition: transform 0.1s ease-out;
+        will-change: transform;
+      }
+
+      .terminal::before {
+        content: "[ CORE_MELTDOWN ]";
+        position: absolute;
+        top: -1px;
+        right: -1px;
+        background: var(--bg);
+        padding: 5px 14px;
+        color: var(--primary);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.75rem;
+        letter-spacing: 3px;
+        font-weight: bold;
+        border: 1px solid rgba(168, 85, 247, 0.35);
+        border-top-left-radius: 0;
+      }
+
+      /* Corner accent — bottom right */
+      .terminal::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 40px;
+        height: 40px;
+        border-bottom: 2px solid var(--primary);
+        border-right: 2px solid var(--primary);
+        opacity: 0.5;
+      }
+      
+      /* Inner scanline inside terminal */
+      .terminal-scanline {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(168, 85, 247, 0.1) 50%,
+          transparent 100%
+        );
+        transform: translateY(-100%);
+        animation: terminal-scan 4s linear infinite;
+        pointer-events: none;
+      }
+      
+      @keyframes terminal-scan {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+      }
+
+      /* Glitch */
+      .glitch-wrapper {
+        margin-bottom: 1.5rem;
+      }
+
+      .glitch {
+        font-size: 6rem;
+        font-weight: 700;
+        position: relative;
+        display: inline-block;
+        color: var(--text);
+        letter-spacing: -2px;
+      }
+
+      .glitch::before,
+      .glitch::after {
+        content: "500";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .glitch::before {
+        color: var(--primary);
+        z-index: -1;
+        animation: glitch-anim 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both
+          infinite;
+        text-shadow: 0 0 12px var(--primary);
+      }
+
+      .glitch::after {
+        color: var(--error);
+        z-index: -2;
+        animation: glitch-anim 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) reverse
+          both infinite;
+        opacity: 0.7;
+      }
+
+      @keyframes glitch-anim {
+        0% {
+          transform: translate(0);
+        }
+        20% {
+          transform: translate(-5px, 3px);
+          clip-path: inset(10% 0 60% 0);
+        }
+        40% {
+          transform: translate(-5px, -3px);
+          clip-path: inset(50% 0 20% 0);
+        }
+        60% {
+          transform: translate(5px, 3px);
+          clip-path: inset(30% 0 40% 0);
+        }
+        80% {
+          transform: translate(5px, -3px);
+          clip-path: inset(70% 0 5% 0);
+        }
+        100% {
+          transform: translate(0);
+        }
+      }
+
+      /* Flicker animation on the main number */
+      .glitch {
+        animation: flicker 5s step-end infinite;
+      }
+
+      @keyframes flicker {
+        0%,
+        95%,
+        100% {
+          opacity: 1;
+        }
+        96% {
+          opacity: 0.2;
+        }
+        97% {
+          opacity: 1;
+        }
+        98% {
+          opacity: 0.4;
+        }
+        99% {
+          opacity: 1;
+        }
+      }
+
+      h2 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        color: var(--primary);
+        letter-spacing: 2px;
+      }
+
+      p {
+        font-size: 1rem;
+        color: #94a3b8;
+        margin-bottom: 2rem;
+        line-height: 1.65;
+      }
+
+      /* Scrolling log tape */
+      .log-tape-wrap {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(168, 85, 247, 0.2);
+        border-left: 3px solid var(--error);
+        padding: 10px 14px;
+        margin-bottom: 2rem;
+        text-align: left;
+        overflow: hidden;
+        height: 68px;
+        position: relative;
+      }
+
+      .log-tape {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.68rem;
+        color: #64748b;
+        line-height: 1.8;
+        animation: scroll-log 10s linear infinite;
+      }
+
+      .log-tape .err {
+        color: #ef4444;
+      }
+      .log-tape .warn {
+        color: #f59e0b;
+      }
+      .log-tape .ok {
+        color: #22c55e;
+      }
+
+      @keyframes scroll-log {
+        0% {
+          transform: translateY(0);
+        }
+        100% {
+          transform: translateY(-50%);
+        }
+      }
+
+      /* Buttons */
+      .btn-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      button {
+        background: rgba(168, 85, 247, 0.06);
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        padding: 16px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.8rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      button::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          transparent 40%,
+          rgba(168, 85, 247, 0.15) 100%
+        );
+        opacity: 0;
+        transition: opacity 0.25s;
+      }
+
+      button:hover {
+        background: #a855f7;
+        color: #fff;
+        box-shadow: 0 0 18px rgba(168, 85, 247, 0.6);
+      }
+
+      button:hover::after {
+        opacity: 1;
+      }
+      
+      button:active {
+        transform: scale(0.97);
+      }
+
+      button.secondary {
+        border-color: #334155;
+        color: #94a3b8;
+        background: transparent;
+      }
+
+      button.secondary:hover {
+        border-color: #94a3b8;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow: none;
+      }
+
+      /* Error tag */
+      .error-tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.68rem;
+        padding: 6px 14px;
+        display: inline-block;
+        margin-top: 28px;
+        color: #ff6b6b;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.15), inset 0 0 10px rgba(239, 68, 68, 0.1);
+        animation: blink-tag 2s step-end infinite;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      @keyframes blink-tag {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
+      }
+
+      /* Scanline overlay */
+      .scanline {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          transparent 50%,
+          rgba(0, 0, 0, 0.08) 50%
+        );
+        background-size: 100% 4px;
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 600px) {
+        .terminal {
+          padding: 2.5rem 1.5rem;
+          clip-path: polygon(30px 0, 100% 0, 100% 100%, 0 100%, 0 30px);
+          width: 92%;
+        }
+        .glitch {
+          font-size: 4.5rem;
+        }
+        .glitch-wrapper {
+          margin-bottom: 1rem;
+        }
+        h2 {
+          font-size: 0.85rem;
+          margin-bottom: 0.75rem;
+        }
+        p {
+          font-size: 0.9rem;
+          margin-bottom: 1.5rem;
+        }
+        .btn-group {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        button {
+          padding: 14px;
+        }
+        .log-tape-wrap {
+          height: 60px;
+          padding: 8px 10px;
+          margin-bottom: 1.5rem;
+        }
+        .log-tape {
+          font-size: 0.6rem;
+        }
+        .terminal::before {
+          font-size: 0.65rem;
+          padding: 4px 10px;
+        }
+        .error-tag {
+          margin-top: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-floor"></div>
+    <div class="burst"></div>
+    <div class="scanline"></div>
+
+    <!-- Falling spark particles -->
+    <div class="sparks" id="sparks"></div>
+
+    <div class="terminal">
+      <div class="terminal-scanline"></div>
+      <div class="glitch-wrapper">
+        <span class="glitch">500</span>
+      </div>
+
+      <h2>KERNEL_PANIC // 0xFF</h2>
+      <p>
+        Something exploded deep in our servers 🔥. It's us, not you. Our team
+        has been notified — hang tight while we douse the flames.
+      </p>
+
+      <!-- Scrolling fake error log -->
+      <div class="log-tape-wrap">
+        <div class="log-tape" id="log"></div>
+      </div>
+
+      <div class="btn-group">
+        <button onclick="window.location.reload()">Retry</button>
+        <button class="secondary" onclick="window.location.href = '/'">
+          Escape
+        </button>
+      </div>
+
+      <div class="error-tag">STATUS: CRITICAL // KERNEL_FAULT</div>
+    </div>
+
+    <script>
+      /* ── Spark particles ── */
+      const sparksEl = document.getElementById("sparks");
+      const colors = ["#a855f7", "#ef4444", "#f59e0b", "#ec4899"];
+
+      for (let i = 0; i < 28; i++) {
+        const s = document.createElement("div");
+        s.className = "spark";
+        const size = Math.random() * 3 + 1;
+        const height = Math.random() * 60 + 20;
+        s.style.cssText = `
+          left: ${Math.random() * 100}%;
+          width: ${size}px;
+          height: ${height}px;
+          background: ${colors[Math.floor(Math.random() * colors.length)]};
+          animation-duration: ${Math.random() * 5 + 3}s;
+          animation-delay: ${Math.random() * 6}s;
+          opacity: 0;
+          box-shadow: 0 0 4px ${colors[Math.floor(Math.random() * colors.length)]};
+        `;
+        sparksEl.appendChild(s);
+      }
+
+      /* ── Scrolling fake log ── */
+      const lines = [
+        '<span class="err">[FATAL]  Unhandled exception in core/runtime.js:847</span>',
+        '<span class="err">[ERROR]  Segmentation fault — memory addr 0xDEADBEEF</span>',
+        '<span class="warn">[WARN]   Heap allocation failed — retrying (1/3)…</span>',
+        '<span class="err">[FATAL]  Stack overflow detected in worker_thread #7</span>',
+        '<span class="warn">[WARN]   Database connection pool exhausted</span>',
+        '<span class="err">[ERROR]  Null reference in auth/session_manager.js:203</span>',
+        '<span class="ok">  [INFO]   Attempting graceful restart…</span>',
+        '<span class="err">[FATAL]  Restart failed — daemon unresponsive</span>',
+        '<span class="warn">[WARN]   CPU temperature: 98°C — throttling</span>',
+        '<span class="err">[ERROR]  I/O timeout on disk sector 0x0042</span>',
+        '<span class="ok">  [INFO]   Sending alert to ops team…</span>',
+        '<span class="err">[FATAL]  Unhandled exception in core/runtime.js:847</span>',
+        '<span class="warn">[WARN]   Memory leak detected — 2.4 GB unaccounted</span>',
+        '<span class="err">[ERROR]  HTTP 500 emitted to client</span>',
+      ];
+
+      const logEl = document.getElementById("log");
+      logEl.innerHTML = [...lines, ...lines]
+        .map((l) => `<div>${l}</div>`)
+        .join("");
+
+      /* ── 3D Tilt Effect on Terminal ── */
+      const terminal = document.querySelector(".terminal");
+      const handleMouseMove = (e) => {
+        const { clientX, clientY } = e;
+        const { innerWidth, innerHeight } = window;
+        
+        // Calculate mouse position relative to center of screen (-1 to 1)
+        const xPos = (clientX / innerWidth - 0.5) * 2;
+        const yPos = (clientY / innerHeight - 0.5) * 2;
+        
+        // Tilt bounds (max 5 degrees)
+        const maxTilt = 5;
+        const tiltX = yPos * maxTilt * -1; // Invert Y axis for natural feel
+        const tiltY = xPos * maxTilt;
+        
+        terminal.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`;
+      };
+
+      const handleMouseLeave = () => {
+        terminal.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+      };
+
+      // Only apply tilt effect on devices with hover capability
+      if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseleave", handleMouseLeave);
+      }
+    </script>
+  </body>
+</html>

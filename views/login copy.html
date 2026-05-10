@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Share Info - Auth</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #020617;
+        --line: #1e293b;
+        --primary: #38bdf8;
+        --primary-hover: #7dd3fc;
+        --secondary: #818cf8;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --card-bg: rgba(15, 23, 42, 0.82);
+        --input-bg: rgba(255, 255, 255, 0.04);
+        --border: rgba(255, 255, 255, 0.1);
+        --danger: #ff75a0;
+        --success: #22c55e;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-height: 100%;
+        overflow-x: hidden;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        padding: 24px;
+      }
+
+      .mesh {
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(
+            at 0% 0%,
+            rgba(56, 189, 248, 0.12) 0px,
+            transparent 55%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(99, 102, 241, 0.12) 0px,
+            transparent 55%
+          );
+        z-index: 0;
+      }
+
+      .grid-floor {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        left: 0;
+        background-image:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 60px 60px;
+        transform: perspective(1000px) rotateX(68deg) scale(2);
+        transform-origin: bottom;
+        opacity: 0.35;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 25%,
+          black 80%,
+          transparent
+        );
+        z-index: 0;
+      }
+
+      .blob {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(100px);
+        z-index: 0;
+      }
+
+      .blob-1 {
+        width: 420px;
+        height: 420px;
+        background: var(--primary);
+        top: -120px;
+        left: -120px;
+        opacity: 0.14;
+        animation: drift1 10s ease-in-out infinite alternate;
+      }
+
+      .blob-2 {
+        width: 380px;
+        height: 380px;
+        background: var(--secondary);
+        bottom: -120px;
+        right: -120px;
+        opacity: 0.14;
+        animation: drift2 12s ease-in-out infinite alternate;
+      }
+
+      @keyframes drift1 {
+        from {
+          transform: translate(0, 0) scale(1);
+        }
+        to {
+          transform: translate(30px, 40px) scale(1.08);
+        }
+      }
+
+      @keyframes drift2 {
+        from {
+          transform: translate(0, 0) scale(1);
+        }
+        to {
+          transform: translate(-35px, -25px) scale(1.1);
+        }
+      }
+
+      .particles {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        animation: floatUp linear infinite;
+      }
+
+      @keyframes floatUp {
+        0% {
+          transform: translateY(100vh) scale(0);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-10vh) scale(1);
+          opacity: 0;
+        }
+      }
+
+      .container {
+        position: relative;
+        z-index: 5;
+        width: 100%;
+        max-width: 1180px;
+        display: grid;
+        grid-template-columns: 1fr 520px;
+        gap: 40px;
+        align-items: center;
+      }
+
+      .hero {
+        padding-right: 40px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        background: rgba(56, 189, 248, 0.08);
+        color: var(--primary);
+        font-size: 0.85rem;
+        font-family: "JetBrains Mono", monospace;
+        margin-bottom: 24px;
+      }
+
+      .hero h1 {
+        font-size: clamp(3rem, 8vw, 5.8rem);
+        line-height: 0.95;
+        letter-spacing: -4px;
+        margin-bottom: 24px;
+        font-weight: 800;
+      }
+
+      .gradient-text {
+        background: linear-gradient(to right, #ffffff, #7dd3fc, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero p {
+        font-size: 1.08rem;
+        line-height: 1.8;
+        color: var(--muted);
+        max-width: 580px;
+      }
+
+      .features {
+        margin-top: 40px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .feature {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 18px;
+        border-radius: 18px;
+        backdrop-filter: blur(10px);
+      }
+
+      .feature h3 {
+        font-size: 1rem;
+        margin-bottom: 10px;
+      }
+
+      .feature p {
+        font-size: 0.92rem;
+        line-height: 1.7;
+      }
+
+      .auth-card {
+        position: relative;
+        background: var(--card-bg);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 30px;
+        backdrop-filter: blur(16px);
+        overflow: hidden;
+        box-shadow:
+          0 30px 80px rgba(0, 0, 0, 0.55),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      }
+
+      .auth-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(
+          135deg,
+          rgba(56, 189, 248, 0.5),
+          transparent,
+          rgba(129, 140, 248, 0.5)
+        );
+        -webkit-mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+
+      .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 28px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+      }
+
+      .logo-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #020617;
+        font-weight: 800;
+      }
+
+      .status {
+        font-size: 0.75rem;
+        color: var(--success);
+        font-family: "JetBrains Mono", monospace;
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        padding: 8px 12px;
+        border-radius: 999px;
+      }
+
+      .auth-content {
+        padding: 36px 34px 34px;
+      }
+
+      .toggle-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 6px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 16px;
+        margin-bottom: 32px;
+      }
+
+      .toggle-btn {
+        height: 52px;
+        border: none;
+        border-radius: 12px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+
+      .toggle-btn.active {
+        background: linear-gradient(
+          135deg,
+          rgba(56, 189, 248, 0.2),
+          rgba(129, 140, 248, 0.18)
+        );
+        color: white;
+        border: 1px solid rgba(56, 189, 248, 0.18);
+        box-shadow: 0 10px 25px rgba(56, 189, 248, 0.08);
+      }
+
+      .auth-header h2 {
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+
+      .auth-header p {
+        color: var(--muted);
+        line-height: 1.7;
+        margin-bottom: 30px;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .input-group label {
+        font-size: 0.92rem;
+        color: #dbeafe;
+        font-weight: 600;
+      }
+
+      .input-wrapper {
+        position: relative;
+      }
+
+      .input-wrapper input {
+        width: 100%;
+        height: 58px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: var(--input-bg);
+        color: white;
+        padding: 0 18px;
+        outline: none;
+        font-size: 0.96rem;
+        transition: all 0.25s ease;
+      }
+
+      .input-wrapper input:focus {
+        border-color: rgba(56, 189, 248, 0.5);
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .input-wrapper input::placeholder {
+        color: #64748b;
+      }
+
+      .options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+      }
+
+      .checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .checkbox input {
+        accent-color: var(--primary);
+      }
+
+      .forgot {
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+
+      .submit-btn {
+        margin-top: 8px;
+        width: 100%;
+        height: 60px;
+        border-radius: 18px;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #020617;
+        transition: all 0.3s ease;
+        box-shadow: 0 18px 40px rgba(56, 189, 248, 0.18);
+      }
+
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+      }
+
+      .divider {
+        position: relative;
+        margin: 28px 0;
+        text-align: center;
+      }
+
+      .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .divider span {
+        position: relative;
+        background: rgba(15, 23, 42, 0.95);
+        padding: 0 14px;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      .social-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+      }
+
+      .social-btn {
+        height: 56px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.25s ease;
+      }
+
+      .social-btn:hover {
+        transform: translateY(-2px);
+        border-color: rgba(56, 189, 248, 0.3);
+        background: rgba(56, 189, 248, 0.08);
+      }
+
+      .footer-text {
+        margin-top: 28px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .footer-text a {
+        color: var(--primary);
+        text-decoration: none;
+      }
+
+      .register-fields {
+        display: none;
+      }
+
+      .auth-card.register-mode .register-fields {
+        display: grid;
+      }
+
+      .scanline {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          transparent 50%,
+          rgba(0, 0, 0, 0.08) 50%
+        );
+        background-size: 100% 4px;
+        pointer-events: none;
+        z-index: 20;
+      }
+
+      @media (max-width: 980px) {
+        .container {
+          grid-template-columns: 1fr;
+          max-width: 560px;
+        }
+
+        .hero {
+          padding-right: 0;
+          text-align: center;
+        }
+
+        .hero p {
+          margin: auto;
+        }
+
+        .features {
+          margin-top: 28px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        body {
+          padding: 16px;
+        }
+
+        .hero {
+          display: none;
+        }
+
+        .auth-content {
+          padding: 28px 22px 24px;
+        }
+
+        .top-bar {
+          padding: 18px 20px;
+        }
+
+        .row,
+        .social-grid,
+        .features {
+          grid-template-columns: 1fr;
+        }
+
+        .auth-header h2 {
+          font-size: 1.7rem;
+        }
+
+        .submit-btn,
+        .input-wrapper input,
+        .social-btn {
+          height: 56px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="mesh"></div>
+    <div class="grid-floor"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="particles" id="particles"></div>
+    <div class="scanline"></div>
+
+    <main class="container">
+      <section class="hero">
+        <div class="tag">
+          <span>●</span>
+          Share Info Platform
+        </div>
+
+        <h1>
+          Share ideas.
+          <span class="gradient-text">Store links.</span>
+          Connect instantly.
+        </h1>
+
+        <p>
+          A production-ready modern authentication experience crafted for your
+          Share Info platform. Secure login, fast onboarding, responsive
+          layouts, and premium dark UI aesthetics.
+        </p>
+
+        <!-- <div class="features">
+          <div class="feature">
+            <h3>Lightning Fast</h3>
+            <p>
+              Optimized responsive UI with smooth transitions and clean modern
+              interactions.
+            </p>
+          </div>
+
+          <div class="feature">
+            <h3>Production Ready</h3>
+            <p>
+              Built with scalable structure, accessibility focus, and polished
+              UX design.
+            </p>
+          </div>
+
+          <div class="feature">
+            <h3>Secure Experience</h3>
+            <p>
+              Perfect for JWT auth, session auth, OAuth, or any backend
+              authentication flow.
+            </p>
+          </div> 
+
+          <div class="feature">
+            <h3>Mobile Friendly</h3>
+            <p>
+              Fully responsive layout with adaptive spacing and touch-friendly
+              controls.
+            </p>
+          </div>
+        </div> -->
+      </section>
+
+      <section class="auth-card" id="authCard">
+        <div class="top-bar">
+          <div class="logo">
+            <div class="logo-box">S</div>
+            <div>
+              <div>Share Info</div>
+              <small style="color: var(--muted)">secure access</small>
+            </div>
+          </div>
+
+          <div class="status">SYSTEM ONLINE</div>
+        </div>
+
+        <div class="auth-content">
+          <div class="toggle-wrapper">
+            <button class="toggle-btn active" id="loginTab">Login</button>
+            <button class="toggle-btn" id="registerTab">Register</button>
+          </div>
+
+          <div class="auth-header">
+            <h2 id="title">Welcome back</h2>
+            <p id="description">
+              Login to continue sharing links, texts, notes, and resources with
+              your community.
+            </p>
+          </div>
+
+          <form class="form-grid">
+            <!-- <div class="register-fields row"> -->
+              
+              <!-- <div class="input-group">
+                <label>First Name</label>
+                <div class="input-wrapper">
+                  <input type="text" placeholder="Omkar" />
+                </div>
+              </div> -->
+
+              <!-- <div class="input-group">
+                <label>Last Name</label>
+                <div class="input-wrapper">
+                  <input type="text" placeholder="Patil" />
+                </div>
+              </div> -->
+
+            <!-- </div> -->
+
+            <div class="input-group">
+              <label>Name</label>
+              <div class="input-wrapper">
+                <input type="text" placeholder="Rahul" />
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Email Address</label>
+              <div class="input-wrapper">
+                <input type="email" placeholder="you@example.com" />
+              </div>
+            </div>
+
+            <!-- <div class="register-fields input-group">
+              <label>Username</label>
+              <div class="input-wrapper">
+                <input type="text" placeholder="shareinfo_user" />
+              </div>
+            </div> -->
+
+            <div class="input-group">
+              <label>Password</label>
+              <div class="input-wrapper">
+                <input type="password" placeholder="Enter your password" />
+              </div>
+            </div>
+
+            <!-- <div class="register-fields input-group">
+              <label>Confirm Password</label>
+              <div class="input-wrapper">
+                <input type="password" placeholder="Confirm password" />
+              </div>
+            </div> -->
+
+            <!-- <div class="options">
+              <label class="checkbox">
+                <input type="checkbox" />
+                Remember me
+              </label>
+
+              <a href="#" class="forgot">Forgot password?</a>
+            </div> -->
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+              Access Dashboard
+            </button>
+          </form>
+
+          <div class="divider">
+            <span>OR CONTINUE WITH</span>
+          </div>
+
+          <div class="social-grid">
+            <button class="social-btn">Google</button>
+            <button class="social-btn">GitHub</button>
+          </div>
+
+          <div class="footer-text">
+            By continuing, you agree to our
+            <a href="#">Terms</a>
+            and
+            <a href="#">Privacy Policy</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const authCard = document.getElementById("authCard");
+      const loginTab = document.getElementById("loginTab");
+      const registerTab = document.getElementById("registerTab");
+      const title = document.getElementById("title");
+      const description = document.getElementById("description");
+      const submitBtn = document.getElementById("submitBtn");
+
+      loginTab.addEventListener("click", () => {
+        authCard.classList.remove("register-mode");
+        loginTab.classList.add("active");
+        registerTab.classList.remove("active");
+
+        title.textContent = "Welcome back";
+        description.textContent =
+          "Login to continue sharing links, texts, notes, and resources with your community.";
+
+        submitBtn.textContent = "Access Dashboard";
+      });
+
+      registerTab.addEventListener("click", () => {
+        authCard.classList.add("register-mode");
+        registerTab.classList.add("active");
+        loginTab.classList.remove("active");
+
+        title.textContent = "Create your account";
+        description.textContent =
+          "Join Share Info and start sharing texts, links, snippets, and resources instantly.";
+
+        submitBtn.textContent = "Create Account";
+      });
+
+      const particlesContainer = document.getElementById("particles");
+
+      for (let i = 0; i < 40; i++) {
+        const particle = document.createElement("div");
+        particle.classList.add("particle");
+
+        particle.style.left = Math.random() * 100 + "%";
+        particle.style.animationDuration = 6 + Math.random() * 8 + "s";
+        particle.style.animationDelay = Math.random() * 5 + "s";
+        particle.style.opacity = Math.random();
+        particle.style.width = particle.style.height =
+          Math.random() * 3 + 2 + "px";
+
+        particlesContainer.appendChild(particle);
+      }
+    </script>
+  </body>
+</html>

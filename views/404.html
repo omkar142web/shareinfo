@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 // Signal Lost</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #020617;
+        --line: #1e293b;
+        --primary: #38bdf8;
+        --error-pink: #ff75a0;
+        --text: #f8fafc;
+        --terminal-bg: rgba(15, 23, 42, 0.92);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        overflow: hidden;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        height: 100dvh;
+        width: 100vw;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        touch-action: none;
+      }
+
+      /* ── Mesh ambient glow (kept from original) ── */
+      .mesh {
+        position: absolute;
+        inset: 0;
+        background-image:
+          radial-gradient(
+            at 0% 0%,
+            rgba(56, 189, 248, 0.1) 0px,
+            transparent 55%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(99, 102, 241, 0.1) 0px,
+            transparent 55%
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── Grid floor ── */
+      .grid-floor {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        bottom: 0;
+        left: 0;
+        background-image:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 60px 60px;
+        transform: perspective(1000px) rotateX(65deg) scale(2);
+        transform-origin: bottom;
+        z-index: 0;
+        opacity: 0.4;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          black 20%,
+          black 80%,
+          transparent
+        );
+        pointer-events: none;
+      }
+
+      /* ── Blobs (upgraded — animated) ── */
+      .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        z-index: 0;
+        pointer-events: none;
+      }
+      .blob-1 {
+        width: 380px;
+        height: 380px;
+        top: -12%;
+        left: -8%;
+        background: var(--primary);
+        opacity: 0.12;
+        animation: drift-1 8s ease-in-out infinite alternate;
+      }
+      .blob-2 {
+        width: 340px;
+        height: 340px;
+        bottom: -12%;
+        right: -8%;
+        background: #818cf8;
+        opacity: 0.12;
+        animation: drift-2 9s ease-in-out infinite alternate;
+      }
+      @keyframes drift-1 {
+        from {
+          transform: translate(0, 0) scale(1);
+        }
+        to {
+          transform: translate(30px, 20px) scale(1.1);
+        }
+      }
+      @keyframes drift-2 {
+        from {
+          transform: translate(0, 0) scale(1);
+        }
+        to {
+          transform: translate(-25px, -15px) scale(1.08);
+        }
+      }
+
+      /* ── Scanline ── */
+      .scanline {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          transparent 50%,
+          rgba(0, 0, 0, 0.09) 50%
+        );
+        background-size: 100% 4px;
+        z-index: 20;
+        pointer-events: none;
+      }
+
+      /* ── Floating particles ── */
+      .particles {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        overflow: hidden;
+      }
+      .particle {
+        position: absolute;
+        border-radius: 50%;
+        animation: float-up linear infinite;
+        opacity: 0;
+      }
+      @keyframes float-up {
+        0% {
+          transform: translateY(100vh) scale(0);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 0.4;
+        }
+        100% {
+          transform: translateY(-10vh) scale(1);
+          opacity: 0;
+        }
+      }
+
+      /* ── Card ── */
+      .card {
+        background: var(--terminal-bg);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 3.5rem 2.8rem;
+        border-radius: 24px;
+        width: 90%;
+        max-width: 460px;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        box-shadow:
+          0 25px 60px -12px rgba(0, 0, 0, 0.6),
+          0 0 40px rgba(56, 189, 248, 0.05),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        text-align: center;
+        position: relative;
+        z-index: 10;
+        animation: slideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+        /* Corner cut — top-right */
+        clip-path: polygon(
+          0 0,
+          calc(100% - 28px) 0,
+          100% 28px,
+          100% 100%,
+          0 100%
+        );
+      }
+
+      /* ── Corner badge — top right ── */
+      .card-badge {
+        position: absolute;
+        top: -1px;
+        right: -1px;
+        background: var(--bg);
+        padding: 5px 14px;
+        color: var(--primary);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.72rem;
+        letter-spacing: 3px;
+        font-weight: 700;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        border-top-right-radius: 24px;
+      }
+
+      /* ── Corner accent — bottom left ── */
+      .card::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: -1px;
+        width: 32px;
+        height: 32px;
+        border-bottom: 2px solid rgba(56, 189, 248, 0.4);
+        border-left: 2px solid rgba(56, 189, 248, 0.4);
+        border-bottom-left-radius: 24px;
+      }
+
+      /* ── Glitch hero ── */
+      .glitch-wrapper {
+        margin-bottom: 1.2rem;
+      }
+
+      .glitch {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 6rem;
+        font-weight: 800;
+        letter-spacing: -4px;
+        position: relative;
+        display: inline-block;
+        background: linear-gradient(to bottom, #fff 30%, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+        animation: flicker 6s step-end infinite;
+      }
+
+      .glitch::before,
+      .glitch::after {
+        content: "404";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+      }
+      .glitch::before {
+        background: linear-gradient(to bottom, var(--primary), #0ea5e9);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        z-index: -1;
+        text-shadow: none;
+        filter: blur(0);
+        animation: glitch-anim 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) both
+          infinite;
+        opacity: 0.85;
+      }
+      .glitch::after {
+        background: linear-gradient(to bottom, var(--error-pink), #f43f5e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        z-index: -2;
+        animation: glitch-anim 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)
+          reverse both infinite;
+        opacity: 0.5;
+      }
+
+      @keyframes glitch-anim {
+        0% {
+          transform: translate(0);
+        }
+        20% {
+          transform: translate(-4px, 2px);
+          clip-path: inset(10% 0 60% 0);
+        }
+        40% {
+          transform: translate(-4px, -2px);
+          clip-path: inset(50% 0 20% 0);
+        }
+        60% {
+          transform: translate(4px, 2px);
+          clip-path: inset(30% 0 40% 0);
+        }
+        80% {
+          transform: translate(4px, -2px);
+          clip-path: inset(70% 0 5% 0);
+        }
+        100% {
+          transform: translate(0);
+        }
+      }
+
+      @keyframes flicker {
+        0%,
+        93%,
+        100% {
+          opacity: 1;
+        }
+        94% {
+          opacity: 0.15;
+        }
+        95% {
+          opacity: 1;
+        }
+        96.5% {
+          opacity: 0.5;
+        }
+        97% {
+          opacity: 1;
+        }
+      }
+
+      /* ── Heading & body ── */
+      h2 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        color: var(--primary);
+        letter-spacing: 2px;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: #94a3b8;
+        margin-bottom: 1.6rem;
+        line-height: 1.7;
+        font-size: 1rem;
+      }
+
+      /* ── Error tag (upgraded — animated pink glow) ── */
+      .error-tag {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.7rem;
+        color: var(--error-pink);
+        background: rgba(233, 30, 99, 0.12);
+        border: 1px solid rgba(255, 46, 126, 0.4);
+        padding: 7px 16px;
+        border-radius: 8px;
+        display: inline-block;
+        margin-bottom: 1.8rem;
+        text-shadow: 0 0 8px rgba(255, 117, 160, 0.5);
+        box-shadow: 0 0 18px rgba(233, 30, 99, 0.08);
+        letter-spacing: 1px;
+        animation: tag-pulse 2.5s ease-in-out infinite alternate;
+      }
+
+      @keyframes tag-pulse {
+        from {
+          box-shadow: 0 0 8px rgba(233, 30, 99, 0.06);
+        }
+        to {
+          box-shadow: 0 0 24px rgba(233, 30, 99, 0.22);
+        }
+      }
+
+      /* ── Divider ── */
+      .divider {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          rgba(56, 189, 248, 0.2),
+          transparent
+        );
+        margin-bottom: 1.8rem;
+      }
+
+      /* ── Buttons ── */
+      .btn-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      .btn {
+        padding: 15px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: block;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        border: none;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        letter-spacing: 0.3px;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: #0f172a;
+        box-shadow: 0 0 0 rgba(56, 189, 248, 0);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      @media (hover: hover) {
+        .btn-primary:hover {
+          background: #7dd3fc;
+          transform: translateY(-2px);
+          box-shadow: 0 0 22px rgba(56, 189, 248, 0.45);
+        }
+        .btn-secondary:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.22);
+          transform: translateY(-2px);
+        }
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(32px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mesh"></div>
+    <div class="grid-floor"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="scanline"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="card">
+      <div class="card-badge">[ SIGNAL_LOST ]</div>
+
+      <div class="glitch-wrapper">
+        <span class="glitch">404</span>
+      </div>
+
+      <h2>Signal Lost // Route Not Found</h2>
+
+      <p>
+        The page you're looking for has drifted into another dimension — or
+        never existed in this timeline 😙.
+      </p>
+
+      <div class="error-tag">STATUS: 0xNULL_POINTER // SECTOR_LOST</div>
+
+      <div class="divider"></div>
+
+      <div class="btn-group">
+        <a href="/" class="btn btn-primary">Go Home</a>
+        <a href="javascript:history.back()" class="btn btn-secondary"
+          >Go Back</a
+        >
+      </div>
+    </div>
+
+    <script>
+      /* ── Floating particles ── */
+      const container = document.getElementById("particles");
+      const colors = [
+        "rgba(56,189,248,",
+        "rgba(129,140,248,",
+        "rgba(255,117,160,",
+      ];
+
+      for (let i = 0; i < 22; i++) {
+        const p = document.createElement("div");
+        p.className = "particle";
+        const size = Math.random() * 4 + 2;
+        const col = colors[Math.floor(Math.random() * colors.length)];
+        p.style.cssText = `
+          left: ${Math.random() * 100}%;
+          width: ${size}px;
+          height: ${size}px;
+          background: ${col}0.7);
+          box-shadow: 0 0 ${size * 2}px ${col}0.4);
+          animation-duration: ${Math.random() * 8 + 6}s;
+          animation-delay: -${Math.random() * 8}s;
+        `;
+        container.appendChild(p);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All Snippets</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        background: #0f172a;
+        color: white;
+        padding: 40px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: auto;
+      }
+
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .title {
+        font-size: 40px;
+        font-weight: bold;
+      }
+
+      .search {
+        flex: 1;
+        min-width: 250px;
+      }
+
+      .search input {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        background: #1e293b;
+        color: white;
+        outline: none;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 25px;
+      }
+
+      .card {
+        background: #1e293b;
+        border-radius: 20px;
+        padding: 24px;
+        cursor: pointer;
+        transition: 0.25s;
+        border: 1px solid transparent;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        border-color: #2563eb;
+      }
+
+      .card-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 12px;
+      }
+
+      .preview {
+        color: #cbd5e1;
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .tag {
+        background: #0f172a;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+
+      .stats {
+        display: flex;
+        gap: 18px;
+        color: #94a3b8;
+        font-size: 14px;
+        flex-wrap: wrap;
+      }
+
+      .type {
+        display: inline-block;
+        margin-bottom: 15px;
+        background: #2563eb;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .empty {
+        text-align: center;
+        margin-top: 100px;
+        color: #64748b;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="top">
+        <div class="title">All Snippets</div>
+
+        <div class="search">
+          <input
+            type="text"
+            placeholder="Search snippets..."
+            id="searchInput"
+          />
+        </div>
+      </div>
+
+      <div class="grid" id="snippetsContainer"></div>
+
+      <div class="empty" id="emptyMessage" style="display: none">
+        No snippets found.
+      </div>
+    </div>
+
+    <script>
+      // FETCH FROM DATABASE
+
+      const snippets = [
+        {
+          _id: "1",
+
+          title: "MongoDB Notes",
+
+          slug: "mongodb-notes",
+
+          tags: ["mongodb", "backend"],
+
+          stats: {
+            views: 120,
+            likes: 32,
+          },
+
+          blocks: [
+            {
+              type: "paragraph",
+              content: {
+                text: "MongoDB is a NoSQL database used for scalable apps.",
+              },
+            },
+          ],
+        },
+
+        {
+          _id: "2",
+
+          title: "JavaScript Array Methods",
+
+          slug: "js-array-methods",
+
+          tags: ["javascript", "frontend"],
+
+          stats: {
+            views: 300,
+            likes: 80,
+          },
+
+          blocks: [
+            {
+              type: "code",
+              content: {
+                language: "javascript",
+                code: `const arr = [1,2,3];
+
+arr.map(item => item * 2);`,
+              },
+            },
+          ],
+        },
+
+        {
+          _id: "3",
+
+          title: "Useful Backend Links",
+
+          slug: "backend-links",
+
+          tags: ["resources", "nodejs"],
+
+          stats: {
+            views: 90,
+            likes: 20,
+          },
+
+          blocks: [
+            {
+              type: "link",
+              content: {
+                title: "Express JS",
+                description: "Fast backend framework for Node.js",
+              },
+            },
+          ],
+        },
+      ];
+
+      const container = document.getElementById("snippetsContainer");
+
+      const emptyMessage = document.getElementById("emptyMessage");
+
+      function renderSnippets(data) {
+        container.innerHTML = "";
+
+        if (data.length === 0) {
+          emptyMessage.style.display = "block";
+
+          return;
+        }
+
+        emptyMessage.style.display = "none";
+
+        data.forEach((snippet) => {
+          const card = document.createElement("div");
+
+          card.className = "card";
+
+          // PREVIEW CONTENT
+
+          let preview = "";
+
+          const firstBlock = snippet.blocks[0];
+
+          if (firstBlock) {
+            if (firstBlock.type === "paragraph") {
+              preview = firstBlock.content.text;
+            }
+
+            if (firstBlock.type === "code") {
+              preview = firstBlock.content.code;
+            }
+
+            if (firstBlock.type === "link") {
+              preview = firstBlock.content.description;
+            }
+          }
+
+          // MAIN TYPE
+
+          const mainType = firstBlock?.type || "snippet";
+
+          card.innerHTML = `
+
+          <div class="type">
+            ${mainType.toUpperCase()}
+          </div>
+
+          <div class="card-title">
+            ${snippet.title}
+          </div>
+
+          <div class="preview">
+            ${preview.slice(0, 120)}
+          </div>
+
+          <div class="tags">
+
+            ${snippet.tags
+              .map(
+                (tag) => `
+                <div class="tag">
+                  #${tag}
+                </div>
+              `,
+              )
+              .join("")}
+
+          </div>
+
+          <div class="stats">
+
+            <span>
+              👁 ${snippet.stats.views}
+            </span>
+
+            <span>
+              ❤️ ${snippet.stats.likes}
+            </span>
+
+          </div>
+
+        `;
+
+          // OPEN FULL PAGE
+
+          card.addEventListener("click", () => {
+            // REDIRECT
+
+            window.location.href = `/snippet/${snippet.slug}`;
+
+            // Example:
+            // /snippet/mongodb-notes
+          });
+
+          container.appendChild(card);
+        });
+      }
+
+      renderSnippets(snippets);
+
+      // SEARCH
+
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        const value = e.target.value.toLowerCase();
+
+        const filtered = snippets.filter((snippet) => {
+          return (
+            snippet.title.toLowerCase().includes(value) ||
+            snippet.tags.some((tag) => tag.toLowerCase().includes(value))
+          );
+        });
+
+        renderSnippets(filtered);
+      });
+    </script>
+  </body>
+</html>
