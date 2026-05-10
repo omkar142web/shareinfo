@@ -76,7 +76,7 @@ export const getHome = async (req, res) => {
         //   <pre>${JSON.stringify(getAllUsersData, null, 2)}</pre>
         // `);
 
-        return res.render("allinfo", { data: getAllUsersData });
+        return res.render("allInfo", { data: getAllUsersData });
       }
       // return res.send(`
       //   <h1>Welcome back, ${user.name} 👋</h1>
@@ -86,7 +86,7 @@ export const getHome = async (req, res) => {
       //   <pre>${JSON.stringify(getOneUserData, null, 2)}</pre>
       // `);
 
-      return res.render("allinfo", { data: getOneUserData });
+      return res.render("allInfo", { data: getOneUserData });
     }
 
     clearUserCookies(res);
