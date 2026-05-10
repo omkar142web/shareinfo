@@ -7,16 +7,11 @@
 
 :root {
   /* Core palette */
-  --bg: #0d1628; /* was #080d1a  — slightly lifted dark navy */
-  --surface-0: #111e35; /* was #0c1220 */
-  --surface-1: rgba(
-    22,
-    34,
-    58,
-    0.82
-  ); /* was rgba(16,24,40,0.80) — more visible card surface */
-  --surface-2: rgba(30, 46, 74, 0.65); /* was rgba(22,34,58,0.55) */
-  --surface-hover: rgba(36, 54, 88, 0.75); /* was rgba(30,48,80,0.70) */
+  --bg: #080d1a;
+  --surface-0: #0c1220;
+  --surface-1: rgba(16, 24, 40, 0.75);
+  --surface-2: rgba(22, 34, 58, 0.6);
+  --surface-hover: rgba(30, 48, 80, 0.7);
 
   /* Cyan accent system */
   --cyan: #38bdf8;
@@ -35,13 +30,13 @@
 
   /* Text */
   --text: #f0f6ff;
-  --text-2: #a8bdd4; /* was #94a3b8 — slightly brighter muted text */
-  --text-3: #607a96; /* was #4d6480 — more readable subtle text */
+  --text-2: #94a3b8;
+  --text-3: #4d6480;
 
   /* Borders */
-  --border: rgba(255, 255, 255, 0.09); /* was 0.06 */
-  --border-md: rgba(255, 255, 255, 0.13); /* was 0.10 */
-  --border-hi: rgba(255, 255, 255, 0.2); /* was 0.14 */
+  --border: rgba(255, 255, 255, 0.06);
+  --border-md: rgba(255, 255, 255, 0.1);
+  --border-hi: rgba(255, 255, 255, 0.14);
 
   /* Shadows */
   --shadow-card:
@@ -220,7 +215,7 @@ body::before {
   font-family: var(--font-display);
   font-size: 1.2rem;
   font-weight: 800;
-  /* letter-spacing: -0.04em; */
+  letter-spacing: -0.04em;
   color: var(--text);
 }
 
@@ -319,17 +314,18 @@ body::before {
   padding: 40px 28px 80px;
 }
 
-/* ── Masonry wall (grid — row-wise fill) ─────────── */
+/* ── Masonry wall ────────────────────────────────── */
 .masonry-wall {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--gap);
-  align-items: start; /* cards keep natural height; no row stretching */
+  columns: 4 260px;
+  column-gap: var(--gap);
 }
 
 /* ── Info card base ──────────────────────────────── */
 .info-card {
+  break-inside: avoid;
+  display: inline-block; /* required for column masonry */
   width: 100%;
+  margin-bottom: var(--gap);
   background: var(--surface-1);
   border: 1px solid var(--border-md);
   border-radius: var(--radius);
@@ -947,7 +943,7 @@ body::before {
 /* Tablet */
 @media (max-width: 900px) {
   .masonry-wall {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    columns: 3 220px;
   }
 }
 
@@ -973,7 +969,7 @@ body::before {
   }
 
   .masonry-wall {
-    grid-template-columns: repeat(2, 1fr);
+    columns: 2 160px;
   }
 
   .card-name {
@@ -1003,7 +999,7 @@ body::before {
 /* Small mobile */
 @media (max-width: 420px) {
   .masonry-wall {
-    grid-template-columns: 1fr;
+    columns: 1;
   }
 
   .brand-title {
