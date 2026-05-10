@@ -104,9 +104,9 @@
 
         // ! add condition of same data / 
         if (
-          form.name.value.trim() === "<%= person.name %>" &&
-          form.email.value.trim() === "<%= person.email %>" &&
-          form.info.value.trim() === "<%= person.info %>"
+          form.name.value.trim() === form.name.defaultValue.trim() &&
+          form.email.value.trim() === form.email.defaultValue.trim() &&
+          form.info.value.trim() === form.info.defaultValue.trim()
         ) {
           btn.disabled = true;
           btn.innerHTML = `
