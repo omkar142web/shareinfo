@@ -79,13 +79,13 @@
       </div>
 
       <div class="field-group">
-        <label for="email">
+        <label>
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
             <polyline points="22,6 12,13 2,6" />
           </svg>
           Owner Email
-          <span class="label-tag">read-only</span>
+          <!-- <span class="label-tag">read-only</span> -->
         </label>
         <div class="input-wrap">
           <input class="readonly" readonly type="email" id="email" name="email" placeholder="rahul@example.com" value="<%= person?.email || '' %>" required autocomplete="on" />
