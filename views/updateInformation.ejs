@@ -5,84 +5,186 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= title %></title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/update.css" />
 </head>
 
 <body>
 
-  <h1><%= title %></h1>
+  <!-- ── Ambient orbs ── -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
 
-  <form>
-    <div>
-      <label for="name">Entry Title</label>
-      <input type="text" id="name" name="name" placeholder="e.g. Rahul Sharma" value="<%= person?.name || '' %>" required autocomplete="on" autofocus />
+  <!-- ── Form card ── -->
+  <div class="form-shell">
+
+    <!-- Header -->
+    <div class="form-header">
+      <div class="form-header-top">
+        <a href="/" class="back-link" aria-label="Back to dashboard">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span>Dashboard</span>
+        </a>
+        <span class="form-mode-badge">
+          <% if (title === 'Add Info') { %>
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          New Entry
+          <% } else { %>
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          Editing
+          <% } %>
+        </span>
+      </div>
+
+      <div class="form-title-row">
+        <span class="brand-pulse" aria-hidden="true"></span>
+        <h1><%= title %></h1>
+      </div>
+
+      <p class="form-subtitle">
+        <% if (title === 'Add Info') { %>
+        Fill in the details below — links, notes, codes, anything.
+        <% } else { %>
+        Modify the fields and save your changes below.
+        <% } %>
+      </p>
     </div>
 
-    <div>
-      <label for="email">Owner Email</label>
-      <input class="readonly" readonly type="email" id="email" name="email" placeholder="rahul@example.com" value="<%= person?.email || '' %>" required autocomplete="on" />
-    </div>
+    <div class="form-divider" aria-hidden="true"></div>
 
+    <!-- Form body -->
+    <form novalidate>
 
-    <div>
-      <label for="info">Content / Notes</label>
-      <!-- <input type="text" id="info" name="info" placeholder="e.g. website link, notes, codes, any info u want.." value="<%= person?.info || '' %>" required autocomplete="on" /> -->
-      <textarea id="info" name="info" rows="3" placeholder="e.g. Paste links, notes, codes or any useful info.." required autocomplete="on"><%= person?.info || '' %></textarea>
-    </div>
+      <div class="field-group">
+        <label for="name">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          Entry Title
+        </label>
+        <div class="input-wrap">
+          <input type="text" id="name" name="name" placeholder="e.g. Rahul Sharma" value="<%= person?.name || '' %>" required autocomplete="on" autofocus />
+        </div>
+      </div>
 
-    <div>
-      <button type="submit">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1l2.1-2.1M17 7l2.1-2.1" />
-        </svg>
-        <%= buttonText %>
-      </button>
-      <a href="/" class="btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="8" y1="6" x2="21" y2="6" />
-          <line x1="8" y1="12" x2="21" y2="12" />
-          <line x1="8" y1="18" x2="21" y2="18" />
-          <line x1="3" y1="6" x2="3.01" y2="6" />
-          <line x1="3" y1="12" x2="3.01" y2="12" />
-          <line x1="3" y1="18" x2="3.01" y2="18" />
-        </svg>
-        See All
-      </a>
-    </div>
-  </form>
+      <div class="field-group">
+        <label for="email">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg>
+          Owner Email
+          <span class="label-tag">read-only</span>
+        </label>
+        <div class="input-wrap">
+          <input class="readonly" readonly type="email" id="email" name="email" placeholder="rahul@example.com" value="<%= person?.email || '' %>" required autocomplete="on" />
+          <span class="input-lock" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </span>
+        </div>
+      </div>
 
+      <div class="field-group">
+        <label for="info">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="17" y1="10" x2="3" y2="10" />
+            <line x1="21" y1="6" x2="3" y2="6" />
+            <line x1="21" y1="14" x2="3" y2="14" />
+            <line x1="17" y1="18" x2="3" y2="18" />
+          </svg>
+          Content / Notes
+        </label>
+        <div class="input-wrap textarea-wrap">
+          <textarea id="info" name="info" rows="3" placeholder="Paste links, notes, codes or any useful info.." required autocomplete="on"><%= person?.info || '' %></textarea>
+          <span class="char-counter" id="charCounter">0 chars</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <% if (title === 'Add Info') { %>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <% } else { %>
+            <path d="M20 6 9 17l-5-5" />
+            <% } %>
+          </svg>
+          <%= buttonText %>
+        </button>
+
+        <a href="/" class="btn-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" />
+            <line x1="3" y1="12" x2="3.01" y2="12" />
+            <line x1="3" y1="18" x2="3.01" y2="18" />
+          </svg>
+          See All
+        </a>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ── Textarea auto-resize + char counter ── -->
   <script>
     const textarea = document.querySelector("textarea");
+    const counter = document.getElementById("charCounter");
 
     function autoResize() {
       textarea.style.height = "auto";
       textarea.style.height = textarea.scrollHeight + 5 + "px";
     }
 
-    textarea.addEventListener("input", autoResize);
+    function updateCounter() {
+      const len = textarea.value.length;
+      counter.textContent = len > 0 ? `${len} char${len !== 1 ? 's' : ''}` : '';
+      counter.classList.toggle('visible', len > 0);
+    }
 
-    window.addEventListener("load", autoResize);
+    textarea.addEventListener("input", () => {
+      autoResize();
+      updateCounter();
+    });
+    window.addEventListener("load", () => {
+      autoResize();
+      updateCounter();
+    });
   </script>
 
+  <!-- ── Form submit logic (unchanged) ── -->
   <% if (title != 'Add Info') { %>
   <script>
     let form = document.querySelector("form");
-    let inputs = form.querySelectorAll("input , textarea");
+    let inputs = form.querySelectorAll("input, textarea");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const btn = form.querySelector("button");
+      const btn = form.querySelector("button[type='submit']");
 
       for (let input of inputs) {
         if (!input.value?.trim()) {
           input.focus();
-          input.style.borderColor = "#ff75a0";
-          input.style.boxShadow = "0 0 0 3px rgba(255,117,160,0.18)";
-          input.addEventListener("input", () => {
-            input.style.borderColor = "";
-            input.style.boxShadow = "";
-          }, {
+          input.classList.add('input-error');
+          input.addEventListener("input", () => input.classList.remove('input-error'), {
             once: true
           });
           return;
@@ -92,7 +194,7 @@
       try {
         btn.disabled = true;
         btn.innerHTML = `
-          <span style="display:inline-flex;animation:spin 0.7s linear infinite;transform-origin:center;">
+          <span class="spin-wrap">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round">
@@ -102,7 +204,6 @@
           Updating…
         `;
 
-        // ! add condition of same data / 
         if (
           form.name.value.trim() === form.name.defaultValue.trim() &&
           form.email.value.trim() === form.email.defaultValue.trim() &&
@@ -117,8 +218,7 @@
             </svg>
             Nothing to update!
           `;
-
-          window.location.replace("/"); // better than href here
+          window.location.replace("/");
           return;
         }
 
@@ -128,9 +228,9 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            name: form.elements['name'].value.trim(), // ✅
-            email: form.elements['email'].value.trim(), // ✅ 
-            info: form.elements['info'].value.trim(), // ✅
+            name: form.elements['name'].value.trim(),
+            email: form.elements['email'].value.trim(),
+            info: form.elements['info'].value.trim(),
           }),
         });
 
@@ -145,7 +245,6 @@
           </svg>
           Updated!
         `;
-
         window.location.href = "/";
 
       } catch (err) {
@@ -165,7 +264,7 @@
   <% } else { %>
   <script>
     form = document.querySelector("form");
-    inputs = form.querySelectorAll("input , textarea");
+    inputs = form.querySelectorAll("input, textarea");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -174,12 +273,8 @@
       for (let input of inputs) {
         if (!input.value?.trim()) {
           input.focus();
-          input.style.borderColor = "#ff75a0";
-          input.style.boxShadow = "0 0 0 3px rgba(255,117,160,0.18)";
-          input.addEventListener("input", () => {
-            input.style.borderColor = "";
-            input.style.boxShadow = "";
-          }, {
+          input.classList.add('input-error');
+          input.addEventListener("input", () => input.classList.remove('input-error'), {
             once: true
           });
           return;
@@ -189,7 +284,7 @@
       try {
         btn.disabled = true;
         btn.innerHTML = `
-          <span style="display:inline-flex;animation:spin 0.7s linear infinite;transform-origin:center;">
+          <span class="spin-wrap">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round">
@@ -205,9 +300,9 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            name: form.elements['name'].value.trim(), // ✅
-            email: form.elements['email'].value.trim(), // ✅ 
-            info: form.elements['info'].value.trim(), // ✅
+            name: form.elements['name'].value.trim(),
+            email: form.elements['email'].value.trim(),
+            info: form.elements['info'].value.trim(),
           }),
         });
 
@@ -222,8 +317,6 @@
           </svg>
           Added!
         `;
-
-
         window.location.href = "/";
 
       } catch (err) {

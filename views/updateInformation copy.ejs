@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/update.css" />
+</head>
+
+<body>
+
+  <h1><%= title %></h1>
+
+  <form>
+    <div>
+      <label for="name">Entry Title</label>
+      <input type="text" id="name" name="name" placeholder="e.g. Rahul Sharma" value="<%= person?.name || '' %>" required autocomplete="on" autofocus />
+    </div>
+
+    <div>
+      <label for="email">Owner Email</label>
+      <input class="readonly" readonly type="email" id="email" name="email" placeholder="rahul@example.com" value="<%= person?.email || '' %>" required autocomplete="on" />
+    </div>
+
+
+    <div>
+      <label for="info">Content / Notes</label>
+      <!-- <input type="text" id="info" name="info" placeholder="e.g. website link, notes, codes, any info u want.." value="<%= person?.info || '' %>" required autocomplete="on" /> -->
+      <textarea id="info" name="info" rows="3" placeholder="e.g. Paste links, notes, codes or any useful info.." required autocomplete="on"><%= person?.info || '' %></textarea>
+    </div>
+
+    <div>
+      <button type="submit">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1l2.1-2.1M17 7l2.1-2.1" />
+        </svg>
+        <%= buttonText %>
+      </button>
+      <a href="/" class="btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6" />
+          <line x1="8" y1="12" x2="21" y2="12" />
+          <line x1="8" y1="18" x2="21" y2="18" />
+          <line x1="3" y1="6" x2="3.01" y2="6" />
+          <line x1="3" y1="12" x2="3.01" y2="12" />
+          <line x1="3" y1="18" x2="3.01" y2="18" />
+        </svg>
+        See All
+      </a>
+    </div>
+  </form>
+
+  <script>
+    const textarea = document.querySelector("textarea");
+
+    function autoResize() {
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + 5 + "px";
+    }
+
+    textarea.addEventListener("input", autoResize);
+
+    window.addEventListener("load", autoResize);
+  </script>
+
+  <% if (title != 'Add Info') { %>
+  <script>
+    let form = document.querySelector("form");
+    let inputs = form.querySelectorAll("input , textarea");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector("button");
+
+      for (let input of inputs) {
+        if (!input.value?.trim()) {
+          input.focus();
+          input.style.borderColor = "#ff75a0";
+          input.style.boxShadow = "0 0 0 3px rgba(255,117,160,0.18)";
+          input.addEventListener("input", () => {
+            input.style.borderColor = "";
+            input.style.boxShadow = "";
+          }, {
+            once: true
+          });
+          return;
+        }
+      }
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <span style="display:inline-flex;animation:spin 0.7s linear infinite;transform-origin:center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+            </svg>
+          </span>
+          Updating…
+        `;
+
+        // ! add condition of same data / 
+        if (
+          form.name.value.trim() === form.name.defaultValue.trim() &&
+          form.email.value.trim() === form.email.defaultValue.trim() &&
+          form.info.value.trim() === form.info.defaultValue.trim()
+        ) {
+          btn.disabled = true;
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+            Nothing to update!
+          `;
+
+          window.location.replace("/"); // better than href here
+          return;
+        }
+
+        const response = await fetch(`/<%= person._id %>`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: form.elements['name'].value.trim(), // ✅
+            email: form.elements['email'].value.trim(), // ✅ 
+            info: form.elements['info'].value.trim(), // ✅
+          }),
+        });
+
+        if (!response.ok) throw new Error("Update failed");
+        await new Promise(r => setTimeout(r, 400));
+
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          Updated!
+        `;
+
+        window.location.href = "/";
+
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          <%= buttonText %>
+        `;
+      }
+    });
+  </script>
+  <% } else { %>
+  <script>
+    form = document.querySelector("form");
+    inputs = form.querySelectorAll("input , textarea");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector("button[type='submit']");
+
+      for (let input of inputs) {
+        if (!input.value?.trim()) {
+          input.focus();
+          input.style.borderColor = "#ff75a0";
+          input.style.boxShadow = "0 0 0 3px rgba(255,117,160,0.18)";
+          input.addEventListener("input", () => {
+            input.style.borderColor = "";
+            input.style.boxShadow = "";
+          }, {
+            once: true
+          });
+          return;
+        }
+      }
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <span style="display:inline-flex;animation:spin 0.7s linear infinite;transform-origin:center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+            </svg>
+          </span>
+          Adding…
+        `;
+
+        const response = await fetch(`/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: form.elements['name'].value.trim(), // ✅
+            email: form.elements['email'].value.trim(), // ✅ 
+            info: form.elements['info'].value.trim(), // ✅
+          }),
+        });
+
+        if (!response.ok) throw new Error("Failed to add contact");
+        await new Promise(r => setTimeout(r, 400));
+
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          Added!
+        `;
+
+
+        window.location.href = "/";
+
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          <%= buttonText %>
+        `;
+      }
+    });
+  </script>
+  <% } %>
+
+</body>
+
+</html>
