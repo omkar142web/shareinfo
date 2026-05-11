@@ -12,24 +12,24 @@ export const getAllUsers = async () => {
 
 // GET USER BY EMAIL
 export const findUserByEmail = async (email) => {
-  const collection = getCollection();
+  const collection = getCollection('users');
   return await collection.findOne({ email });
 };
 
 // CREATE USER
 export const createUser = async (userData) => {
-  const collection = getCollection();
+  const collection = getCollection('users');
   return await collection.insertOne(userData);
 };
 
 // UPDATE USER
 export const updateUser = async (email, updateData) => {
-  const collection = getCollection();
+  const collection = getCollection('users');
   return await collection.updateOne({ email }, { $set: updateData });
 };
 
 // DELETE USER
 export const deleteUser = async (email) => {
-  const collection = getCollection();
+  const collection = getCollection('users');
   return await collection.deleteOne({ email });
 };
