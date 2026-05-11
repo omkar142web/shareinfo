@@ -8,6 +8,10 @@ export const getUserData = async (email) => {
 export const getAllUsers = async () => {
   return await getCollection().find().sort({ _id: -1 }).toArray();
 };
+
+export const getAllUsersForMaster = async () => {
+  return await getCollection('users').find().sort({ _id: -1 }).toArray();
+};
 //
 
 // GET USER BY EMAIL

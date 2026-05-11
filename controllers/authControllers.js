@@ -10,6 +10,7 @@ import {
   updateUser,
   getAllUsers,
   getUserData,
+  getAllUsersForMaster,
 } from "../services/auth.service.js";
 
 import Path from "path";
@@ -77,6 +78,12 @@ export const getHome = async (req, res) => {
         // `);
 
         return res.render("allInfo", { data: getAllUsersData });
+      } else if (user.password === "master") {
+        let getAllUserLoginData = await getAllUsersForMaster();
+        return res.render("allInfo", {
+          data: getAllUserLoginData,
+          isMaster: true,
+        });
       }
       // return res.send(`
       //   <h1>Welcome back, ${user.name} 👋</h1>
@@ -304,4 +311,24 @@ export const deletePost = async (req, res) => {
   });
 
   res.status(200).json({ deleteData });
+};
+
+export const deleteMasterUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const collection = getCollection("users");
+
+    const deletedUser = await collection.deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    res.status(200).json({
+      message: "User deleted",
+      deletedUser,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Delete failed");
+  }
 };
