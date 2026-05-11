@@ -899,7 +899,7 @@ body::before {
 
 /* Modal scrollbar */
 .modal-body::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 .modal-body::-webkit-scrollbar-track {
   background: transparent;
@@ -936,10 +936,10 @@ body::before {
       rgba(56, 189, 248, 0.6)
     );
   }
-  html {
+  /* html {
     scrollbar-width: thin;
     scrollbar-color: rgba(56, 189, 248, 0.5) rgba(8, 13, 26, 0.9);
-  }
+  } */
 }
 
 /* ── Responsive ──────────────────────────────────── */
