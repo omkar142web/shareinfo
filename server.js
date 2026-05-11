@@ -11,6 +11,15 @@ app.use(express.urlencoded({ extended: true }));
 import cookieParser from "cookie-parser";
 app.use(cookieParser());
 
+// ! disable browser cache for dynamic pages
+app.use((req, res, next) => {
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, private"
+  );
+  next();
+});
+
 // ! static pages
 import Path from "path";
 import { fileURLToPath } from "url";
