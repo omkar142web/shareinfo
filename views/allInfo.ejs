@@ -391,10 +391,6 @@
     }
 
     /* Card types get subtle tint variants */
-    .card-link {
-      border-color: rgba(56, 189, 248, 0.12);
-    }
-
     .card-long {
       cursor: pointer;
       border-color: rgba(139, 92, 246, 0.12);
@@ -441,10 +437,6 @@
       color: var(--text-3);
       padding: 10px 16px 8px;
       border-bottom: 1px solid var(--border);
-    }
-
-    .card-link .card-type-strip {
-      color: var(--cyan);
     }
 
     .card-long .card-type-strip {
@@ -525,8 +517,8 @@
       padding: 4px 16px 14px;
     }
 
-    /* Plain text */
-    .card-plain-text {
+    /* Text content */
+    .card-text {
       font-size: 13.5px;
       line-height: 1.65;
       color: var(--text-2);
@@ -535,11 +527,7 @@
     }
 
     /* Snippet for long cards */
-    .card-snippet {
-      font-size: 13px;
-      line-height: 1.65;
-      color: var(--text-2);
-      word-break: break-word;
+    .card-text-snippet {
       display: -webkit-box;
       -webkit-line-clamp: 5;
       -webkit-box-orient: vertical;
@@ -581,61 +569,34 @@
       box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
     }
 
-    /* Link chip */
-    .link-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      background: var(--cyan-faint);
-      border: 1px solid var(--cyan-border);
-      border-radius: var(--radius-sm);
-      text-decoration: none;
-      transition:
-        background 0.15s,
-        border-color 0.15s,
-        transform 0.12s,
-        box-shadow 0.15s;
-      overflow: hidden;
-    }
-
-    .link-chip:hover {
-      background: rgba(56, 189, 248, 0.18);
-      border-color: rgba(56, 189, 248, 0.4);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 20px var(--cyan-glow);
-    }
-
-    .link-favicon {
-      flex-shrink: 0;
-      color: var(--cyan);
-      display: flex;
-      align-items: center;
-    }
-
-    .link-text {
-      flex: 1;
-      font-size: 12.5px;
-      color: var(--cyan);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .inline-link {
+      color: #67d8ff;
       font-weight: 500;
-    }
-
-    .link-arrow {
-      flex-shrink: 0;
-      font-size: 14px;
-      color: var(--cyan);
-      opacity: 0.7;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+      text-shadow: 0 0 14px rgba(56, 189, 248, 0.18);
+      background-image: linear-gradient(var(--cyan-glow), var(--cyan-glow));
+      background-repeat: no-repeat;
+      background-size: 100% 1px;
+      background-position: 0 100%;
       transition:
-        opacity 0.15s,
-        transform 0.15s;
+        color 0.18s ease,
+        text-shadow 0.18s ease,
+        background-size 0.18s ease,
+        background-color 0.18s ease;
     }
 
-    .link-chip:hover .link-arrow {
-      opacity: 1;
-      transform: translate(2px, -2px);
+    .inline-link:hover {
+      color: #bae6fd;
+      text-shadow: 0 0 18px rgba(56, 189, 248, 0.36);
+      background-size: 100% 2px;
+      background-color: rgba(56, 189, 248, 0.06);
+    }
+
+    .inline-link:focus-visible {
+      outline: 2px solid var(--cyan-border);
+      outline-offset: 2px;
+      border-radius: 3px;
     }
 
     /* ── Card footer (actions) ───────────────────────── */
@@ -1130,12 +1091,86 @@
 
     <!-- ── Masonry wall ── -->
     <% if (typeof data !== 'undefined' && data.length > 0) { %>
+    <%
+      const escapeHTML = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+
+      const trimUrlPunctuation = (value) => {
+        let url = value;
+        let trailing = '';
+
+        while (/[.,!?;:)\]]$/.test(url)) {
+          trailing = url.slice(-1) + trailing;
+          url = url.slice(0, -1);
+        }
+
+        return { url, trailing };
+      };
+
+      const isExternalUrl = (value) => {
+        const clean = value.replace(/^https?:\/\//i, '');
+        const host = clean.split(/[/?#]/)[0].replace(/^www\./i, '');
+        const tld = host.split('.').pop();
+
+        return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(host) && /^[a-z]{2,}$/i.test(tld);
+      };
+
+      const shouldIgnoreUrl = (rawText, value) => {
+        const clean = value.replace(/^https?:\/\//i, '');
+
+        return (
+          /<[^>]+>/.test(rawText) ||
+          /^\s*(?:import|export)\b/m.test(rawText) ||
+          /\.(?:css|js|json|html|ejs)(?:[?#].*)?$/i.test(clean) ||
+          /^(?:\.{1,2}\/|[a-z]:\\|\\\\|\/(?!\/))/i.test(value) ||
+          /\\/.test(value) ||
+          !isExternalUrl(value)
+        );
+      };
+
+      const parseContent = (text = '') => {
+        const rawText = String(text);
+
+        if (/<[^>]+>/.test(rawText) || /^\s*(?:import|export)\b/m.test(rawText)) {
+          return escapeHTML(rawText);
+        }
+
+        const urlPattern = /(^|[\s(])((?:https?:\/\/)?(?:www\.)?[a-z0-9][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)+(?:\/[^\s<>"']*)?)/gi;
+        let parsed = '';
+        let lastIndex = 0;
+        let match;
+
+        while ((match = urlPattern.exec(rawText)) !== null) {
+          const [fullMatch, prefix, candidate] = match;
+          const { url, trailing } = trimUrlPunctuation(candidate);
+          const urlStart = match.index + prefix.length;
+
+          parsed += escapeHTML(rawText.slice(lastIndex, urlStart));
+
+          if (!url || shouldIgnoreUrl(rawText, url)) {
+            parsed += escapeHTML(candidate);
+            lastIndex = urlStart + candidate.length;
+            continue;
+          }
+
+          const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+          parsed += `<a class="inline-link" href="${escapeHTML(href)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${escapeHTML(url)}</a>${escapeHTML(trailing)}`;
+          lastIndex = match.index + fullMatch.length;
+        }
+
+        return parsed + escapeHTML(rawText.slice(lastIndex));
+      };
+    %>
     <div class="masonry-wall" id="masonryWall">
 
       <% data.forEach((person, index) => {
-        const isLink = person.info && person.info.includes('.') && !person.info.includes(' ');
         const isLong = person.info && person.info.length > 120;
-        const cardType = isLink ? 'link' : isLong ? 'long' : 'plain';
+        const cardType = isLong ? 'long' : 'plain';
         const snippet = isLong ? person.info.substring(0, 115) : person.info;
         const safeInfo = (person.info || '').replace(/'/g, "\\'").replace(/\n/g, '\\n');
         const safeName = (person.name || '').replace(/'/g, "\\'");
@@ -1148,13 +1183,7 @@
 
         <!-- Card type indicator -->
         <div class="card-type-strip" aria-hidden="true">
-          <% if (cardType === 'link') { %>
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-          </svg>
-          Link
-          <% } else if (cardType === 'long') { %>
+          <% if (cardType === 'long') { %>
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="17" y1="10" x2="3" y2="10" />
             <line x1="21" y1="6" x2="3" y2="6" />
@@ -1187,22 +1216,9 @@
 
         <!-- Card body -->
         <div class="card-body">
-          <% if (cardType === 'link') { %>
-          <!-- Link card -->
-          <a class="link-chip" href="<%= person.info.startsWith('http') ? person.info : 'https://' + person.info %>" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
-            <span class="link-favicon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-              </svg>
-            </span>
-            <span class="link-text"><%= person.info %></span>
-            <span class="link-arrow" aria-hidden="true">↗</span>
-          </a>
-
-          <% } else if (cardType === 'long') { %>
+          <% if (cardType === 'long') { %>
           <!-- Long text card -->
-          <p class="card-snippet"><%= snippet %><span class="ellipsis-fade">…</span></p>
+          <p class="card-text card-text-snippet"><%- parseContent(snippet) %><span class="ellipsis-fade">…</span></p>
           <button class="view-more-btn" onclick="event.stopPropagation(); openModal('<%= safeName %>', '<%= safeInfo %>', '<%= safeEmail %>', '<%= safePassword %>')">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8" />
@@ -1213,7 +1229,7 @@
 
           <% } else { %>
           <!-- Plain text card -->
-          <p class="card-plain-text"><%= person.info %></p>
+          <p class="card-text"><%- parseContent(person.info) %></p>
 
           <% } %>
         </div>
