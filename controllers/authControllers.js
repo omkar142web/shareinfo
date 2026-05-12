@@ -49,10 +49,7 @@ function clearUserCookies(res) {
 export const getHome = async (req, res) => {
   try {
     if (!req.cookies.email || !req.cookies.password) {
-      //   return res.sendFile(Path.join(viewsPath , '404.html'));
-      return res.send(
-        `Welcome guest! Please <a href="/login">login</a> or <a href="/register">register</a>.`,
-      );
+      return res.redirect("/login");
     }
 
     // ✅ service layer used
@@ -60,45 +57,26 @@ export const getHome = async (req, res) => {
 
     if (!user) {
       clearUserCookies(res);
-      return res.send(`User not found. <a href="/register">Register</a>`);
+      return res.redirect("/login");
     }
 
     if (user.password === req.cookies.password) {
       const getOneUserData = await getUserData(user.email);
-      //   const collectionData = await getCollection().find({}).toArray();
       const getAllUsersData = await getAllUsers();
       console.log("All data from DB:", getOneUserData);
-      if (user.password === "admin") {
-        // return res.send(`
-        //   <h1>Welcome Admin, ${user.name} 👑</h1>
-        //   <p>Email: ${user.email}</p>
-        //   <a href="/logout">Logout</a>
-        //   <p>Here is all your data from the database:</p>
-        //   <pre>${JSON.stringify(getAllUsersData, null, 2)}</pre>
-        // `);
 
+      if (user.password === "admin") {
         return res.render("allInfo", { data: getAllUsersData });
       } else if (user.password === "master") {
-        let getAllUserLoginData = await getAllUsersForMaster();
-        return res.render("allInfo", {
-          data: getAllUserLoginData,
-          isMaster: true,
-        });
+        const getAllUserLoginData = await getAllUsersForMaster();
+        return res.render("allInfo", { data: getAllUserLoginData, isMaster: true });
       }
-      // return res.send(`
-      //   <h1>Welcome back, ${user.name} 👋</h1>
-      //   <p>Email: ${user.email}</p>
-      //   <a href="/logout">Logout</a>
-      //   <p>Here is all your data from the database:</p>
-      //   <pre>${JSON.stringify(getOneUserData, null, 2)}</pre>
-      // `);
 
       return res.render("allInfo", { data: getOneUserData });
     }
 
     clearUserCookies(res);
-
-    return res.send(`Invalid credentials. <a href="/login">Login</a>`);
+    return res.redirect("/login");
   } catch (err) {
     console.error("Home error ❌", err);
     res.status(500).send("Internal Server Error");
@@ -109,7 +87,7 @@ export const getHome = async (req, res) => {
 export const getLogin = async (req, res) => {
   try {
     if (!req.cookies.email || !req.cookies.password) {
-      return res.sendFile(Path.join(viewsPath, "login.html"));
+      return res.render("login");
     }
 
     // ✅ service layer used
@@ -117,8 +95,7 @@ export const getLogin = async (req, res) => {
 
     if (!user || user.password !== req.cookies.password) {
       clearUserCookies(res);
-
-      return res.sendFile(Path.join(viewsPath, "login.html"));
+      return res.render("login");
     }
 
     return res.redirect("/");
@@ -137,25 +114,32 @@ export const postLogin = async (req, res) => {
     const user = await findUserByEmail(email);
 
     if (!user) {
-      return res.send(`User not found! <a href="/register">Register</a>`);
+      return res.render("login", {
+        error: "No account found with that email. Please register first.",
+        email,
+      });
     }
 
     if (user.password !== password) {
-      return res.send(`Wrong password! <a href="/login">Try again</a>`);
+      return res.render("login", {
+        error: "Incorrect password. Please try again.",
+        email,
+      });
     }
 
     setUserCookies(res, user);
-
     return res.redirect("/");
   } catch (err) {
     console.error("Login POST error ❌", err);
-    res.status(500).send("Internal Server Error");
+    return res.render("login", {
+      error: "Something went wrong. Please try again.",
+    });
   }
 };
 
 //! REGISTER GET
 export const getRegister = (req, res) => {
-  res.sendFile(Path.join(viewsPath, "register.html"));
+  res.render("register");
 };
 
 //! REGISTER POST
@@ -169,7 +153,11 @@ export const postRegister = async (req, res) => {
     console.log(existingUser);
 
     if (existingUser) {
-      return res.send(`Email already exists! <a href="/login">Login</a>`);
+      return res.render("register", {
+        error: "An account with this email already exists. Try logging in.",
+        name,
+        email,
+      });
     }
 
     // ✅ service layer used
@@ -177,11 +165,12 @@ export const postRegister = async (req, res) => {
 
     console.log(req.body);
     setUserCookies(res, { name, email, password });
-
     return res.redirect("/");
   } catch (err) {
     console.error("Register POST error ❌", err);
-    res.status(500).send("Internal Server Error");
+    return res.render("register", {
+      error: "Something went wrong. Please try again.",
+    });
   }
 };
 
