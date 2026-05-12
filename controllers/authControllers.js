@@ -110,29 +110,40 @@ export const postLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required.",
+      });
+    }
+
     // ✅ service layer used
     const user = await findUserByEmail(email);
 
     if (!user) {
-      return res.render("login", {
-        error: "No account found with that email. Please register first.",
-        email,
+      return res.status(401).json({
+        success: false,
+        message: "No account found with that email. Please register first.",
+        field: "email",
       });
     }
 
     if (user.password !== password) {
-      return res.render("login", {
-        error: "Incorrect password. Please try again.",
-        email,
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password. Please try again.",
+        field: "password",
       });
     }
 
     setUserCookies(res, user);
-    return res.redirect("/");
+
+    return res.json({ success: true, redirect: "/" });
   } catch (err) {
     console.error("Login POST error ❌", err);
-    return res.render("login", {
-      error: "Something went wrong. Please try again.",
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
@@ -146,6 +157,14 @@ export const getRegister = (req, res) => {
 export const postRegister = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required.",
+      });
+    }
+
     console.log(name, email);
 
     // ✅ service layer used
@@ -153,10 +172,10 @@ export const postRegister = async (req, res) => {
     console.log(existingUser);
 
     if (existingUser) {
-      return res.render("register", {
-        error: "An account with this email already exists. Try logging in.",
-        name,
-        email,
+      return res.status(409).json({
+        success: false,
+        message: "An account with this email already exists. Try logging in.",
+        field: "email",
       });
     }
 
@@ -165,11 +184,13 @@ export const postRegister = async (req, res) => {
 
     console.log(req.body);
     setUserCookies(res, { name, email, password });
-    return res.redirect("/");
+
+    return res.json({ success: true, redirect: "/" });
   } catch (err) {
     console.error("Register POST error ❌", err);
-    return res.render("register", {
-      error: "Something went wrong. Please try again.",
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
