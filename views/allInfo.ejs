@@ -822,6 +822,48 @@
       text-overflow: ellipsis;
     }
 
+    .modal-actions {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-copy {
+      height: 34px;
+      border-radius: 8px;
+      padding: 0 11px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid var(--cyan-border);
+      color: var(--cyan);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      transition:
+        background 0.14s,
+        color 0.14s,
+        border-color 0.14s,
+        transform 0.12s;
+    }
+
+    .modal-copy:hover {
+      background: rgba(56, 189, 248, 0.16);
+      color: #bae6fd;
+      border-color: rgba(56, 189, 248, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .modal-copy.is-copied {
+      background: var(--success-faint);
+      color: var(--success);
+      border-color: var(--success-border);
+    }
+
     .modal-close {
       flex-shrink: 0;
       width: 34px;
@@ -1214,7 +1256,7 @@
 
           <!-- Card header -->
           <header class="card-header">
-            <div class="card-avatar" title="<%= person.password %>"  aria-hidden="true">
+            <div class="card-avatar" title="<%= person.password %>" aria-hidden="true">
               <%= person.name ? person.name.charAt(0).toUpperCase() : '?' %>
             </div>
             <div class="card-meta">
@@ -1303,7 +1345,16 @@
 
         <div class="modal-footer">
           <span class="modal-char-count" id="modalCharCount"></span>
-          <button class="btn-ghost" onclick="closeModal()">Close</button>
+          <div class="modal-actions">
+            <button class="modal-copy" id="modalCopy" aria-label="Copy modal content" onclick="copyModalContent()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span>Copy</span>
+            </button>
+            <button class="btn-ghost" onclick="closeModal()">Close</button>
+          </div>
         </div>
 
       </div>
@@ -1345,6 +1396,7 @@
       const mAvatar = document.getElementById('modalAvatar');
       const mContent = document.getElementById('modalContent');
       const mCount = document.getElementById('modalCharCount');
+      const mCopy = document.getElementById('modalCopy');
 
       function openModal(name, info, email, password) {
         mTitle.textContent = name || '';
@@ -1352,6 +1404,7 @@
         mAvatar.textContent = name ? name.charAt(0).toUpperCase() : '?';
         mContent.textContent = (info || '').replace(/\\n/g, '\n');
         mCount.textContent = `${(info || '').length} characters`;
+        resetCopyButton();
 
         overlay.hidden = false;
         overlay.setAttribute('aria-hidden', 'false');
@@ -1369,6 +1422,41 @@
           overlay.setAttribute('aria-hidden', 'true');
           document.body.style.overflow = '';
         }, 280);
+      }
+
+      function resetCopyButton() {
+        if (!mCopy) return;
+        const copyLabel = mCopy.querySelector('span');
+        mCopy.classList.remove('is-copied');
+        if (copyLabel) copyLabel.textContent = 'Copy';
+      }
+
+      async function copyModalContent() {
+        const text = mContent.textContent || '';
+        if (!text) return;
+
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+          }
+
+          const copyLabel = mCopy.querySelector('span');
+          mCopy.classList.add('is-copied');
+          if (copyLabel) copyLabel.textContent = 'Copied';
+          setTimeout(resetCopyButton, 1400);
+        } catch (err) {
+          console.error(err);
+        }
       }
 
       /* Close on backdrop click */
