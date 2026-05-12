@@ -238,6 +238,7 @@
       font-weight: 800;
       /* letter-spacing: -0.04em; */
       color: var(--text);
+      cursor: pointer;
     }
 
     .brand-title em {
@@ -1091,7 +1092,7 @@
       <div class="header-inner">
         <div class="header-brand">
           <span class="brand-pulse" aria-hidden="true"></span>
-          <span class="brand-title">Share<em>Info</em></span>
+          <span class="brand-title" onclick="window.location.reload()">Share<em>Info</em></span>
           <% if (typeof data !== 'undefined' && data.length > 0) { %>
           <!-- <span class="card-count-badge"><%= data.length %></span> -->
           <% } %>
