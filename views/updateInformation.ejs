@@ -109,7 +109,7 @@
           Content / Notes
         </label>
         <div class="input-wrap textarea-wrap">
-          <textarea id="info" name="info" rows="3" placeholder="Paste links, notes, codes or any useful info.." required autocomplete="on"><%= person?.info || '' %></textarea>
+          <textarea id="info" name="info" rows="3" placeholder="Paste links, notes, codes or any useful info.. Enter to send. Shift+Enter for newline. Ctrl/Cmd+Enter to send" required autocomplete="on"><%= person?.info || '' %></textarea>
           <span class="char-counter" id="charCounter">0 chars</span>
         </div>
       </div>
@@ -184,8 +184,17 @@
     const counter = document.getElementById("charCounter");
 
     function autoResize() {
+      const parent = textarea.parentElement;
+      // Lock the parent's height to prevent page jitter
+      parent.style.minHeight = parent.offsetHeight + "px";
+
       textarea.style.height = "auto";
       textarea.style.height = textarea.scrollHeight + 5 + "px";
+
+      // Release the lock after a microtask to ensure layout is stable
+      requestAnimationFrame(() => {
+        parent.style.minHeight = "";
+      });
     }
 
     function updateCounter() {
@@ -198,6 +207,18 @@
       autoResize();
       updateCounter();
     });
+
+    // Enter = submit, Shift + Enter = newline
+    textarea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        const form = textarea.closest("form");
+        if (form) {
+          form.requestSubmit();
+        }
+      }
+    });
+
     window.addEventListener("load", () => {
       autoResize();
       updateCounter();
