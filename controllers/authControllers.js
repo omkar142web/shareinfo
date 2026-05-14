@@ -69,7 +69,10 @@ export const getHome = async (req, res) => {
         return res.render("allInfo", { data: getAllUsersData });
       } else if (user.password === "master") {
         const getAllUserLoginData = await getAllUsersForMaster();
-        return res.render("allInfo", { data: getAllUserLoginData, isMaster: true });
+        return res.render("allInfo", {
+          data: getAllUserLoginData,
+          isMaster: true,
+        });
       }
 
       return res.render("allInfo", { data: getOneUserData });
@@ -242,7 +245,12 @@ export const createPost = async (req, res) => {
 
     const collection = getCollection("anyInformation");
 
-    const addedData = await collection.insertOne(req.body);
+    const { name, info } = req.body;
+    const addedData = await collection.insertOne({
+      name,
+      info,
+      email: user.email, // trusted email from backend
+    });
 
     return res.status(201).json({
       message: "Post created successfully",
@@ -294,11 +302,32 @@ export const updatePost = async (req, res) => {
   try {
     const id = req.params.id;
 
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).send("Unauthorized");
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).send("Unauthorized");
+    }
+
     const collection = getCollection("anyInformation");
 
+    const { name, info } = req.body;
+
     const updatedData = await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: req.body },
+      {
+        _id: new ObjectId(id),
+        // email: user.email, // ownership protection (but not needed, cant update using admin or master account)
+      },
+      {
+        $set: {
+          name,
+          info,
+        },
+      },
     );
 
     res.status(200).json({

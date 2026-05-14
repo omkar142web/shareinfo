@@ -380,10 +380,10 @@ input {
 
 /* Lock icon offset for readonly email */
 .readonly {
-  pointer-events: none;
+  /* pointer-events: none; */
   padding-right: 38px;
   opacity: 0.5;
-  /* cursor: not-allowed; */
+  cursor: not-allowed;
 }
 
 input::placeholder,
