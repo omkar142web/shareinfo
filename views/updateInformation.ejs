@@ -208,13 +208,17 @@
       updateCounter();
     });
 
-    // Enter = submit, Shift + Enter = newline
+    // Enter = submit (Desktop only), Shift + Enter = newline
     textarea.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        const form = textarea.closest("form");
-        if (form) {
-          form.requestSubmit();
+        // Only prevent default and submit if we're likely on desktop
+        // On mobile, 'Enter' should remain a newline for better UX
+        if (window.innerWidth > 768) {
+          e.preventDefault();
+          const form = textarea.closest("form");
+          if (form) {
+            form.requestSubmit();
+          }
         }
       }
     });
