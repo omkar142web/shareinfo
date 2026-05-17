@@ -223,9 +223,11 @@ body::before {
   letter-spacing: 0.01em;
 }
 
-.back-link:hover {
-  color: var(--text-2);
-  gap: 8px;
+@media (hover: hover) {
+  .back-link:hover {
+    color: var(--text-2);
+    gap: 8px;
+  }
 }
 
 /* Mode badge */
@@ -392,10 +394,12 @@ textarea::placeholder {
   font-weight: 400;
 }
 
-input:hover:not(:focus):not(.readonly),
-textarea:hover:not(:focus) {
-  background: var(--input-hover);
-  border-color: var(--border-hi);
+@media (hover: hover) {
+  input:hover:not(:focus):not(.readonly),
+  textarea:hover:not(:focus) {
+    background: var(--input-hover);
+    border-color: var(--border-hi);
+  }
 }
 
 input:focus,
@@ -455,8 +459,10 @@ textarea::-webkit-scrollbar-thumb {
   background: rgba(56, 189, 248, 0.2);
   border-radius: 100px;
 }
-textarea::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.35);
+@media (hover: hover) {
+  textarea::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.35);
+  }
 }
 
 /* Char counter */
@@ -509,11 +515,7 @@ textarea::-webkit-scrollbar-thumb:hover {
     opacity 0.16s;
 }
 
-.btn-submit:hover {
-  background: #7dd3fc;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 28px var(--cyan-glow);
-}
+
 
 .btn-submit:active {
   transform: scale(0.97);
@@ -552,11 +554,19 @@ textarea::-webkit-scrollbar-thumb:hover {
     transform 0.14s;
 }
 
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text);
-  border-color: var(--border-hi);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .btn-submit:hover {
+    background: #7dd3fc;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 28px var(--cyan-glow);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+    border-color: var(--border-hi);
+    transform: translateY(-1px);
+  }
 }
 
 .btn-secondary:active {
@@ -626,12 +636,14 @@ textarea::-webkit-scrollbar-thumb:hover {
     border-radius: 100px;
     border: 2px solid rgba(8, 13, 26, 0.9);
   }
-  ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(125, 211, 252, 0.75),
-      rgba(56, 189, 248, 0.55)
-    );
+  @media (hover: hover) {
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(
+        180deg,
+        rgba(125, 211, 252, 0.75),
+        rgba(56, 189, 248, 0.55)
+      );
+    }
   }
   html {
     scrollbar-width: thin;
