@@ -77,7 +77,7 @@
           Entry Title
         </label>
         <div class="input-wrap">
-          <input type="text" id="name" name="name" placeholder="What is this entry about?" value="<%= person?.name || '' %>" required autocomplete="on" autofocus />
+          <input type="text" id="name" name="name" placeholder="What is this entry about?" value="<%= person?.name || '' %>" required autocomplete="on" />
         </div>
       </div>
 
@@ -230,6 +230,9 @@
     window.addEventListener("load", () => {
       autoResize();
       updateCounter();
+
+      // Responsive autofocus: #info on mobile (<=768px), #name on desktop
+      document.getElementById(window.innerWidth <= 768 ? "info" : "name")?.focus();
     });
   </script>
 
