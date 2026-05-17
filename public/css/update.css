@@ -603,18 +603,6 @@ textarea::-webkit-scrollbar-thumb {
     display: flex;
     flex-direction: column;
   }
-
-  .field-info {
-    order: -2;
-  }
-
-  .field-title {
-    order: -1;
-  }
-
-  /* .field-email {
-    order: 3;
-  } */
 }
 
 @media (max-width: 480px) {

@@ -160,6 +160,25 @@
   </div>
 
   <script>
+    // Responsive DOM ordering to maintain natural tab order without CSS 'order' hacks
+    (function() {
+      const form = document.querySelector("form");
+      const info = document.querySelector(".field-info");
+      const title = document.querySelector(".field-title");
+      const actions = document.querySelector(".form-actions");
+
+      function adjustDOMOrder() {
+        if (window.innerWidth > 768) {
+          form.insertBefore(info, actions);
+        } else {
+          form.insertBefore(info, title);
+        }
+      }
+      
+      adjustDOMOrder();
+      window.addEventListener("resize", adjustDOMOrder);
+    })();
+
     function goBackSafely() {
       const referrer = document.referrer;
 
