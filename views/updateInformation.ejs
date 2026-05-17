@@ -166,17 +166,20 @@
       const info = document.querySelector(".field-info");
       const title = document.querySelector(".field-title");
       const actions = document.querySelector(".form-actions");
+      const mql = window.matchMedia("(max-width: 768px)");
 
-      function adjustDOMOrder() {
-        if (window.innerWidth > 768) {
-          form.insertBefore(info, actions);
-        } else {
+      function adjustDOMOrder(e) {
+        if (e.matches) {
+          // Mobile layout: info before title
           form.insertBefore(info, title);
+        } else {
+          // Desktop layout: info before actions
+          form.insertBefore(info, actions);
         }
       }
       
-      adjustDOMOrder();
-      window.addEventListener("resize", adjustDOMOrder);
+      adjustDOMOrder(mql);
+      mql.addEventListener("change", adjustDOMOrder);
     })();
 
     function goBackSafely() {
