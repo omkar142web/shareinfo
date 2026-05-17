@@ -598,6 +598,25 @@ textarea::-webkit-scrollbar-thumb {
 } */
 
 /* ── Responsive ───────────────────────────────────── */
+@media (max-width: 768px) {
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .field-info {
+    order: -2;
+  }
+
+  .field-title {
+    order: -1;
+  }
+
+  /* .field-email {
+    order: 3;
+  } */
+}
+
 @media (max-width: 480px) {
   body {
     padding: 28px 14px;
