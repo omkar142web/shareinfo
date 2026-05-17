@@ -1086,6 +1086,190 @@
       outline-offset: 3px;
     }
 
+    /* ── Confirmation Modal ── */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(4, 8, 20, 0.4);
+      backdrop-filter: blur(12px) saturate(1.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .confirm-overlay.is-active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .confirm-modal {
+      background: linear-gradient(135deg, rgba(22, 34, 58, 0.95), rgba(13, 22, 40, 0.98));
+      border: 1px solid var(--border-hi);
+      border-radius: 24px;
+      padding: 32px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-md);
+      transform: scale(0.9) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .confirm-overlay.is-active .confirm-modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .confirm-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--danger-faint);
+      color: var(--danger);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      border: 1px solid var(--danger-border);
+      box-shadow: 0 8px 24px rgba(251, 113, 133, 0.15);
+    }
+
+    .confirm-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .confirm-desc {
+      font-size: 14.5px;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .confirm-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-confirm-delete {
+      background: var(--danger) !important;
+      color: #fff !important;
+      border: none !important;
+    }
+
+    .btn-confirm-delete:hover {
+      background: #ff5f78 !important;
+      box-shadow: 0 8px 24px rgba(251, 113, 133, 0.3) !important;
+    }
+
+    .confirm-btns button {
+      justify-content : center;
+    }
+
+    /* ── Toasts ── */
+    .toast-container {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border-md);
+      border-radius: 16px;
+      padding: 14px 20px;
+      min-width: 300px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      transform: translateX(120%);
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      backdrop-filter: blur(16px);
+    }
+
+    .toast.is-active {
+      transform: translateX(0);
+    }
+
+    .toast-success {
+      border-left: 4px solid var(--success);
+    }
+
+    .toast-error {
+      border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toast-success .toast-icon {
+      background: var(--success-faint);
+      color: var(--success);
+    }
+
+    .toast-error .toast-icon {
+      background: var(--danger-faint);
+      color: var(--danger);
+    }
+
+    .toast-msg {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── Loading Spinner ── */
+    .spinner {
+      animation: rotate 1s linear infinite;
+    }
+
+    @keyframes rotate {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .confirm-modal {
+        padding: 24px;
+      }
+
+      .toast {
+        min-width: auto;
+        width: calc(100vw - 32px);
+        right: 16px;
+        bottom: 16px;
+      }
+
+      .toast-container {
+        right: 16px;
+        bottom: 16px;
+        left: 16px;
+      }
+    }
+
     div:has(> .modal-name) {
       width: calc(100% - 45px);
     }
@@ -1340,7 +1524,7 @@
 
     </main>
 
-    <!-- ── Modal overlay ── -->
+    <!-- ── View Modal overlay ── -->
     <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
       <div class="modal-glass">
 
@@ -1383,36 +1567,150 @@
       </div>
     </div>
 
-    <script>
-      /* ── Delete function (unchanged logic) ── */
-      let type = document.body.dataset.type;
-      async function DeleteFun(id, btn) {
-        try {
-          // const response = await fetch(`${id}`, {
-          //   method: 'delete'
-          // });
-          const deleteUrl =
-            type === "master" ?
-            `/user/${id}` :
-            `/${id}`;
+    <!-- ── Delete Confirmation Modal ── -->
+    <div class="confirm-overlay" id="confirmOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+      <div class="confirm-modal">
+        <div class="confirm-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+        <h2 class="confirm-title" id="confirmTitle">Delete Item?</h2>
+        <p class="confirm-desc">This action is permanent and cannot be reversed. Are you sure you want to remove this entry?</p>
+        <div class="confirm-btns">
+          <button class="btn-ghost" onclick="closeConfirmModal()">Cancel</button>
+          <button class="btn-primary btn-confirm-delete" id="confirmDeleteBtn">
+            <span>Delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
+    <!-- ── Toast Container ── -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+      /* ── Modern Deletion & Feedback Logic ── */
+      let type = document.body.dataset.type;
+      let deleteTarget = {
+        id: null,
+        btn: null
+      };
+      const confirmOverlay = document.getElementById('confirmOverlay');
+      const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+      const toastContainer = document.getElementById('toastContainer');
+
+      function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+
+        const icon = type === 'success' ?
+          '<div class="toast-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>' :
+          '<div class="toast-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>';
+
+        toast.innerHTML = `${icon}<span class="toast-msg">${message}</span>`;
+        toastContainer.appendChild(toast);
+
+        // Entrance
+        requestAnimationFrame(() => {
+          toast.classList.add('is-active');
+        });
+
+        // Auto-remove
+        setTimeout(() => {
+          toast.classList.remove('is-active');
+          setTimeout(() => toast.remove(), 500);
+        }, 3500);
+      }
+
+      async function DeleteFun(id, btn) {
+        openConfirmModal(id, btn);
+      }
+
+      function openConfirmModal(id, btn) {
+        deleteTarget = {
+          id,
+          btn
+        };
+        confirmOverlay.hidden = false;
+        confirmOverlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        // Trap focus to Delete button for accessibility
+        requestAnimationFrame(() => {
+          confirmOverlay.classList.add('is-active');
+          confirmDeleteBtn.focus();
+        });
+      }
+
+      function closeConfirmModal() {
+        confirmOverlay.classList.remove('is-active');
+        document.body.style.overflow = '';
+
+        setTimeout(() => {
+          confirmOverlay.hidden = true;
+          confirmOverlay.setAttribute('aria-hidden', 'true');
+          deleteTarget = {
+            id: null,
+            btn: null
+          };
+
+          // Reset button state
+          confirmDeleteBtn.disabled = false;
+          confirmDeleteBtn.innerHTML = '<span>Delete</span>';
+        }, 300);
+      }
+
+      confirmDeleteBtn.addEventListener('click', async () => {
+        if (!deleteTarget.id || confirmDeleteBtn.disabled) return;
+
+        try {
+          confirmDeleteBtn.disabled = true;
+          confirmDeleteBtn.innerHTML = `
+            <svg class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.22-8.56"></path>
+            </svg>
+            <span>Deleting...</span>
+          `;
+
+          const deleteUrl = type === "master" ? `/user/${deleteTarget.id}` : `/${deleteTarget.id}`;
           const response = await fetch(deleteUrl, {
             method: "DELETE"
           });
+
           if (!response.ok) throw new Error('Network response was not ok');
 
-          const card = btn.closest('.info-card');
-          card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          // Improved card removal animation
+          const card = deleteTarget.btn.closest('.info-card');
+          card.style.pointerEvents = 'none';
+          card.style.zIndex = '50';
+          card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
           card.style.opacity = '0';
-          card.style.transform = 'scale(0.93) translateY(8px)';
-          setTimeout(() => card.remove(), 320);
+          card.style.transform = 'scale(0.9) translateY(20px)';
+          card.style.filter = 'blur(8px)';
+
+          closeConfirmModal();
+          showToast('Entry removed successfully');
+
+          setTimeout(() => {
+            card.remove();
+            // If masonryWall becomes empty, show empty state
+            const wall = document.getElementById('masonryWall');
+            if (wall && wall.children.length === 0) {
+              window.location.reload(); // Simplest way to show empty state template
+            }
+          }, 600);
 
         } catch (err) {
           console.error(err);
+          showToast('Failed to delete entry', 'error');
+          closeConfirmModal();
         }
-      }
+      });
 
-      /* ── Modal logic ── */
+      /* ── View Modal logic ── */
       const overlay = document.getElementById('modalOverlay');
       const mTitle = document.getElementById('modalTitle');
       const mEmail = document.getElementById('modalEmail');
@@ -1482,14 +1780,21 @@
         }
       }
 
-      /* Close on backdrop click */
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closeModal();
+      /* Global Overlay Listeners */
+      [overlay, confirmOverlay].forEach(ov => {
+        ov.addEventListener('click', (e) => {
+          if (e.target === ov) {
+            if (ov.id === 'modalOverlay') closeModal();
+            else closeConfirmModal();
+          }
+        });
       });
 
-      /* Close on Escape */
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !overlay.hidden) closeModal();
+        if (e.key === 'Escape') {
+          if (!overlay.hidden) closeModal();
+          if (!confirmOverlay.hidden) closeConfirmModal();
+        }
       });
 
       /* ── Stagger card entrance ── */

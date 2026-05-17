@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/update.css" />
+</head>
+
+<body>
+
+  <!-- ── Ambient orbs ── -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <!-- ── Form card ── -->
+  <div class="form-shell">
+
+    <!-- Header -->
+    <div class="form-header">
+      <div class="form-header-top">
+        <a href="/" class="back-link" aria-label="Back to dashboard">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span>Dashboard</span>
+        </a>
+        <span class="form-mode-badge">
+          <% if (title === 'Add Info') { %>
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          New Entry
+          <% } else { %>
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          Editing
+          <% } %>
+        </span>
+      </div>
+
+      <div class="form-title-row">
+        <span class="brand-pulse" aria-hidden="true"></span>
+        <h1><%= title %></h1>
+      </div>
+
+      <p class="form-subtitle">
+        <% if (title === 'Add Info') { %>
+        Fill in the details below — links, notes, codes, anything.
+        <% } else { %>
+        Modify the fields and save your changes below.
+        <% } %>
+      </p>
+    </div>
+
+    <div class="form-divider" aria-hidden="true"></div>
+
+    <!-- Form body -->
+    <form novalidate>
+
+      <div class="field-group field-title">
+        <label for="name">
+          <!-- <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg> -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 448 512" fill="currentColor">
+            <path d="M0 216C0 149.7 53.7 96 120 96h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v96c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V216zm256 0c0-66.3 53.7-120 120-120h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v96c0 35.3-28.7 64-64 64H320c-35.3 0-64-28.7-64-64V216z" />
+          </svg>
+          Entry Title
+        </label>
+        <div class="input-wrap">
+          <input type="text" id="name" name="name" placeholder="What is this entry about?" value="<%= person?.name || '' %>" required autocomplete="on" />
+        </div>
+      </div>
+
+      <div class="field-group field-email">
+        <label>
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg>
+          Owner Email
+          <!-- <span class="label-tag">read-only</span> -->
+        </label>
+        <div class="input-wrap">
+          <input class="readonly" disabled type="email" id="email" placeholder="rahul@example.com" value="<%= person?.email || '' %>" autocomplete="off" />
+
+          <span class="input-lock" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <div class="field-group field-info">
+        <label for="info">
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="17" y1="10" x2="3" y2="10" />
+            <line x1="21" y1="6" x2="3" y2="6" />
+            <line x1="21" y1="14" x2="3" y2="14" />
+            <line x1="17" y1="18" x2="3" y2="18" />
+          </svg>
+          Content / Notes
+        </label>
+        <div class="input-wrap textarea-wrap">
+          <textarea id="info" name="info" rows="3" placeholder="Paste links, notes, codes or any useful info.. Enter to send. Shift+Enter for newline. Ctrl/Cmd+Enter to send" required autocomplete="on"><%= person?.info || '' %></textarea>
+          <span class="char-counter" id="charCounter">0 chars</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <% if (title === 'Add Info') { %>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <% } else { %>
+            <path d="M20 6 9 17l-5-5" />
+            <% } %>
+          </svg>
+          <%= buttonText %>
+        </button>
+
+        <% if (title !== 'Add Info') { %>
+        <button type="button" class="btn-delete-trigger" onclick="openConfirmModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6" />
+            <path d="M14 11v6" />
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+          </svg>
+          Delete
+        </button>
+        <% } %>
+
+        <!-- <a href="/" class="btn-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" />
+            <line x1="3" y1="12" x2="3.01" y2="12" />
+            <line x1="3" y1="18" x2="3.01" y2="18" />
+          </svg>
+          See All
+        </a> -->
+        <button type="button" class="btn-secondary" onclick="goBackSafely()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" />
+            <line x1="3" y1="12" x2="3.01" y2="12" />
+            <line x1="3" y1="18" x2="3.01" y2="18" />
+          </svg>
+          See All
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ── Confirmation Modal ── -->
+  <div class="confirm-overlay" id="confirmOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+    <div class="confirm-modal">
+      <div class="confirm-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      </div>
+      <h2 class="confirm-title" id="confirmTitle">Delete Entry?</h2>
+      <p class="confirm-desc">This action is permanent and cannot be reversed. Are you sure you want to remove this entry?</p>
+      <div class="confirm-btns">
+        <button class="btn-modal-ghost" onclick="closeConfirmModal()">Cancel</button>
+        <button class="btn-modal-danger" id="confirmDeleteBtn">
+          <span>Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast Container ── -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <style>
+    /* ── Delete Button Styling ── */
+    .btn-delete-trigger {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 20px;
+      background: rgba(251, 113, 133, 0.1);
+      color: #fb7185;
+      border: 1px solid rgba(251, 113, 133, 0.2);
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-delete-trigger:hover {
+      background: #fb7185;
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(251, 113, 133, 0.3);
+    }
+
+    /* ── Confirmation Modal ── */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(4, 8, 20, 0.4);
+      backdrop-filter: blur(12px) saturate(1.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .confirm-overlay.is-active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .confirm-modal {
+      background: linear-gradient(135deg, rgba(22, 34, 58, 0.95), rgba(13, 22, 40, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 32px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+      transform: scale(0.9) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .confirm-overlay.is-active .confirm-modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .confirm-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(251, 113, 133, 0.1);
+      color: #fb7185;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      border: 1px solid rgba(251, 113, 133, 0.2);
+    }
+
+    .confirm-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #f0f6ff;
+      margin-bottom: 12px;
+    }
+
+    .confirm-desc {
+      font-size: 14.5px;
+      color: #a8bdd4;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .confirm-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-modal-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      color: #a8bdd4;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-modal-ghost:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #f0f6ff;
+    }
+
+    .btn-modal-danger {
+      background: #fb7185;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-modal-danger:hover {
+      background: #ff5f78;
+      box-shadow: 0 8px 24px rgba(251, 113, 133, 0.3);
+    }
+
+    /* ── Toasts ── */
+    .toast-container {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 14px 20px;
+      min-width: 300px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      transform: translateX(120%);
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      backdrop-filter: blur(16px);
+    }
+
+    .toast.is-active { transform: translateX(0); }
+    .toast-success { border-left: 4px solid #34d399; }
+    .toast-error { border-left: 4px solid #fb7185; }
+    .toast-msg { font-size: 14px; font-weight: 600; color: #f0f6ff; }
+
+    .spinner { animation: rotate 1s linear infinite; }
+    @keyframes rotate { 100% { transform: rotate(360deg); } }
+  </style>
+
+  <script>
+    /* ── Modern Deletion Logic ── */
+    const confirmOverlay = document.getElementById('confirmOverlay');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const toastContainer = document.getElementById('toastContainer');
+
+    function openConfirmModal() {
+      confirmOverlay.hidden = false;
+      confirmOverlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => {
+        confirmOverlay.classList.add('is-active');
+        confirmDeleteBtn.focus();
+      });
+    }
+
+    function closeConfirmModal() {
+      confirmOverlay.classList.remove('is-active');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        confirmOverlay.hidden = true;
+        confirmOverlay.setAttribute('aria-hidden', 'true');
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.innerHTML = '<span>Delete</span>';
+      }, 300);
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<span class="toast-msg">${message}</span>`;
+      toastContainer.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('is-active'));
+      setTimeout(() => {
+        toast.classList.remove('is-active');
+        setTimeout(() => toast.remove(), 500);
+      }, 3500);
+    }
+
+    <% if (typeof person !== 'undefined' && person && person._id) { %>
+    confirmDeleteBtn?.addEventListener('click', async () => {
+      if (confirmDeleteBtn.disabled) return;
+
+      try {
+        confirmDeleteBtn.disabled = true;
+        confirmDeleteBtn.innerHTML = `
+          <svg class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-6.22-8.56"></path>
+          </svg>
+          <span>Deleting...</span>
+        `;
+
+        const response = await fetch(`/<%= person._id %>`, { method: "DELETE" });
+        if (!response.ok) throw new Error('Delete failed');
+
+        showToast('Entry deleted successfully');
+        setTimeout(() => {
+          window.location.replace("/");
+        }, 1000);
+
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to delete entry', 'error');
+        closeConfirmModal();
+      }
+    });
+    <% } %>
+
+    /* Close on backdrop/Escape */
+    confirmOverlay?.addEventListener('click', (e) => {
+      if (e.target === confirmOverlay) closeConfirmModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !confirmOverlay.hidden) closeConfirmModal();
+    });
+
+    // Existing logic...
+
+    function goBackSafely() {
+      const referrer = document.referrer;
+
+      try {
+        if (!referrer) {
+          window.location.href = "/";
+          return;
+        }
+
+        const previousUrl = new URL(referrer);
+        const sameOrigin = previousUrl.origin === window.location.origin;
+        const isDashboard = previousUrl.pathname === "/";
+
+        if (sameOrigin && isDashboard) {
+          history.back();
+        } else {
+          window.location.href = "/";
+        }
+      } catch {
+        window.location.href = "/";
+      }
+    }
+
+    // <!-- ── Textarea auto-resize + char counter ── -->
+    const textarea = document.querySelector("textarea");
+    const counter = document.getElementById("charCounter");
+
+    function autoResize() {
+      const parent = textarea.parentElement;
+      // Lock the parent's height to prevent page jitter
+      parent.style.minHeight = parent.offsetHeight + "px";
+
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + 5 + "px";
+
+      // Release the lock after a microtask to ensure layout is stable
+      requestAnimationFrame(() => {
+        parent.style.minHeight = "";
+      });
+    }
+
+    function updateCounter() {
+      const len = textarea.value.length;
+      counter.textContent = len > 0 ? `${len} char${len !== 1 ? 's' : ''}` : '';
+      counter.classList.toggle('visible', len > 0);
+    }
+
+    textarea.addEventListener("input", () => {
+      autoResize();
+      updateCounter();
+    });
+
+    // Enter = submit (Desktop only), Shift + Enter = newline
+    textarea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        // Only prevent default and submit if we're likely on desktop
+        // On mobile, 'Enter' should remain a newline for better UX
+        if (window.innerWidth > 768) {
+          e.preventDefault();
+          const form = textarea.closest("form");
+          if (form) {
+            form.requestSubmit();
+          }
+        }
+      }
+    });
+
+    window.addEventListener("load", () => {
+      autoResize();
+      updateCounter();
+
+      // Responsive autofocus: #info on mobile (<=768px), #name on desktop
+      document.getElementById(window.innerWidth <= 768 ? "info" : "name")?.focus();
+    });
+  </script>
+
+  <!-- ── Form submit logic (unchanged) ── -->
+  <% if (title != 'Add Info') { %>
+  <script>
+    let form = document.querySelector("form");
+    let inputs = form.querySelectorAll("input, textarea");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector("button[type='submit']");
+
+      for (let input of inputs) {
+        if (!input.value?.trim()) {
+          input.focus();
+          input.classList.add('input-error');
+          input.addEventListener("input", () => input.classList.remove('input-error'), {
+            once: true
+          });
+          return;
+        }
+      }
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <span class="spin-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+            </svg>
+          </span>
+          Updating…
+        `;
+
+        if (
+          form.name.value.trim() === form.name.defaultValue.trim() &&
+          form.email.value.trim() === form.email.defaultValue.trim() &&
+          form.info.value.trim() === form.info.defaultValue.trim()
+        ) {
+          btn.disabled = true;
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+            Nothing to update!
+          `;
+          // window.location.replace("/");
+          goBackSafely();
+          return;
+        }
+
+        const response = await fetch(`/<%= person._id %>`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: form.elements['name'].value.trim(),
+            info: form.elements['info'].value.trim(),
+          }),
+        });
+
+        if (!response.ok) throw new Error("Update failed");
+        await new Promise(r => setTimeout(r, 400));
+
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          Updated!
+        `;
+        // window.location.href = "/";
+        window.location.replace("/");
+        // goBackSafely();
+
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          <%= buttonText %>
+        `;
+      }
+    });
+  </script>
+  <% } else { %>
+  <script>
+    form = document.querySelector("form");
+    inputs = form.querySelectorAll("input, textarea");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector("button[type='submit']");
+
+      for (let input of inputs) {
+        if (!input.value?.trim()) {
+          input.focus();
+          input.classList.add('input-error');
+          input.addEventListener("input", () => input.classList.remove('input-error'), {
+            once: true
+          });
+          return;
+        }
+      }
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <span class="spin-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+            </svg>
+          </span>
+          Adding…
+        `;
+
+        const response = await fetch(`/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: form.elements['name'].value.trim(),
+            info: form.elements['info'].value.trim(),
+          }),
+        });
+
+        if (!response.ok) throw new Error("Failed to add contact");
+        await new Promise(r => setTimeout(r, 400));
+
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          Added!
+        `;
+        // window.location.href = "/";
+        window.location.replace("/");
+        // goBackSafely();
+
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          <%= buttonText %>
+        `;
+      }
+    });
+  </script>
+  <% } %>
+
+</body>
+
+</html>
