@@ -287,10 +287,12 @@
       white-space: nowrap;
     }
 
-    .btn-primary:hover {
-      background: #7dd3fc;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 24px var(--cyan-glow);
+    @media (hover: hover) {
+      .btn-primary:hover {
+        background: #7dd3fc;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px var(--cyan-glow);
+      }
     }
 
     .btn-primary:active {
@@ -318,11 +320,13 @@
       white-space: nowrap;
     }
 
-    .btn-ghost:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text);
-      border-color: var(--border-hi);
-      transform: translateY(-1px);
+    @media (hover: hover) {
+      .btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        border-color: var(--border-hi);
+        transform: translateY(-1px);
+      }
     }
 
     .btn-ghost:active {
@@ -393,10 +397,6 @@
       transition: opacity 0.25s;
     }
 
-    .info-card:hover::before {
-      opacity: 0.9;
-    }
-
     /* Card types get subtle tint variants */
     .card-long {
       cursor: pointer;
@@ -413,6 +413,10 @@
 
     /* Hover */
     @media (hover: hover) {
+      .info-card:hover::before {
+        opacity: 0.9;
+      }
+
       .info-card:hover {
         box-shadow: var(--shadow-hover);
         transform: translateY(-3px);
@@ -569,11 +573,13 @@
       letter-spacing: 0.01em;
     }
 
-    .view-more-btn:hover {
-      background: rgba(139, 92, 246, 0.18);
-      color: #c4b5fd;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+    @media (hover: hover) {
+      .view-more-btn:hover {
+        background: rgba(139, 92, 246, 0.18);
+        color: #c4b5fd;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+      }
     }
 
     .inline-link {
@@ -593,11 +599,13 @@
         background-color 0.18s ease;
     }
 
-    .inline-link:hover {
-      color: #bae6fd;
-      text-shadow: 0 0 18px rgba(56, 189, 248, 0.36);
-      background-size: 100% 2px;
-      background-color: rgba(56, 189, 248, 0.06);
+    @media (hover: hover) {
+      .inline-link:hover {
+        color: #bae6fd;
+        text-shadow: 0 0 18px rgba(56, 189, 248, 0.36);
+        background-size: 100% 2px;
+        background-color: rgba(56, 189, 248, 0.06);
+      }
     }
 
     .inline-link:focus-visible {
@@ -641,26 +649,28 @@
       border-color: var(--success-border);
     }
 
-    .action-edit:hover {
-      background: var(--success);
-      color: #04200f;
-      border-color: var(--success);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(52, 211, 153, 0.28);
-    }
-
     .action-delete {
       background: var(--danger-faint);
       color: var(--danger);
       border-color: var(--danger-border);
     }
 
-    .action-delete:hover {
-      background: var(--danger);
-      color: #240410;
-      border-color: var(--danger);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(251, 113, 133, 0.28);
+    @media (hover: hover) {
+      .action-edit:hover {
+        background: var(--success);
+        color: #04200f;
+        border-color: var(--success);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(52, 211, 153, 0.28);
+      }
+
+      .action-delete:hover {
+        background: var(--danger);
+        color: #240410;
+        border-color: var(--danger);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(251, 113, 133, 0.28);
+      }
     }
 
     .action-btn:active {
@@ -852,19 +862,6 @@
         transform 0.12s;
     }
 
-    .modal-copy:hover {
-      background: rgba(56, 189, 248, 0.16);
-      color: #bae6fd;
-      border-color: rgba(56, 189, 248, 0.45);
-      transform: translateY(-1px);
-    }
-
-    .modal-copy.is-copied {
-      background: var(--success-faint);
-      color: var(--success);
-      border-color: var(--success-border);
-    }
-
     .modal-close {
       flex-shrink: 0;
       width: 34px;
@@ -883,11 +880,26 @@
         transform 0.12s;
     }
 
-    .modal-close:hover {
-      background: var(--danger-faint);
-      color: var(--danger);
-      border-color: var(--danger-border);
-      transform: rotate(90deg) scale(1.05);
+    @media (hover: hover) {
+      .modal-copy:hover {
+        background: rgba(56, 189, 248, 0.16);
+        color: #bae6fd;
+        border-color: rgba(56, 189, 248, 0.45);
+        transform: translateY(-1px);
+      }
+
+      .modal-close:hover {
+        background: var(--danger-faint);
+        color: var(--danger);
+        border-color: var(--danger-border);
+        transform: rotate(90deg) scale(1.05);
+      }
+    }
+
+    .modal-copy.is-copied {
+      background: var(--success-faint);
+      color: var(--success);
+      border-color: var(--success-border);
     }
 
     .modal-divider {
@@ -945,10 +957,12 @@
         border: 2px solid rgba(8, 13, 26, 0.9);
       }
 
-      ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg,
-            rgba(125, 211, 252, 0.8),
-            rgba(56, 189, 248, 0.6));
+      @media (hover: hover) {
+        ::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg,
+              rgba(125, 211, 252, 0.8),
+              rgba(56, 189, 248, 0.6));
+        }
       }
 
       /* html {
@@ -970,8 +984,10 @@
         border-radius: 100px;
       }
 
-      .modal-body::-webkit-scrollbar-thumb:hover {
-        background: rgba(56, 189, 248, 0.45);
+      @media (hover: hover) {
+        .modal-body::-webkit-scrollbar-thumb:hover {
+          background: rgba(56, 189, 248, 0.45);
+        }
       }
     }
 
