@@ -383,9 +383,21 @@ if (!URI) {
 }
 
 let actuallDB;
+
+async function createIndexes() {
+  const infoCollection = actuallDB.collection("anyInformation");
+  const usersCollection = actuallDB.collection("users");
+
+  await Promise.all([
+    infoCollection.createIndex({ email: 1, _id: -1 }),
+    usersCollection.createIndex({ email: 1 }, { unique: true }),
+  ]);
+
+  console.log("Database indexes are ready");
+}
+
 export async function connectDB() {
   try {
-    // Reuse existing connection
     if (actuallDB) return actuallDB;
 
     const client = new MongoClient(URI);
@@ -394,34 +406,22 @@ export async function connectDB() {
     await client.connect();
     actuallDB = client.db(dbname);
 
-    console.log(`🍃 MongoDB is connected to database : ${dbname}`);
+    console.log(`MongoDB is connected to database: ${dbname}`);
+    await createIndexes();
 
-    // // CREATE INDEXES HERE
-    // await createIndexes();
+    return actuallDB;
   } catch (err) {
-    console.error("❌ MongoDB connection failed:", err);
+    console.error("MongoDB connection failed:", err);
     process.exit(1);
   }
 }
-
-// async function createIndexes() {
-//   const usersCollection = actuallDB.collection("users");
-
-//   // UNIQUE EMAIL INDEX
-//   await usersCollection.createIndex(
-//     { email: 1 },
-//     { unique: true }
-//   );
-
-//   console.log("✅ User indexes created");
-// }
 
 export function getCollection(collectionName = "anyInformation") {
   if (!actuallDB) {
     throw new Error("Database not connected. Please call connectDB() first.");
   }
-  let actualCollection = actuallDB.collection(collectionName);
-  return actualCollection;
+
+  return actuallDB.collection(collectionName);
 }
 
 
@@ -436,11 +436,9 @@ import { getCollection } from "../config/mongodb.js";
 import {
   findUserByEmail,
   createUser,
-  deleteUser,
-  updateUser,
-  getAllUsers,
-  getUserData,
-  getAllUsersForMaster,
+  getPagedUserData,
+  getPagedAllData,
+  getPagedUsers,
 } from "../services/auth.service.js";
 
 import Path from "path";
@@ -456,6 +454,8 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   maxAge: 1000 * 60 * 60 * 24 * 30,
 };
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 50;
 
 const setUserCookies = (res, user) => {
   const cookies = {
@@ -490,29 +490,89 @@ export const getHome = async (req, res) => {
       return res.redirect("/login");
     }
 
-    if (user.password === req.cookies.password) {
-      const getOneUserData = await getUserData(user.email);
-      const getAllUsersData = await getAllUsers();
-      console.log("All data from DB:", getOneUserData);
-
-      if (user.password === "admin") {
-        return res.render("allInfo", { data: getAllUsersData });
-      } else if (user.password === "master") {
-        const getAllUserLoginData = await getAllUsersForMaster();
-        return res.render("allInfo", {
-          data: getAllUserLoginData,
-          isMaster: true,
-        });
-      }
-
-      return res.render("allInfo", { data: getOneUserData });
+    if (user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.redirect("/login");
     }
 
-    clearUserCookies(res);
-    return res.redirect("/login");
+    let page;
+    let isMaster = false;
+
+    if (user.password === "admin") {
+      page = await getPagedAllData(null, DEFAULT_PAGE_SIZE);
+    } else if (user.password === "master") {
+      page = await getPagedUsers(null, DEFAULT_PAGE_SIZE);
+      isMaster = true;
+    } else {
+      page = await getPagedUserData(user.email, null, DEFAULT_PAGE_SIZE);
+    }
+
+    return res.render("allInfo", {
+      data: page.items,
+      initialCursor: page.nextCursor,
+      hasMore: page.hasMore,
+      ...(isMaster ? { isMaster: true } : {}),
+    });
   } catch (err) {
     console.error("Home error ❌", err);
     res.status(500).send("Internal Server Error");
+  }
+};
+
+export const getEntriesPage = async (req, res) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const cursor = req.query.cursor ? String(req.query.cursor) : null;
+    if (cursor && !/^[a-f\d]{24}$/i.test(cursor)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid cursor",
+      });
+    }
+
+    const requestedLimit = Number.parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(requestedLimit)
+      ? Math.min(Math.max(requestedLimit, 1), MAX_PAGE_SIZE)
+      : DEFAULT_PAGE_SIZE;
+
+    let page;
+    if (user.password === "admin") {
+      page = await getPagedAllData(cursor, limit);
+    } else if (user.password === "master") {
+      page = await getPagedUsers(cursor, limit);
+    } else {
+      page = await getPagedUserData(user.email, cursor, limit);
+    }
+
+    return res.json({
+      items: page.items.map((item) => ({
+        ...item,
+        _id: item._id.toString(),
+      })),
+      nextCursor: page.nextCursor,
+      hasMore: page.hasMore,
+    });
+  } catch (err) {
+    console.error("Entries page error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
 
@@ -821,6 +881,7 @@ import {
   getUpdatePage,
   getAddPage,
   deleteMasterUser,
+  getEntriesPage,
 } from "../controllers/authControllers.js";
 
 const router = express.Router();
@@ -836,6 +897,7 @@ router.get("/logout", logoutUser);
 router.route("/add").get(getAddPage);
 router.delete("/user/:id", deleteMasterUser);
 router.route("/update/:id").get(getUpdatePage);
+router.get("/api/entries", getEntriesPage);
 router.route("/:id").get(getCreatePost).put(updatePost).delete(deletePost);
 
 export default router;
@@ -844,7 +906,54 @@ export default router;
 // ==========================================
 // FILE: services/auth.service.js
 // ==========================================
+import { ObjectId } from "mongodb";
+
 import { getCollection } from "../config/mongodb.js";
+
+const getPagedCollection = async ({
+  collectionName = "anyInformation",
+  cursor = null,
+  filter = {},
+  limit = 20,
+}) => {
+  const collection = getCollection(collectionName);
+  const query = cursor
+    ? { ...filter, _id: { $lt: new ObjectId(cursor) } }
+    : filter;
+  const rawItems = await collection
+    .find(query)
+    .sort({ _id: -1 })
+    .limit(limit + 1)
+    .toArray();
+  const hasMore = rawItems.length > limit;
+  const items = hasMore ? rawItems.slice(0, limit) : rawItems;
+  const nextCursor =
+    hasMore && items.length > 0
+      ? items[items.length - 1]._id.toString()
+      : null;
+
+  return { items, nextCursor, hasMore };
+};
+
+export const getPagedUserData = async (email, cursor, limit = 20) => {
+  return getPagedCollection({
+    cursor,
+    filter: { email },
+    limit,
+  });
+};
+
+export const getPagedAllData = async (cursor, limit = 20) => {
+  return getPagedCollection({ cursor, limit });
+};
+
+export const getPagedUsers = async (cursor, limit = 20) => {
+  return getPagedCollection({
+    collectionName: "users",
+    cursor,
+    limit,
+  });
+};
 
 //! User repository functions
 export const getUserData = async (email) => {
