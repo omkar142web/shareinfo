@@ -12,11 +12,14 @@ const getPagedCollection = async ({
   const query = cursor
     ? { ...filter, _id: { $lt: new ObjectId(cursor) } }
     : filter;
-  const rawItems = await collection
-    .find(query)
-    .sort({ _id: -1 })
-    .limit(limit + 1)
-    .toArray();
+  const [rawItems, totalCount] = await Promise.all([
+    collection
+      .find(query)
+      .sort({ _id: -1 })
+      .limit(limit + 1)
+      .toArray(),
+    collection.countDocuments(filter),
+  ]);
   const hasMore = rawItems.length > limit;
   const items = hasMore ? rawItems.slice(0, limit) : rawItems;
   const nextCursor =
@@ -24,7 +27,7 @@ const getPagedCollection = async ({
       ? items[items.length - 1]._id.toString()
       : null;
 
-  return { items, nextCursor, hasMore };
+  return { items, nextCursor, hasMore, totalCount };
 };
 
 export const getPagedUserData = async (email, cursor, limit = 20) => {

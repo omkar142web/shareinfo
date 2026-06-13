@@ -1487,6 +1487,8 @@
 
         return parsed + escapeHTML(rawText.slice(lastIndex));
       };
+
+      const entryTotal = typeof totalCount !== 'undefined' ? totalCount : data.length;
     %>
       <div class="masonry-wall" id="masonryWall">
 
@@ -1533,7 +1535,7 @@
               <span class="card-email"><%= person.email %></span>
               <% } %>
             </div>
-            <div class="card-index-badge" aria-hidden="true">#<%= String(index + 1).padStart(2, '0') %></div>
+            <div class="card-index-badge" aria-hidden="true">#<%= String(entryTotal - index).padStart(2, '0') %></div>
           </header>
 
           <!-- Card body -->
@@ -1669,9 +1671,11 @@
     <script>
       const initialPagination = {
         nextCursor: <%- JSON.stringify(typeof initialCursor !== "undefined" ? initialCursor : null) %>,
-        hasMore: <%= typeof hasMore !== "undefined" ? Boolean(hasMore) : false %>
+        hasMore: <%= typeof hasMore !== "undefined" ? Boolean(hasMore) : false %>,
+        totalCount: <%= typeof totalCount !== "undefined" ? totalCount : (typeof data !== "undefined" ? data.length : 0) %>
       };
       let nextCursor = initialPagination.nextCursor;
+      let totalEntryCount = initialPagination.totalCount;
       let isFetching = false;
       let exhausted = !initialPagination.hasMore;
       let observer;
@@ -1890,6 +1894,24 @@
         element.append(template.content.firstElementChild);
       }
 
+      function formatCardIndexBadge(number) {
+        return `#${String(number).padStart(2, '0')}`;
+      }
+
+      function updateAllCardBadges() {
+        const wall = document.getElementById('masonryWall');
+        if (!wall) return;
+
+        const cards = wall.querySelectorAll('.info-card');
+
+        cards.forEach((card, position) => {
+          const badge = card.querySelector('.card-index-badge');
+          if (badge) {
+            badge.textContent = formatCardIndexBadge(totalEntryCount - position);
+          }
+        });
+      }
+
       function buildCard(item, displayIndex, batchIndex) {
         const info = String(item.info ?? '');
         const name = String(item.name ?? '');
@@ -1966,7 +1988,7 @@
         const badge = document.createElement('div');
         badge.className = 'card-index-badge';
         badge.setAttribute('aria-hidden', 'true');
-        badge.textContent = `#${String(displayIndex).padStart(2, '0')}`;
+        badge.textContent = formatCardIndexBadge(displayIndex);
         header.append(badge);
         card.append(header);
 
@@ -2109,9 +2131,14 @@
             throw new Error('Invalid entries response');
           }
 
+          if (typeof page.totalCount === 'number') {
+            totalEntryCount = page.totalCount;
+          }
+
           const wall = document.getElementById('masonryWall');
           if (wall && page.items.length > 0) {
             wall.append(renderCards(page.items));
+            updateAllCardBadges();
           }
 
           nextCursor = page.nextCursor || null;
@@ -2196,6 +2223,9 @@
             card.remove();
             if (isLastCard) {
               window.location.reload();
+            } else {
+              totalEntryCount = Math.max(0, totalEntryCount - 1);
+              updateAllCardBadges();
             }
           }, 600);
 

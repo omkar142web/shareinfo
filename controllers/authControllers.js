@@ -81,6 +81,7 @@ export const getHome = async (req, res) => {
       data: page.items,
       initialCursor: page.nextCursor,
       hasMore: page.hasMore,
+      totalCount: page.totalCount,
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {
@@ -136,6 +137,7 @@ export const getEntriesPage = async (req, res) => {
       })),
       nextCursor: page.nextCursor,
       hasMore: page.hasMore,
+      totalCount: page.totalCount,
     });
   } catch (err) {
     console.error("Entries page error:", err);
