@@ -68,7 +68,11 @@
       --shadow-hover:
         0 0 0 1px var(--cyan-border), 0 16px 60px rgba(0, 0, 0, 0.65),
         0 0 40px var(--cyan-glow);
-      --shadow-modal: 0 0 0 1px var(--border-hi), 0 40px 100px rgba(0, 0, 0, 0.8);
+      --shadow-modal: 0 0 0 1px var(--border-hi), 0 32px 80px rgba(0, 0, 0, 0.62);
+
+      /* Layering */
+      --z-modal: 1000;
+      --z-toast: 1100;
 
       /* Type */
       --font-display: "Sora", system-ui, sans-serif;
@@ -375,6 +379,19 @@
         transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
         box-shadow 0.22s ease,
         border-color 0.22s ease;
+    }
+
+    .info-card.is-removing {
+      animation: none;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0;
+      transform: scale(0.9) translateY(20px);
+      filter: blur(8px);
+      transition:
+        opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+        filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     @keyframes card-in {
@@ -721,10 +738,10 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      z-index: 200;
+      z-index: var(--z-modal);
       background: rgba(4, 8, 20, 0.75);
-      backdrop-filter: blur(12px) saturate(1.2);
-      -webkit-backdrop-filter: blur(12px) saturate(1.2);
+      backdrop-filter: blur(9px) saturate(1.2);
+      -webkit-backdrop-filter: blur(9px) saturate(1.2);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1090,21 +1107,26 @@
     .confirm-overlay {
       position: fixed;
       inset: 0;
-      z-index: 500;
-      background: rgba(4, 8, 20, 0.4);
-      backdrop-filter: blur(12px) saturate(1.6);
+      z-index: calc(var(--z-modal) + 10);
+      background: rgba(4, 8, 20, 0.6);
+      backdrop-filter: blur(9px) saturate(1.4);
+      -webkit-backdrop-filter: blur(9px) saturate(1.4);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
     .confirm-overlay.is-active {
       opacity: 1;
       visibility: visible;
+    }
+
+    .confirm-overlay[hidden] {
+      display: none;
     }
 
     .confirm-modal {
@@ -1115,13 +1137,17 @@
       width: 100%;
       max-width: 400px;
       text-align: center;
-      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-md);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-md);
+      opacity: 0;
       transform: scale(0.9) translateY(20px);
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition:
+        transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.25s ease;
     }
 
     .confirm-overlay.is-active .confirm-modal {
       transform: scale(1) translateY(0);
+      opacity: 1;
     }
 
     .confirm-icon {
@@ -1180,7 +1206,7 @@
       position: fixed;
       bottom: 32px;
       right: 32px;
-      z-index: 1000;
+      z-index: var(--z-toast);
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -1197,12 +1223,16 @@
       gap: 14px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       transform: translateX(120%);
-      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      opacity: 0;
+      transition:
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.25s ease;
       backdrop-filter: blur(16px);
     }
 
     .toast.is-active {
       transform: translateX(0);
+      opacity: 1;
     }
 
     .toast-success {
@@ -1589,7 +1619,7 @@
     </div>
 
     <!-- ── Toast Container ── -->
-    <div class="toast-container" id="toastContainer"></div>
+    <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
     <script>
       /* ── Modern Deletion & Feedback Logic ── */
@@ -1601,8 +1631,110 @@
       const confirmOverlay = document.getElementById('confirmOverlay');
       const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
       const toastContainer = document.getElementById('toastContainer');
+      const overlayState = new WeakMap();
+      const scrollLocks = new Set();
+      let originalBodyOverflow = '';
+      let originalBodyPaddingRight = '';
+
+      function lockPageScroll(owner) {
+        if (scrollLocks.has(owner)) return;
+
+        if (scrollLocks.size === 0) {
+          originalBodyOverflow = document.body.style.overflow;
+          originalBodyPaddingRight = document.body.style.paddingRight;
+
+          const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+          const bodyPaddingRight = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
+          document.body.style.overflow = 'hidden';
+
+          if (scrollBarWidth > 0) {
+            document.body.style.paddingRight = `${bodyPaddingRight + scrollBarWidth}px`;
+          }
+        }
+
+        scrollLocks.add(owner);
+      }
+
+      function unlockPageScroll(owner) {
+        scrollLocks.delete(owner);
+        if (scrollLocks.size > 0) return;
+
+        document.body.style.overflow = originalBodyOverflow;
+        document.body.style.paddingRight = originalBodyPaddingRight;
+      }
+
+      function getOverlayState(element) {
+        if (!overlayState.has(element)) {
+          overlayState.set(element, {
+            closeTimer: null,
+            openFrame: null,
+            returnFocus: null
+          });
+        }
+
+        return overlayState.get(element);
+      }
+
+      function openOverlay(element, activeClass, focusTarget, returnFocus = document.activeElement) {
+        const state = getOverlayState(element);
+        clearTimeout(state.closeTimer);
+        cancelAnimationFrame(state.openFrame);
+        state.closeTimer = null;
+        state.returnFocus = returnFocus;
+
+        lockPageScroll(element);
+        element.hidden = false;
+        element.setAttribute('aria-hidden', 'false');
+
+        state.openFrame = requestAnimationFrame(() => {
+          element.classList.add(activeClass);
+          focusTarget?.focus();
+          state.openFrame = null;
+        });
+      }
+
+      function closeOverlay(element, activeClass, onClosed, restoreFocus = true) {
+        if (element.hidden) return;
+
+        const state = getOverlayState(element);
+        clearTimeout(state.closeTimer);
+        cancelAnimationFrame(state.openFrame);
+        state.openFrame = null;
+        element.classList.remove(activeClass);
+
+        state.closeTimer = setTimeout(() => {
+          element.hidden = true;
+          element.setAttribute('aria-hidden', 'true');
+          unlockPageScroll(element);
+          onClosed?.();
+
+          if (restoreFocus && state.returnFocus?.isConnected) {
+            state.returnFocus.focus();
+          }
+
+          state.returnFocus = null;
+          state.closeTimer = null;
+        }, 300);
+      }
+
+      function resetConfirmButton() {
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.innerHTML = '<span>Delete</span>';
+      }
+
+      function dismissToast(toast) {
+        if (!toast || toast.dataset.dismissing === 'true') return;
+        toast.dataset.dismissing = 'true';
+        toast.classList.remove('is-active');
+        setTimeout(() => toast.remove(), 400);
+      }
 
       function showToast(message, type = 'success') {
+        const visibleToasts = [...toastContainer.querySelectorAll('.toast')];
+        while (visibleToasts.length >= 3) {
+          dismissToast(visibleToasts.shift());
+        }
+
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
 
@@ -1620,12 +1752,11 @@
 
         // Auto-remove
         setTimeout(() => {
-          toast.classList.remove('is-active');
-          setTimeout(() => toast.remove(), 500);
+          dismissToast(toast);
         }, 3500);
       }
 
-      async function DeleteFun(id, btn) {
+      function DeleteFun(id, btn) {
         openConfirmModal(id, btn);
       }
 
@@ -1634,33 +1765,18 @@
           id,
           btn
         };
-        confirmOverlay.hidden = false;
-        confirmOverlay.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-
-        // Trap focus to Delete button for accessibility
-        requestAnimationFrame(() => {
-          confirmOverlay.classList.add('is-active');
-          confirmDeleteBtn.focus();
-        });
+        resetConfirmButton();
+        openOverlay(confirmOverlay, 'is-active', confirmDeleteBtn, btn);
       }
 
-      function closeConfirmModal() {
-        confirmOverlay.classList.remove('is-active');
-        document.body.style.overflow = '';
-
-        setTimeout(() => {
-          confirmOverlay.hidden = true;
-          confirmOverlay.setAttribute('aria-hidden', 'true');
+      function closeConfirmModal(restoreFocus = true) {
+        closeOverlay(confirmOverlay, 'is-active', () => {
           deleteTarget = {
             id: null,
             btn: null
           };
-
-          // Reset button state
-          confirmDeleteBtn.disabled = false;
-          confirmDeleteBtn.innerHTML = '<span>Delete</span>';
-        }, 300);
+          resetConfirmButton();
+        }, restoreFocus);
       }
 
       confirmDeleteBtn.addEventListener('click', async () => {
@@ -1682,24 +1798,18 @@
 
           if (!response.ok) throw new Error('Network response was not ok');
 
-          // Improved card removal animation
           const card = deleteTarget.btn.closest('.info-card');
-          card.style.pointerEvents = 'none';
-          card.style.zIndex = '50';
-          card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-          card.style.opacity = '0';
-          card.style.transform = 'scale(0.9) translateY(20px)';
-          card.style.filter = 'blur(8px)';
+          const wall = document.getElementById('masonryWall');
+          const isLastCard = wall && wall.querySelectorAll('.info-card').length <= 1;
+          card.classList.add('is-removing');
 
-          closeConfirmModal();
+          closeConfirmModal(false);
           showToast('Entry removed successfully');
 
           setTimeout(() => {
             card.remove();
-            // If masonryWall becomes empty, show empty state
-            const wall = document.getElementById('masonryWall');
-            if (wall && wall.children.length === 0) {
-              window.location.reload(); // Simplest way to show empty state template
+            if (isLastCard) {
+              window.location.reload();
             }
           }, 600);
 
@@ -1727,22 +1837,11 @@
         mCount.textContent = `${(info || '').length} characters`;
         resetCopyButton();
 
-        overlay.hidden = false;
-        overlay.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-
-        requestAnimationFrame(() => {
-          overlay.classList.add('is-open');
-        });
+        openOverlay(overlay, 'is-open', document.getElementById('modalClose'));
       }
 
       function closeModal() {
-        overlay.classList.remove('is-open');
-        setTimeout(() => {
-          overlay.hidden = true;
-          overlay.setAttribute('aria-hidden', 'true');
-          document.body.style.overflow = '';
-        }, 280);
+        closeOverlay(overlay, 'is-open');
       }
 
       function resetCopyButton() {
@@ -1792,8 +1891,11 @@
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-          if (!overlay.hidden) closeModal();
-          if (!confirmOverlay.hidden) closeConfirmModal();
+          if (!confirmOverlay.hidden) {
+            closeConfirmModal();
+          } else if (!overlay.hidden) {
+            closeModal();
+          }
         }
       });
 
