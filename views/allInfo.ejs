@@ -1726,11 +1726,29 @@
           overlayState.set(element, {
             closeTimer: null,
             openFrame: null,
-            returnFocus: null
+            returnFocus: null,
+            activeClass: null,
+            onClosed: null,
+            restoreFocus: true
           });
         }
 
         return overlayState.get(element);
+      }
+
+      const MODAL_HISTORY_STATE_KEY = 'shareInfoModal';
+      let modalHistoryCount = 0;
+
+      function getActiveOverlay() {
+        // Topmost overlay first — add future modals here in stacking order.
+        if (confirmOverlay && !confirmOverlay.hidden) return confirmOverlay;
+        if (overlay && !overlay.hidden) return overlay;
+        return null;
+      }
+
+      function pushModalHistory() {
+        history.pushState({ [MODAL_HISTORY_STATE_KEY]: modalHistoryCount }, '');
+        modalHistoryCount++;
       }
 
       function openOverlay(element, activeClass, focusTarget, returnFocus = document.activeElement) {
@@ -1739,10 +1757,14 @@
         cancelAnimationFrame(state.openFrame);
         state.closeTimer = null;
         state.returnFocus = returnFocus;
+        state.activeClass = activeClass;
+        state.onClosed = null;
+        state.restoreFocus = true;
 
         lockPageScroll(element);
         element.hidden = false;
         element.setAttribute('aria-hidden', 'false');
+        pushModalHistory();
 
         state.openFrame = requestAnimationFrame(() => {
           element.classList.add(activeClass);
@@ -1751,29 +1773,54 @@
         });
       }
 
-      function closeOverlay(element, activeClass, onClosed, restoreFocus = true) {
+      function closeOverlay(element, activeClass, onClosed, restoreFocus = true, { fromPopstate = false } = {}) {
         if (element.hidden) return;
 
         const state = getOverlayState(element);
+
+        if (!fromPopstate) {
+          if (activeClass) state.activeClass = activeClass;
+          if (onClosed) state.onClosed = onClosed;
+          state.restoreFocus = restoreFocus;
+
+          if (modalHistoryCount > 0) {
+            history.back();
+            return;
+          }
+        }
+
+        const activeClassName = state.activeClass || activeClass;
+        const closedCallback = state.onClosed || onClosed;
+        const shouldRestoreFocus = fromPopstate ? state.restoreFocus : restoreFocus;
+
         clearTimeout(state.closeTimer);
         cancelAnimationFrame(state.openFrame);
         state.openFrame = null;
-        element.classList.remove(activeClass);
+        element.classList.remove(activeClassName);
 
         state.closeTimer = setTimeout(() => {
           element.hidden = true;
           element.setAttribute('aria-hidden', 'true');
           unlockPageScroll(element);
-          onClosed?.();
+          closedCallback?.();
 
-          if (restoreFocus && state.returnFocus?.isConnected) {
+          if (shouldRestoreFocus && state.returnFocus?.isConnected) {
             state.returnFocus.focus();
           }
 
           state.returnFocus = null;
+          state.onClosed = null;
           state.closeTimer = null;
         }, 300);
       }
+
+      window.addEventListener('popstate', () => {
+        const activeElement = getActiveOverlay();
+        if (!activeElement || modalHistoryCount <= 0) return;
+
+        modalHistoryCount--;
+        closeOverlay(activeElement, null, null, true, { fromPopstate: true });
+      });
 
       function resetConfirmButton() {
         confirmDeleteBtn.disabled = false;
@@ -2307,9 +2354,12 @@
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-          if (!confirmOverlay.hidden) {
+          const activeElement = getActiveOverlay();
+          if (!activeElement) return;
+
+          if (activeElement === confirmOverlay) {
             closeConfirmModal();
-          } else if (!overlay.hidden) {
+          } else if (activeElement === overlay) {
             closeModal();
           }
         }
