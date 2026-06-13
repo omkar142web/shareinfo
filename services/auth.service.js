@@ -1,4 +1,51 @@
+import { ObjectId } from "mongodb";
+
 import { getCollection } from "../config/mongodb.js";
+
+const getPagedCollection = async ({
+  collectionName = "anyInformation",
+  cursor = null,
+  filter = {},
+  limit = 20,
+}) => {
+  const collection = getCollection(collectionName);
+  const query = cursor
+    ? { ...filter, _id: { $lt: new ObjectId(cursor) } }
+    : filter;
+  const rawItems = await collection
+    .find(query)
+    .sort({ _id: -1 })
+    .limit(limit + 1)
+    .toArray();
+  const hasMore = rawItems.length > limit;
+  const items = hasMore ? rawItems.slice(0, limit) : rawItems;
+  const nextCursor =
+    hasMore && items.length > 0
+      ? items[items.length - 1]._id.toString()
+      : null;
+
+  return { items, nextCursor, hasMore };
+};
+
+export const getPagedUserData = async (email, cursor, limit = 20) => {
+  return getPagedCollection({
+    cursor,
+    filter: { email },
+    limit,
+  });
+};
+
+export const getPagedAllData = async (cursor, limit = 20) => {
+  return getPagedCollection({ cursor, limit });
+};
+
+export const getPagedUsers = async (cursor, limit = 20) => {
+  return getPagedCollection({
+    collectionName: "users",
+    cursor,
+    limit,
+  });
+};
 
 //! User repository functions
 export const getUserData = async (email) => {

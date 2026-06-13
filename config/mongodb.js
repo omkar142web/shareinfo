@@ -8,9 +8,21 @@ if (!URI) {
 }
 
 let actuallDB;
+
+async function createIndexes() {
+  const infoCollection = actuallDB.collection("anyInformation");
+  const usersCollection = actuallDB.collection("users");
+
+  await Promise.all([
+    infoCollection.createIndex({ email: 1, _id: -1 }),
+    usersCollection.createIndex({ email: 1 }, { unique: true }),
+  ]);
+
+  console.log("Database indexes are ready");
+}
+
 export async function connectDB() {
   try {
-    // Reuse existing connection
     if (actuallDB) return actuallDB;
 
     const client = new MongoClient(URI);
@@ -19,32 +31,20 @@ export async function connectDB() {
     await client.connect();
     actuallDB = client.db(dbname);
 
-    console.log(`🍃 MongoDB is connected to database : ${dbname}`);
+    console.log(`MongoDB is connected to database: ${dbname}`);
+    await createIndexes();
 
-    // // CREATE INDEXES HERE
-    // await createIndexes();
+    return actuallDB;
   } catch (err) {
-    console.error("❌ MongoDB connection failed:", err);
+    console.error("MongoDB connection failed:", err);
     process.exit(1);
   }
 }
-
-// async function createIndexes() {
-//   const usersCollection = actuallDB.collection("users");
-
-//   // UNIQUE EMAIL INDEX
-//   await usersCollection.createIndex(
-//     { email: 1 },
-//     { unique: true }
-//   );
-
-//   console.log("✅ User indexes created");
-// }
 
 export function getCollection(collectionName = "anyInformation") {
   if (!actuallDB) {
     throw new Error("Database not connected. Please call connectDB() first.");
   }
-  let actualCollection = actuallDB.collection(collectionName);
-  return actualCollection;
+
+  return actuallDB.collection(collectionName);
 }
