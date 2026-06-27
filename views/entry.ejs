@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= entry.name %> - ShareInfo</title>
+  <meta name="description" content="<%= String(entry.info || '').slice(0, 150) %>" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d1628;
+      --surface: rgba(22, 34, 58, 0.86);
+      --text: #f0f6ff;
+      --text-2: #a8bdd4;
+      --text-3: #607a96;
+      --cyan: #38bdf8;
+      --cyan-faint: rgba(56, 189, 248, 0.1);
+      --cyan-border: rgba(56, 189, 248, 0.28);
+      --border: rgba(255, 255, 255, 0.12);
+      --font-display: "Sora", system-ui, sans-serif;
+      --font-body: "DM Sans", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      background:
+        radial-gradient(circle at 16% 8%, rgba(56, 189, 248, 0.14), transparent 28rem),
+        linear-gradient(180deg, #0d1628 0%, #09111f 100%);
+      color: var(--text);
+      padding: 28px 18px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px);
+      background-size: 42px 42px;
+      pointer-events: none;
+    }
+
+    .shell {
+      position: relative;
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 28px 0 60px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    a,
+    button {
+      font: inherit;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text-2);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .article {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 18px;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+
+    .article-header {
+      padding: 30px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      margin-bottom: 16px;
+      padding: 6px 10px;
+      border: 1px solid var(--cyan-border);
+      border-radius: 999px;
+      background: var(--cyan-faint);
+      color: var(--cyan);
+      font: 500 11px var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 6vw, 4rem);
+      line-height: 1.02;
+      letter-spacing: -0.055em;
+      margin-bottom: 16px;
+    }
+
+    .meta {
+      color: var(--text-3);
+      font-size: 13px;
+    }
+
+    .article-body {
+      padding: 30px;
+    }
+
+    .content {
+      color: var(--text-2);
+      font-size: 16px;
+      line-height: 1.82;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .inline-link {
+      color: #67d8ff;
+      overflow-wrap: anywhere;
+      text-decoration: underline;
+      text-decoration-color: rgba(103, 216, 255, 0.35);
+      text-underline-offset: 3px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      border: 1px solid var(--cyan-border);
+      background: rgba(17, 30, 53, 0.96);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .toast.is-active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 560px) {
+      .article-header,
+      .article-body {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="shell">
+    <nav class="topbar">
+      <a class="btn" href="/">Back to Home</a>
+      <button class="btn" type="button" id="copyLink">Copy Link</button>
+    </nav>
+
+    <article class="article">
+      <header class="article-header">
+        <span class="eyebrow">Public note</span>
+        <h1><%= entry.name %></h1>
+        <p class="meta">
+          Published <%= entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric' }) : 'recently' %>
+        </p>
+      </header>
+      <div class="article-body">
+        <p class="content" id="content"></p>
+      </div>
+    </article>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const entry = <%- JSON.stringify(entry) %>;
+    const content = document.getElementById('content');
+    const toast = document.getElementById('toast');
+
+    function appendLinkedContent(container, text = '') {
+      const rawText = String(text || '');
+      const urlPattern = /(^|[\s(])((?:https?:\/\/)?(?:www\.)?[a-z0-9][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)+(?:\/[^\s<>"']*)?)/gi;
+      let lastIndex = 0;
+      let match;
+
+      while ((match = urlPattern.exec(rawText)) !== null) {
+        const [fullMatch, prefix, candidate] = match;
+        const urlStart = match.index + prefix.length;
+        container.append(document.createTextNode(rawText.slice(lastIndex, urlStart)));
+
+        const href = /^https?:\/\//i.test(candidate) ? candidate : `https://${candidate}`;
+        const link = document.createElement('a');
+        link.className = 'inline-link';
+        link.href = href;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = candidate;
+        container.append(link);
+
+        lastIndex = match.index + fullMatch.length;
+      }
+
+      container.append(document.createTextNode(rawText.slice(lastIndex)));
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('is-active');
+      setTimeout(() => toast.classList.remove('is-active'), 1800);
+    }
+
+    async function copyCurrentLink() {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(window.location.href);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = window.location.href;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
+        }
+        showToast('Public link copied');
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to copy link');
+      }
+    }
+
+    appendLinkedContent(content, entry.info || '');
+    document.getElementById('copyLink').addEventListener('click', copyCurrentLink);
+  </script>
+</body>
+
+</html>

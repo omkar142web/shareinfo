@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getHome,
+  getDashboard,
   getLogin,
   postLogin,
   getRegister,
@@ -19,6 +20,8 @@ import {
 const router = express.Router();
 
 router.route("/").get(getHome).post(createPost);
+
+router.get("/dashboard", getDashboard);
 
 router.route("/login").get(getLogin).post(postLogin);
 

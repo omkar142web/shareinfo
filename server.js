@@ -37,6 +37,8 @@ await connectDB();
 
 // ! routes..
 import authRoutes from "./routes/authRoutes.js";
+import publicRoutes from "./routes/publicRoutes.js";
+app.use("/", publicRoutes);
 app.use("/", authRoutes);
 
 // ! error handling middleware

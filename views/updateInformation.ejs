@@ -23,7 +23,7 @@
     <!-- Header -->
     <div class="form-header">
       <div class="form-header-top">
-        <a href="/" class="back-link" aria-label="Back to dashboard">
+        <a href="/dashboard" class="back-link" aria-label="Back to dashboard">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
@@ -116,6 +116,29 @@
           <textarea id="info" name="info" rows="3" placeholder="Paste links, notes, codes or any useful info.. Enter to send. Shift+Enter for newline. Ctrl/Cmd+Enter to send" required autocomplete="on"><%= person?.info || '' %></textarea>
           <span class="char-counter" id="charCounter">0 chars</span>
         </div>
+        <div class="vis-row">
+          <span class="vis-label">Visibility</span>
+          <span class="vis-icon" id="visIcon" aria-hidden="true">
+            <% if (person?.isPublic === true) { %>
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20" />
+              <path d="M12 2a15.3 15.3 0 0 1 0 20" />
+              <path d="M12 2a15.3 15.3 0 0 0 0 20" />
+            </svg>
+            <% } else { %>
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <% } %>
+          </span>
+          <label class="vis-switch" aria-label="Make entry public">
+            <input type="checkbox" id="visCheck" <%= person?.isPublic === true ? 'checked' : '' %> />
+            <span class="vis-slider"></span>
+          </label>
+          <span class="vis-state" id="visState"><%= person?.isPublic === true ? 'Public' : 'Private' %></span>
+        </div>
       </div>
 
       <!-- Actions -->
@@ -187,23 +210,39 @@
 
       try {
         if (!referrer) {
-          window.location.href = "/";
+          window.location.href = "/dashboard";
           return;
         }
 
         const previousUrl = new URL(referrer);
         const sameOrigin = previousUrl.origin === window.location.origin;
-        const isDashboard = previousUrl.pathname === "/";
+        const isDashboard = previousUrl.pathname === "/dashboard";
 
         if (sameOrigin && isDashboard) {
           history.back();
         } else {
-          window.location.href = "/";
+          window.location.href = "/dashboard";
         }
       } catch {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     }
+
+    const visCheck = document.getElementById("visCheck");
+    const visState = document.getElementById("visState");
+    const visIcon = document.getElementById("visIcon");
+
+    function renderVisibilityState() {
+      const isPublic = visCheck.checked;
+      visState.textContent = isPublic ? "Public" : "Private";
+      visState.style.color = isPublic ? "var(--success)" : "var(--text-3)";
+      visIcon.innerHTML = isPublic ?
+        `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 0 20" /><path d="M12 2a15.3 15.3 0 0 0 0 20" /></svg>` :
+        `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>`;
+    }
+
+    visCheck.addEventListener("change", renderVisibilityState);
+    renderVisibilityState();
 
     // <!-- ── Textarea auto-resize + char counter ── -->
     const textarea = document.querySelector("textarea");
@@ -262,7 +301,7 @@
   <% if (title != 'Add Info') { %>
   <script>
     let form = document.querySelector("form");
-    let inputs = form.querySelectorAll("input, textarea");
+    let inputs = form.querySelectorAll("input:not([type='checkbox']), textarea");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -295,7 +334,8 @@
         if (
           form.name.value.trim() === form.name.defaultValue.trim() &&
           form.email.value.trim() === form.email.defaultValue.trim() &&
-          form.info.value.trim() === form.info.defaultValue.trim()
+          form.info.value.trim() === form.info.defaultValue.trim() &&
+          visCheck.checked === <%= person?.isPublic === true ? 'true' : 'false' %>
         ) {
           btn.disabled = true;
           btn.innerHTML = `
@@ -319,6 +359,7 @@
           body: JSON.stringify({
             name: form.elements['name'].value.trim(),
             info: form.elements['info'].value.trim(),
+            isPublic: visCheck.checked,
           }),
         });
 
@@ -334,7 +375,7 @@
           Updated!
         `;
         // window.location.href = "/";
-        window.location.replace("/");
+        window.location.replace("/dashboard");
         // goBackSafely();
 
       } catch (err) {
@@ -354,7 +395,7 @@
   <% } else { %>
   <script>
     form = document.querySelector("form");
-    inputs = form.querySelectorAll("input, textarea");
+    inputs = form.querySelectorAll("input:not([type='checkbox']), textarea");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -392,6 +433,7 @@
           body: JSON.stringify({
             name: form.elements['name'].value.trim(),
             info: form.elements['info'].value.trim(),
+            isPublic: visCheck.checked,
           }),
         });
 
@@ -407,7 +449,7 @@
           Added!
         `;
         // window.location.href = "/";
-        window.location.replace("/");
+        window.location.replace("/dashboard");
         // goBackSafely();
 
       } catch (err) {

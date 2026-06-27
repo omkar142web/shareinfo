@@ -15,6 +15,7 @@ async function createIndexes() {
 
   await Promise.all([
     infoCollection.createIndex({ email: 1, _id: -1 }),
+    infoCollection.createIndex({ isPublic: 1, _id: -1 }),
     usersCollection.createIndex({ email: 1 }, { unique: true }),
   ]);
 

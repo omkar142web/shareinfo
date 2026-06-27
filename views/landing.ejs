@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShareInfo - Your Knowledge Wall</title>
+  <meta name="description" content="ShareInfo lets you save, organize, and share notes, links, and data publicly or privately." />
+  <meta property="og:title" content="ShareInfo" />
+  <meta property="og:description" content="Your personal knowledge wall for notes, links, snippets, and ideas." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d1628;
+      --surface: rgba(22, 34, 58, 0.82);
+      --surface-2: rgba(30, 46, 74, 0.62);
+      --text: #f0f6ff;
+      --text-2: #a8bdd4;
+      --text-3: #607a96;
+      --cyan: #38bdf8;
+      --cyan-faint: rgba(56, 189, 248, 0.1);
+      --cyan-border: rgba(56, 189, 248, 0.28);
+      --success: #34d399;
+      --success-faint: rgba(52, 211, 153, 0.1);
+      --success-border: rgba(52, 211, 153, 0.28);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-hi: rgba(255, 255, 255, 0.2);
+      --font-display: "Sora", system-ui, sans-serif;
+      --font-body: "DM Sans", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      background:
+        radial-gradient(circle at 15% 12%, rgba(56, 189, 248, 0.16), transparent 28rem),
+        radial-gradient(circle at 85% 18%, rgba(52, 211, 153, 0.1), transparent 24rem),
+        linear-gradient(180deg, #0d1628 0%, #09111f 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px);
+      background-size: 42px 42px;
+      pointer-events: none;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(22px);
+      background: rgba(9, 17, 31, 0.72);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner,
+    .section {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .header-inner {
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      font-size: 1.15rem;
+    }
+
+    .brand-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.6);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.16s, background 0.16s, border-color 0.16s;
+    }
+
+    .btn-primary {
+      background: var(--cyan);
+      color: #06111f;
+      border-color: var(--cyan);
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text-2);
+    }
+
+    @media (hover: hover) {
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+    }
+
+    .hero {
+      min-height: calc(100vh - 68px);
+      display: grid;
+      align-items: center;
+      padding: 72px 0 48px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 42px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      margin-bottom: 18px;
+      padding: 6px 10px;
+      border: 1px solid var(--cyan-border);
+      border-radius: 999px;
+      background: var(--cyan-faint);
+      color: var(--cyan);
+      font: 500 11px var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      max-width: 760px;
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 7vw, 6.2rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
+
+    .hero-copy {
+      max-width: 610px;
+      margin: 22px 0 28px;
+      color: var(--text-2);
+      font-size: 1.08rem;
+      line-height: 1.75;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hero-panel {
+      border: 1px solid var(--border-hi);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+
+    .panel-top {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-3);
+      font: 500 11px var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .preview-list {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .preview-item,
+    .info-card,
+    .use-card {
+      border: 1px solid var(--border);
+      background: rgba(13, 22, 40, 0.58);
+      border-radius: 8px;
+    }
+
+    .preview-item {
+      padding: 14px;
+    }
+
+    .preview-item strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .preview-item span {
+      color: var(--text-3);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .use-cases {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      padding: 28px 0 66px;
+    }
+
+    .use-card {
+      padding: 18px;
+    }
+
+    .use-card h3 {
+      font-family: var(--font-display);
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .use-card p {
+      color: var(--text-3);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .public-head {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .public-head h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 3.2rem);
+      letter-spacing: -0.04em;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-row input {
+      flex: 1;
+      min-height: 44px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-hi);
+      background: rgba(13, 22, 40, 0.72);
+      color: var(--text);
+      font: 500 14px var(--font-body);
+      outline: none;
+    }
+
+    .masonry-wall {
+      column-count: 3;
+      column-gap: 18px;
+      padding-bottom: 34px;
+    }
+
+    .info-card {
+      display: inline-block;
+      width: 100%;
+      margin: 0 0 18px;
+      overflow: hidden;
+      break-inside: avoid;
+    }
+
+    .card-strip {
+      padding: 10px 14px 8px;
+      border-bottom: 1px solid var(--border);
+      color: var(--success);
+      font: 500 10px var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .card-body {
+      padding: 14px;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+
+    .card-text {
+      color: var(--text-2);
+      font-size: 13.5px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .card-text-snippet {
+      display: -webkit-box;
+      -webkit-line-clamp: 5;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      display: flex;
+      gap: 8px;
+      padding: 0 14px 14px;
+      flex-wrap: wrap;
+    }
+
+    .card-action {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text-2);
+      padding: 7px 10px;
+      font: 700 12px var(--font-body);
+      cursor: pointer;
+    }
+
+    .inline-link {
+      color: #67d8ff;
+      overflow-wrap: anywhere;
+      text-decoration: underline;
+      text-decoration-color: rgba(103, 216, 255, 0.35);
+      text-underline-offset: 3px;
+    }
+
+    .empty-public,
+    .end-of-feed {
+      color: var(--text-3);
+      text-align: center;
+      padding: 34px 0;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(3, 8, 18, 0.72);
+      backdrop-filter: blur(12px);
+    }
+
+    .modal-overlay[hidden],
+    .feed-loading[hidden],
+    .end-of-feed[hidden] {
+      display: none;
+    }
+
+    .modal {
+      width: min(720px, 100%);
+      max-height: min(720px, 86vh);
+      display: flex;
+      flex-direction: column;
+      border-radius: 16px;
+      border: 1px solid var(--border-hi);
+      background: rgba(17, 30, 53, 0.96);
+      overflow: hidden;
+    }
+
+    .modal-header,
+    .modal-footer {
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--border);
+      border-bottom: 0;
+    }
+
+    .modal-body {
+      overflow: auto;
+      padding: 20px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 60;
+      border: 1px solid var(--success-border);
+      background: rgba(17, 30, 53, 0.96);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .toast.is-active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .site-footer {
+      border-top: 1px solid var(--border);
+      margin-top: 46px;
+      padding: 28px 0;
+      color: var(--text-3);
+      font-size: 13px;
+    }
+
+    @media (max-width: 860px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .use-cases {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .masonry-wall {
+        column-count: 2;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .header-inner {
+        height: auto;
+        padding: 14px 0;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 46px;
+      }
+
+      .use-cases,
+      .masonry-wall {
+        column-count: 1;
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .search-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="brand"><span class="brand-dot"></span>ShareInfo</a>
+      <nav class="nav">
+        <a class="btn btn-ghost" href="/login">Login</a>
+        <a class="btn btn-primary" href="/register">Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section hero">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Private by default. Public when needed.</span>
+          <h1>Your personal knowledge wall.</h1>
+          <p class="hero-copy">Save notes, links, snippets, references and ideas in one fast place. Keep them private, or publish the ones worth sharing.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#public-notes">Explore Public Notes</a>
+            <a class="btn btn-ghost" href="/login">Open Dashboard</a>
+          </div>
+        </div>
+        <div class="hero-panel" aria-hidden="true">
+          <div class="panel-top">
+            <span>Latest public</span>
+            <span><%= totalCount || 0 %> notes</span>
+          </div>
+          <div class="preview-list">
+            <% (data || []).slice(0, 3).forEach((item) => { %>
+            <div class="preview-item">
+              <strong><%= item.name %></strong>
+              <span><%= String(item.info || '').slice(0, 120) %><%= String(item.info || '').length > 120 ? '...' : '' %></span>
+            </div>
+            <% }) %>
+            <% if (!data || data.length === 0) { %>
+            <div class="preview-item">
+              <strong>No public notes yet</strong>
+              <span>Publish one from your dashboard to make it appear here.</span>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section use-cases" aria-label="Use cases">
+      <article class="use-card"><h3>Students</h3><p>Store notes, formulas, references, and practical snippets.</p></article>
+      <article class="use-card"><h3>Developers</h3><p>Save APIs, commands, regex, docs, and code snippets.</p></article>
+      <article class="use-card"><h3>Researchers</h3><p>Collect links, citations, observations, and reading notes.</p></article>
+      <article class="use-card"><h3>Everyone</h3><p>Keep useful information searchable and ready when needed.</p></article>
+    </section>
+
+    <section class="section" id="public-notes">
+      <div class="public-head">
+        <div>
+          <span class="eyebrow">Discover</span>
+          <h2>Latest Public Notes</h2>
+        </div>
+        <form class="search-row" id="searchForm">
+          <input id="searchInput" type="search" placeholder="Search public knowledge..." autocomplete="off" />
+          <button class="btn btn-primary" type="submit">Search</button>
+          <button class="btn btn-ghost" type="button" id="clearSearch" hidden>Clear</button>
+        </form>
+      </div>
+
+      <div class="masonry-wall" id="masonryWall"></div>
+      <p class="empty-public" id="emptyPublic" hidden>No public notes found.</p>
+      <div class="feed-loading" id="loadSpinner" hidden>Loading...</div>
+      <div class="end-of-feed" id="endOfFeed" <% if (typeof hasMore !== 'undefined' && hasMore) { %>hidden<% } %>>You've seen everything public.</div>
+      <div id="scrollSentinel" style="height: 1px"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="section">ShareInfo - Save. Organize. Share.</div>
+  </footer>
+
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <article class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header class="modal-header">
+        <h2 id="modalTitle"></h2>
+        <button class="card-action" type="button" onclick="closeModal()">Close</button>
+      </header>
+      <div class="modal-body">
+        <p class="card-text" id="modalContent"></p>
+      </div>
+      <footer class="modal-footer">
+        <span id="modalCount"></span>
+        <button class="card-action" type="button" id="modalCopy">Copy Link</button>
+      </footer>
+    </article>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const initialItems = <%- JSON.stringify(data || []) %>;
+    let nextCursor = <%- JSON.stringify(initialCursor || null) %>;
+    let hasMore = <%- JSON.stringify(hasMore === true) %>;
+    let isFetching = false;
+    let searchKeyword = '';
+    let observer;
+
+    const wall = document.getElementById('masonryWall');
+    const emptyPublic = document.getElementById('emptyPublic');
+    const endOfFeed = document.getElementById('endOfFeed');
+    const loadSpinner = document.getElementById('loadSpinner');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    const modalCount = document.getElementById('modalCount');
+    const modalCopy = document.getElementById('modalCopy');
+    const toast = document.getElementById('toast');
+
+    function appendLinkedContent(container, text = '') {
+      const rawText = String(text || '');
+      const urlPattern = /(^|[\s(])((?:https?:\/\/)?(?:www\.)?[a-z0-9][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)+(?:\/[^\s<>"']*)?)/gi;
+      let lastIndex = 0;
+      let match;
+
+      while ((match = urlPattern.exec(rawText)) !== null) {
+        const [fullMatch, prefix, candidate] = match;
+        const urlStart = match.index + prefix.length;
+        container.append(document.createTextNode(rawText.slice(lastIndex, urlStart)));
+
+        const href = /^https?:\/\//i.test(candidate) ? candidate : `https://${candidate}`;
+        const link = document.createElement('a');
+        link.className = 'inline-link';
+        link.href = href;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = candidate;
+        link.addEventListener('click', (event) => event.stopPropagation());
+        container.append(link);
+
+        lastIndex = match.index + fullMatch.length;
+        const trailing = fullMatch.slice(prefix.length + candidate.length);
+        if (trailing) container.append(document.createTextNode(trailing));
+      }
+
+      container.append(document.createTextNode(rawText.slice(lastIndex)));
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('is-active');
+      setTimeout(() => toast.classList.remove('is-active'), 1800);
+    }
+
+    async function copyLink(id) {
+      const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(link);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = link;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
+        }
+        showToast('Public link copied');
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to copy link');
+      }
+    }
+
+    function openModal(item) {
+      modalTitle.textContent = item.name || '';
+      modalContent.textContent = '';
+      appendLinkedContent(modalContent, item.info || '');
+      modalCount.textContent = `${String(item.info || '').length} characters`;
+      modalCopy.onclick = () => copyLink(item._id);
+      modalOverlay.hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modalOverlay.hidden = true;
+      document.body.style.overflow = '';
+    }
+
+    function buildCard(item) {
+      const card = document.createElement('article');
+      card.className = 'info-card';
+
+      const strip = document.createElement('div');
+      strip.className = 'card-strip';
+      strip.textContent = 'Public note';
+      card.append(strip);
+
+      const body = document.createElement('div');
+      body.className = 'card-body';
+
+      const title = document.createElement('a');
+      title.className = 'card-title';
+      title.href = `/entry/${encodeURIComponent(item._id)}`;
+      title.textContent = item.name || 'Untitled';
+      body.append(title);
+
+      const text = document.createElement('p');
+      text.className = 'card-text card-text-snippet';
+      appendLinkedContent(text, item.info || '');
+      body.append(text);
+      card.append(body);
+
+      const footer = document.createElement('footer');
+      footer.className = 'card-footer';
+
+      const view = document.createElement('button');
+      view.className = 'card-action';
+      view.type = 'button';
+      view.textContent = 'Quick View';
+      view.addEventListener('click', () => openModal(item));
+      footer.append(view);
+
+      const read = document.createElement('a');
+      read.className = 'card-action';
+      read.href = `/entry/${encodeURIComponent(item._id)}`;
+      read.textContent = 'Read';
+      footer.append(read);
+
+      const copy = document.createElement('button');
+      copy.className = 'card-action';
+      copy.type = 'button';
+      copy.textContent = 'Copy Link';
+      copy.addEventListener('click', () => copyLink(item._id));
+      footer.append(copy);
+
+      card.append(footer);
+      return card;
+    }
+
+    function renderCards(items, replace = false) {
+      if (replace) wall.textContent = '';
+      const fragment = document.createDocumentFragment();
+      items.forEach((item) => fragment.append(buildCard(item)));
+      wall.append(fragment);
+      emptyPublic.hidden = wall.children.length > 0;
+    }
+
+    async function loadMore() {
+      if (isFetching || !hasMore || !nextCursor) return;
+      isFetching = true;
+      loadSpinner.hidden = false;
+
+      try {
+        const params = new URLSearchParams({ cursor: nextCursor, limit: '20' });
+        const endpoint = searchKeyword ? '/api/public/search' : '/api/public';
+        if (searchKeyword) params.set('keyword', searchKeyword);
+
+        const response = await fetch(`${endpoint}?${params}`);
+        if (!response.ok) throw new Error('Failed to load public notes');
+        const page = await response.json();
+        renderCards(page.items || []);
+        nextCursor = page.nextCursor || null;
+        hasMore = page.hasMore === true;
+        endOfFeed.hidden = hasMore;
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to load notes');
+      } finally {
+        isFetching = false;
+        loadSpinner.hidden = true;
+      }
+    }
+
+    async function runSearch(keyword) {
+      searchKeyword = keyword.trim();
+      const params = new URLSearchParams({ limit: '20' });
+      if (searchKeyword) params.set('keyword', searchKeyword);
+      const endpoint = searchKeyword ? '/api/public/search' : '/api/public';
+      const response = await fetch(`${endpoint}?${params}`);
+      const page = await response.json();
+      renderCards(page.items || [], true);
+      nextCursor = page.nextCursor || null;
+      hasMore = page.hasMore === true;
+      endOfFeed.hidden = hasMore;
+      document.getElementById('clearSearch').hidden = !searchKeyword;
+    }
+
+    document.getElementById('searchForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      runSearch(document.getElementById('searchInput').value);
+    });
+
+    document.getElementById('clearSearch').addEventListener('click', () => {
+      document.getElementById('searchInput').value = '';
+      runSearch('');
+    });
+
+    modalOverlay.addEventListener('click', (event) => {
+      if (event.target === modalOverlay) closeModal();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !modalOverlay.hidden) closeModal();
+    });
+
+    renderCards(initialItems);
+
+    const sentinel = document.getElementById('scrollSentinel');
+    if (sentinel) {
+      observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) loadMore();
+      }, { rootMargin: '0px 0px 220px 0px' });
+      observer.observe(sentinel);
+    }
+  </script>
+</body>
+
+</html>

@@ -677,6 +677,42 @@
       border-color: var(--danger-border);
     }
 
+    .action-copy {
+      background: var(--cyan-faint);
+      color: var(--cyan);
+      border-color: var(--cyan-border);
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-3);
+      cursor: pointer;
+      transition:
+        background 0.12s,
+        color 0.12s,
+        border-color 0.12s,
+        transform 0.12s;
+    }
+
+    .filter-btn.active {
+      background: var(--cyan-faint);
+      color: var(--cyan);
+      border-color: var(--cyan-border);
+    }
+
     @media (hover: hover) {
       .action-edit:hover {
         background: var(--success);
@@ -692,6 +728,20 @@
         border-color: var(--danger);
         transform: translateY(-1px);
         box-shadow: 0 4px 14px rgba(251, 113, 133, 0.28);
+      }
+
+      .action-copy:hover {
+        background: var(--cyan);
+        color: #04111f;
+        border-color: var(--cyan);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.28);
+      }
+
+      .filter-btn:hover {
+        color: var(--text-2);
+        border-color: var(--border-hi);
+        transform: translateY(-1px);
       }
     }
 
@@ -1392,6 +1442,13 @@
 
     <!-- ── Main content ── -->
     <main class="main-content">
+      <% if (typeof isMaster === "undefined" || !isMaster) { %>
+      <div class="filter-bar" aria-label="Filter entries by visibility">
+        <button class="filter-btn <%= (activeVisibility || 'all') === 'all' ? 'active' : '' %>" data-filter="all" type="button">All</button>
+        <button class="filter-btn <%= activeVisibility === 'public' ? 'active' : '' %>" data-filter="public" type="button">Public</button>
+        <button class="filter-btn <%= activeVisibility === 'private' ? 'active' : '' %>" data-filter="private" type="button">Private</button>
+      </div>
+      <% } %>
 
       <!-- ── Empty state ── -->
       <% if (typeof data === 'undefined' || data.length === 0) { %>
@@ -1506,7 +1563,7 @@
       %>
 
         <!-- Card: <%= cardType %> -->
-        <article class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" style="--stagger: <%= index %>">
+        <article class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" data-id="<%= person._id %>" data-is-public="<%= person.isPublic === true ? 'true' : 'false' %>" style="--stagger: <%= index %>">
 
           <!-- Card type indicator -->
           <div class="card-type-strip" aria-hidden="true">
@@ -1514,7 +1571,7 @@
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
             </svg>
-            Data
+            Data / <%= person.isPublic === true ? 'Public' : 'Private' %>
           </div>
 
           <!-- Card header -->
@@ -1546,6 +1603,15 @@
           <!-- Card footer with actions -->
           <footer class="card-footer">
             <% if (typeof isMaster == "undefined" || !isMaster) { %>
+            <% if (person.isPublic === true) { %>
+            <button class="action-btn action-copy" onclick="event.stopPropagation(); copyPublicLink('<%= person._id %>')" title="Copy public link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              Copy Link
+            </button>
+            <% } %>
             <button class="action-btn action-edit" onclick="event.stopPropagation(); window.location.href='update/<%= person._id %>'" title="Edit entry">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -1664,6 +1730,7 @@
       let isFetching = false;
       let exhausted = !initialPagination.hasMore;
       let observer;
+      const activeVisibility = '<%= activeVisibility || "all" %>';
 
       /* ── Modern Deletion & Feedback Logic ── */
       let type = document.body.dataset.type;
@@ -1963,6 +2030,7 @@
         const info = card.dataset.info || '';
         const email = card.dataset.email || '';
         const password = card.dataset.password || '';
+        const isPublic = card.dataset.isPublic === 'true';
         const typeStrip = card.querySelector('.card-type-strip');
         const text = card.querySelector('.card-text');
         const viewMoreButton = card.querySelector('.view-more-btn');
@@ -1985,7 +2053,7 @@
               <polyline points="14 2 14 8 20 8"></polyline>
             </svg>
           `);
-          typeStrip.append(document.createTextNode(isLong ? ' Note' : ' Data'));
+          typeStrip.append(document.createTextNode(`${isLong ? ' Note' : ' Data'} / ${isPublic ? 'Public' : 'Private'}`));
         }
 
         if (text) {
@@ -2028,6 +2096,31 @@
         card.classList.remove('card-pending');
       }
 
+      async function copyPublicLink(id) {
+        const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
+
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(link);
+          } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = link;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+          }
+
+          showToast('Public link copied');
+        } catch (err) {
+          console.error('Failed to copy public link:', err);
+          showToast('Failed to copy link', 'error');
+        }
+      }
+
       function cardTextOverflows(textElement) {
         if (!textElement) return false;
         return textElement.scrollHeight - textElement.clientHeight > 1;
@@ -2051,6 +2144,7 @@
         const email = String(item.email ?? '');
         const password = String(item.password ?? '');
         const id = String(item._id ?? '');
+        const isPublic = item.isPublic === true;
         const card = document.createElement('article');
         card.className = 'info-card card-plain card-pending';
         card.dataset.index = String(displayIndex - 1);
@@ -2058,6 +2152,8 @@
         card.dataset.info = info;
         card.dataset.email = email;
         card.dataset.password = password;
+        card.dataset.id = id;
+        card.dataset.isPublic = isPublic ? 'true' : 'false';
         card.style.animationDelay = `${batchIndex * 60}ms`;
 
         const typeStrip = document.createElement('div');
@@ -2069,7 +2165,7 @@
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
         `);
-        typeStrip.append(document.createTextNode(' Data'));
+        typeStrip.append(document.createTextNode(` Data / ${isPublic ? 'Public' : 'Private'}`));
         card.append(typeStrip);
 
         const header = document.createElement('header');
@@ -2135,6 +2231,25 @@
         footer.className = 'card-footer';
 
         if (type !== 'master') {
+          if (isPublic) {
+            const copyButton = document.createElement('button');
+            copyButton.type = 'button';
+            copyButton.className = 'action-btn action-copy';
+            copyButton.title = 'Copy public link';
+            appendStaticIcon(copyButton, `
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            `);
+            copyButton.append(document.createTextNode(' Copy Link'));
+            copyButton.addEventListener('click', (event) => {
+              event.stopPropagation();
+              copyPublicLink(id);
+            });
+            footer.append(copyButton);
+          }
+
           const editButton = document.createElement('button');
           editButton.type = 'button';
           editButton.className = 'action-btn action-edit';
@@ -2218,6 +2333,9 @@
             cursor: nextCursor,
             limit: '20'
           });
+          if (activeVisibility !== 'all') {
+            params.set('visibility', activeVisibility);
+          }
           const response = await fetch(`/api/entries?${params}`, {
             headers: {
               Accept: 'application/json'
@@ -2445,6 +2563,17 @@
         overflowRefreshFrame = requestAnimationFrame(() => {
           refreshCardOverflowState();
           overflowRefreshFrame = null;
+        });
+      });
+
+      document.querySelectorAll('.filter-btn').forEach((button) => {
+        button.addEventListener('click', () => {
+          const filter = button.dataset.filter || 'all';
+          const url = new URL('/dashboard', window.location.origin);
+          if (filter !== 'all') {
+            url.searchParams.set('visibility', filter);
+          }
+          window.location.href = url.toString();
         });
       });
 

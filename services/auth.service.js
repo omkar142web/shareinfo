@@ -30,6 +30,8 @@ const getPagedCollection = async ({
   return { items, nextCursor, hasMore, totalCount };
 };
 
+export { getPagedCollection };
+
 export const getPagedUserData = async (email, cursor, limit = 20) => {
   return getPagedCollection({
     cursor,
@@ -38,8 +40,53 @@ export const getPagedUserData = async (email, cursor, limit = 20) => {
   });
 };
 
+export const getPagedUserDataWithVisibility = async (
+  email,
+  cursor,
+  limit = 20,
+  visibility = "all",
+) => {
+  const filter = { email };
+
+  if (visibility === "public") {
+    filter.isPublic = true;
+  } else if (visibility === "private") {
+    filter.isPublic = { $ne: true };
+  }
+
+  return getPagedCollection({
+    cursor,
+    filter,
+    limit,
+  });
+};
+
+export const getPagedPublicData = async (cursor, limit = 20) => {
+  return getPagedCollection({
+    cursor,
+    filter: { isPublic: true },
+    limit,
+  });
+};
+
 export const getPagedAllData = async (cursor, limit = 20) => {
   return getPagedCollection({ cursor, limit });
+};
+
+export const getPagedAllDataWithVisibility = async (
+  cursor,
+  limit = 20,
+  visibility = "all",
+) => {
+  const filter = {};
+
+  if (visibility === "public") {
+    filter.isPublic = true;
+  } else if (visibility === "private") {
+    filter.isPublic = { $ne: true };
+  }
+
+  return getPagedCollection({ cursor, filter, limit });
 };
 
 export const getPagedUsers = async (cursor, limit = 20) => {

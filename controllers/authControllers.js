@@ -7,7 +7,9 @@ import {
   findUserByEmail,
   createUser,
   getPagedUserData,
+  getPagedUserDataWithVisibility,
   getPagedAllData,
+  getPagedAllDataWithVisibility,
   getPagedUsers,
 } from "../services/auth.service.js";
 
@@ -47,6 +49,14 @@ function clearUserCookies(res) {
 
 //! HOME
 export const getHome = async (req, res) => {
+  if (req.cookies.email && req.cookies.password) {
+    return res.redirect("/dashboard");
+  }
+
+  return res.redirect("/");
+};
+
+export const getDashboard = async (req, res) => {
   try {
     if (!req.cookies.email || !req.cookies.password) {
       return res.redirect("/login");
@@ -65,16 +75,29 @@ export const getHome = async (req, res) => {
       return res.redirect("/login");
     }
 
+    const visibility = ["public", "private"].includes(req.query.visibility)
+      ? req.query.visibility
+      : "all";
+
     let page;
     let isMaster = false;
 
     if (user.password === "admin" && user.email === "admin@gmail.com") {
-      page = await getPagedAllData(null, DEFAULT_PAGE_SIZE);
+      page = await getPagedAllDataWithVisibility(
+        null,
+        DEFAULT_PAGE_SIZE,
+        visibility,
+      );
     } else if (user.password === "master" && user.email === "master@gmail.com") {
       page = await getPagedUsers(null, DEFAULT_PAGE_SIZE);
       isMaster = true;
     } else {
-      page = await getPagedUserData(user.email, null, DEFAULT_PAGE_SIZE);
+      page = await getPagedUserDataWithVisibility(
+        user.email,
+        null,
+        DEFAULT_PAGE_SIZE,
+        visibility,
+      );
     }
 
     return res.render("allInfo", {
@@ -82,10 +105,11 @@ export const getHome = async (req, res) => {
       initialCursor: page.nextCursor,
       hasMore: page.hasMore,
       totalCount: page.totalCount,
+      activeVisibility: visibility,
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {
-    console.error("Home error ❌", err);
+    console.error("Dashboard error ❌", err);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -121,13 +145,22 @@ export const getEntriesPage = async (req, res) => {
       ? Math.min(Math.max(requestedLimit, 1), MAX_PAGE_SIZE)
       : DEFAULT_PAGE_SIZE;
 
+    const visibility = ["public", "private"].includes(req.query.visibility)
+      ? req.query.visibility
+      : "all";
+
     let page;
     if (user.password === "admin" && user.email === "admin@gmail.com") {
-      page = await getPagedAllData(cursor, limit);
+      page = await getPagedAllDataWithVisibility(cursor, limit, visibility);
     } else if (user.password === "master" && user.email === "master@gmail.com") {
       page = await getPagedUsers(cursor, limit);
     } else {
-      page = await getPagedUserData(user.email, cursor, limit);
+      page = await getPagedUserDataWithVisibility(
+        user.email,
+        cursor,
+        limit,
+        visibility,
+      );
     }
 
     return res.json({
@@ -163,7 +196,7 @@ export const getLogin = async (req, res) => {
       return res.render("login");
     }
 
-    return res.redirect("/");
+    return res.redirect("/dashboard");
   } catch (err) {
     console.error("Login GET error ❌", err);
     res.status(500).send("Internal Server Error");
@@ -203,7 +236,7 @@ export const postLogin = async (req, res) => {
 
     setUserCookies(res, user);
 
-    return res.json({ success: true, redirect: "/" });
+    return res.json({ success: true, redirect: "/dashboard" });
   } catch (err) {
     console.error("Login POST error ❌", err);
     return res.status(500).json({
@@ -250,7 +283,7 @@ export const postRegister = async (req, res) => {
     console.log(req.body);
     setUserCookies(res, { name, email, password });
 
-    return res.json({ success: true, redirect: "/" });
+    return res.json({ success: true, redirect: "/dashboard" });
   } catch (err) {
     console.error("Register POST error ❌", err);
     return res.status(500).json({
@@ -308,9 +341,13 @@ export const createPost = async (req, res) => {
     const collection = getCollection("anyInformation");
 
     const { name, info } = req.body;
+    const now = new Date();
     const addedData = await collection.insertOne({
       name,
       info,
+      isPublic: req.body.isPublic === true,
+      createdAt: now,
+      updatedAt: now,
       email: user.email, // trusted email from backend
     });
 
@@ -388,6 +425,8 @@ export const updatePost = async (req, res) => {
         $set: {
           name,
           info,
+          isPublic: req.body.isPublic === true,
+          updatedAt: new Date(),
         },
       },
     );
