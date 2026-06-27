@@ -12,6 +12,8 @@ export const normalizePublicEntry = (entry = {}) => {
     _id: entry._id?.toString(),
     name: entry.name || "",
     info: entry.info || "",
+    ownerName: entry.ownerName || "",
+    email: entry.email || "",
     isPublic: entry.isPublic === true,
     createdAt: entry.createdAt || entry._id?.getTimestamp?.() || null,
     updatedAt: entry.updatedAt || null,

@@ -346,6 +346,7 @@ export const createPost = async (req, res) => {
       name,
       info,
       isPublic: req.body.isPublic === true,
+      ownerName: user.name,
       createdAt: now,
       updatedAt: now,
       email: user.email, // trusted email from backend

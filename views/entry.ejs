@@ -182,7 +182,7 @@
 
     <article class="article">
       <header class="article-header">
-        <span class="eyebrow">Public note</span>
+        <span class="eyebrow"><% const ownerName = entry.ownerName || entry.email; %><%= ownerName ? `Note by ${ownerName}` : 'Public Note' %></span>
         <h1><%= entry.name %></h1>
         <p class="meta">
           Published <%= entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric' }) : 'recently' %>
