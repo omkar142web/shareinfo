@@ -41,15 +41,17 @@ The preview shows the ShareInfo dashboard: a responsive card wall for saved note
 **Dashboard experience**
 
 - **Responsive masonry layout** adapts from desktop grids to mobile-friendly single-column cards.
+- **Infinite scrolling** loads entries in batches using a cursor-based paginated API to ensure smooth performance with large datasets.
 - **Long-note modal view** opens extended content in a focused overlay instead of forcing oversized cards.
 - **Automatic URL detection** converts valid external links inside notes into clickable links.
+- **Modern UX Feedback** provides real-time interaction cues via toast notifications for success/error states and confirmation modals for destructive actions.
 - **Empty state UI** guides new users to add their first saved item.
 - **Custom 404 and 500 pages** keep errors inside the app experience.
 
 **Admin-style access**
 
-- **Admin data view** shows all stored information when the logged-in user's password is `admin`.
-- **Master user view** lists registered users when the logged-in user's password is `master`.
+- **Admin data view** shows all stored information when the logged-in user's password is `admin` and email is `admin@gmail.com`.
+- **Master user view** lists registered users when the logged-in user's password is `master` and email is `master@gmail.com`.
 
 ## 🛠 Tech Stack
 
@@ -211,6 +213,7 @@ npm test
 |--------|----------|---------------|-------------|
 | `GET` | `/add` | 🔒 Cookie | Render an add-entry form with the logged-in email prefilled. |
 | `POST` | `/` | 🔒 Cookie | Create a new information entry in `anyInformation`. |
+| `GET` | `/api/entries` | 🔒 Cookie | Fetch a paginated list of entries for infinite scrolling. |
 | `GET` | `/:id` | 🔒 Cookie | Render a create/update form route currently wired to create-post behavior. |
 | `GET` | `/update/:id` | 🔒 Cookie | Render the update form for a specific entry. |
 | `PUT` | `/:id` | 🔒 Cookie | Update an information entry by MongoDB ObjectId. |
