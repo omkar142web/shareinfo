@@ -68,9 +68,9 @@ export const getHome = async (req, res) => {
     let page;
     let isMaster = false;
 
-    if (user.password === "admin") {
+    if (user.password === "admin" && user.email === "admin@gmail.com") {
       page = await getPagedAllData(null, DEFAULT_PAGE_SIZE);
-    } else if (user.password === "master") {
+    } else if (user.password === "master" && user.email === "master@gmail.com") {
       page = await getPagedUsers(null, DEFAULT_PAGE_SIZE);
       isMaster = true;
     } else {
@@ -122,9 +122,9 @@ export const getEntriesPage = async (req, res) => {
       : DEFAULT_PAGE_SIZE;
 
     let page;
-    if (user.password === "admin") {
+    if (user.password === "admin" && user.email === "admin@gmail.com") {
       page = await getPagedAllData(cursor, limit);
-    } else if (user.password === "master") {
+    } else if (user.password === "master" && user.email === "master@gmail.com") {
       page = await getPagedUsers(cursor, limit);
     } else {
       page = await getPagedUserData(user.email, cursor, limit);
