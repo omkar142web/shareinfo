@@ -60,9 +60,16 @@
     .topbar {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 12px;
       margin-bottom: 22px;
       flex-wrap: wrap;
+    }
+
+    .topbar-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     a,
@@ -177,7 +184,16 @@
   <main class="shell">
     <nav class="topbar">
       <a class="btn" href="/">Back to Home</a>
-      <button class="btn" type="button" id="copyLink">Copy Link</button>
+      <div class="topbar-group">
+        <button class="btn" type="button" id="copyLink">Copy Link</button>
+        <button class="btn btn-copy" type="button" id="copyLinkIcon" title="Copy public link" style="display: flex; align-items: center; gap: 6px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          Copy Text
+        </button>
+      </div>
     </nav>
 
     <article class="article">
@@ -255,8 +271,32 @@
       }
     }
 
+    async function copyContent() {
+      const text = entry.info || '';
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
+        }
+        showToast('Content copied');
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to copy content');
+      }
+    }
+
     appendLinkedContent(content, entry.info || '');
     document.getElementById('copyLink').addEventListener('click', copyCurrentLink);
+    document.getElementById('copyLinkIcon').addEventListener('click', copyContent);
   </script>
 </body>
 

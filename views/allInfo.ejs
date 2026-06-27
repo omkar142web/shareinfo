@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Share Info — Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
   <!-- <link rel="stylesheet" href="css/home.css" /> -->
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap");
@@ -267,6 +268,50 @@
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface-1);
+      border: 0.5px solid var(--border);
+      border-radius: 99px;
+      padding: 5px 12px;
+      font-size: 13px;
+      color: var(--text-3);
+      margin-bottom: 18px;
+    }
+
+    .breadcrumb a {
+      color: var(--text-2);
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 100ms;
+    }
+
+    .breadcrumb a:hover {
+      color: var(--text);
+    }
+
+    .breadcrumb .sep {
+      color: var(--text-3);
+    }
+
+    .breadcrumb .current {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+      .breadcrumb {
+        font-size: 12px;
+        padding: 4px 10px;
+      }
     }
 
     /* ── Buttons ─────────────────────────────────────── */
@@ -1421,6 +1466,15 @@
         </div>
 
         <nav class="header-actions">
+          <button class="btn-ghost home-btn" onclick="window.location.href='/'" aria-label="Home">
+            <svg xmlns="http://www.w3.org/2000/svg"
+     width="18"
+     height="18"
+     viewBox="0 0 24 24"
+     fill="currentColor">
+  <path d="M12 3.2 3.5 10a1 1 0 0 0-.4.8V20a2 2 0 0 0 2 2h4v-6h6v6h4a2 2 0 0 0 2-2v-9.2a1 1 0 0 0-.4-.8L12 3.2Z"/>
+</svg>
+          </button>
           <button class="btn-ghost logout-btn" onclick="window.location.href='/logout'">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -1442,6 +1496,14 @@
 
     <!-- ── Main content ── -->
     <main class="main-content">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/" aria-label="Home">
+          <i class="ti ti-home" style="font-size:14px;" aria-hidden="true"></i>
+          Home
+        </a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span class="current">Dashboard</span>
+      </nav>
       <% if (typeof isMaster === "undefined" || !isMaster) { %>
       <div class="filter-bar" aria-label="Filter entries by visibility">
         <button class="filter-btn <%= (activeVisibility || 'all') === 'all' ? 'active' : '' %>" data-filter="all" type="button">All</button>
