@@ -545,6 +545,11 @@
       padding: 4px 16px 14px;
     }
 
+    .info-card.card-pending .card-text,
+    .info-card.card-pending .view-more-btn {
+      opacity: 0;
+    }
+
     /* Text content */
     .card-text {
       font-size: 13.5px;
@@ -1198,7 +1203,7 @@
     }
 
     .confirm-btns button {
-      justify-content : center;
+      justify-content: center;
     }
 
     /* ── Toasts ── */
@@ -1493,9 +1498,7 @@
       <div class="masonry-wall" id="masonryWall">
 
         <% data.forEach((person, index) => {
-        const isLong = person.info && person.info.length > 120;
-        const cardType = isLong ? 'long' : 'plain';
-        const snippet = isLong ? person.info.substring(0, 115) : person.info;
+        const cardType = 'plain';
         const safeInfo = (person.info || '').replace(/'/g, "\\'").replace(/\n/g, '\\n');
         const safeName = (person.name || '').replace(/'/g, "\\'");
         const safeEmail = (person.email || '').replace(/'/g, "\\'");
@@ -1503,25 +1506,15 @@
       %>
 
         <!-- Card: <%= cardType %> -->
-        <article class="info-card card-<%= cardType %>" data-index="<%= index %>" style="--stagger: <%= index %>" <% if (isLong) { %> role="button" tabindex="0" aria-label="View full content for <%= person.name %>" onclick="openModal('<%= safeName %>', '<%= safeInfo %>', '<%= safeEmail %>', '<%= safePassword %>')" onkeydown="if(event.key==='Enter'||event.key===' '){openModal('<%= safeName %>','<%= safeInfo %>','<%= safeEmail %>','<%= safePassword %>')}" <% } %>>
+        <article class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" style="--stagger: <%= index %>">
 
           <!-- Card type indicator -->
           <div class="card-type-strip" aria-hidden="true">
-            <% if (cardType === 'long') { %>
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="17" y1="10" x2="3" y2="10" />
-              <line x1="21" y1="6" x2="3" y2="6" />
-              <line x1="21" y1="14" x2="3" y2="14" />
-              <line x1="17" y1="18" x2="3" y2="18" />
-            </svg>
-            Note
-            <% } else { %>
             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
             </svg>
             Data
-            <% } %>
           </div>
 
           <!-- Card header -->
@@ -1540,22 +1533,14 @@
 
           <!-- Card body -->
           <div class="card-body">
-            <% if (cardType === 'long') { %>
-            <!-- Long text card -->
-            <p class="card-text card-text-snippet"><%- parseContent(snippet) %><span class="ellipsis-fade">…</span></p>
-            <button class="view-more-btn" onclick="event.stopPropagation(); openModal('<%= safeName %>', '<%= safeInfo %>', '<%= safeEmail %>', '<%= safePassword %>')">
+            <p class="card-text card-text-snippet"><%- parseContent(person.info) %></p>
+            <button class="view-more-btn" type="button" hidden>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
               View full note
             </button>
-
-            <% } else { %>
-            <!-- Plain text card -->
-            <p class="card-text"><%- parseContent(person.info) %></p>
-
-            <% } %>
           </div>
 
           <!-- Card footer with actions -->
@@ -1747,7 +1732,9 @@
       }
 
       function pushModalHistory() {
-        history.pushState({ [MODAL_HISTORY_STATE_KEY]: modalHistoryCount }, '');
+        history.pushState({
+          [MODAL_HISTORY_STATE_KEY]: modalHistoryCount
+        }, '');
         modalHistoryCount++;
       }
 
@@ -1773,7 +1760,9 @@
         });
       }
 
-      function closeOverlay(element, activeClass, onClosed, restoreFocus = true, { fromPopstate = false } = {}) {
+      function closeOverlay(element, activeClass, onClosed, restoreFocus = true, {
+        fromPopstate = false
+      } = {}) {
         if (element.hidden) return;
 
         const state = getOverlayState(element);
@@ -1819,7 +1808,9 @@
         if (!activeElement || modalHistoryCount <= 0) return;
 
         modalHistoryCount--;
-        closeOverlay(activeElement, null, null, true, { fromPopstate: true });
+        closeOverlay(activeElement, null, null, true, {
+          fromPopstate: true
+        });
       });
 
       function resetConfirmButton() {
@@ -1870,7 +1861,10 @@
           url = url.slice(0, -1);
         }
 
-        return { url, trailing };
+        return {
+          url,
+          trailing
+        };
       }
 
       function isExternalUrl(value) {
@@ -1909,7 +1903,10 @@
 
         while ((match = urlPattern.exec(rawText)) !== null) {
           const [fullMatch, prefix, candidate] = match;
-          const { url, trailing } = trimUrlPunctuation(candidate);
+          const {
+            url,
+            trailing
+          } = trimUrlPunctuation(candidate);
           const urlStart = match.index + prefix.length;
 
           container.append(document.createTextNode(rawText.slice(lastIndex, urlStart)));
@@ -1959,50 +1956,120 @@
         });
       }
 
+      function applyLongCardState(card, isLong) {
+        if (!card) return;
+
+        const name = card.dataset.name || '';
+        const info = card.dataset.info || '';
+        const email = card.dataset.email || '';
+        const password = card.dataset.password || '';
+        const typeStrip = card.querySelector('.card-type-strip');
+        const text = card.querySelector('.card-text');
+        const viewMoreButton = card.querySelector('.view-more-btn');
+
+        card.classList.toggle('card-long', isLong);
+        card.classList.toggle('card-plain', !isLong);
+
+        if (typeStrip) {
+          typeStrip.innerHTML = '';
+          appendStaticIcon(typeStrip, isLong ? `
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="17" y1="10" x2="3" y2="10"></line>
+              <line x1="21" y1="6" x2="3" y2="6"></line>
+              <line x1="21" y1="14" x2="3" y2="14"></line>
+              <line x1="17" y1="18" x2="3" y2="18"></line>
+            </svg>
+          ` : `
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+          `);
+          typeStrip.append(document.createTextNode(isLong ? ' Note' : ' Data'));
+        }
+
+        if (text) {
+          text.classList.toggle('card-text-snippet', isLong);
+          const ellipsis = text.querySelector('.ellipsis-fade');
+
+          if (isLong && !ellipsis) {
+            const ellipsisNode = document.createElement('span');
+            ellipsisNode.className = 'ellipsis-fade';
+            ellipsisNode.textContent = '\u2026';
+            text.append(ellipsisNode);
+          } else if (!isLong && ellipsis) {
+            ellipsis.remove();
+          }
+        }
+
+        if (viewMoreButton) {
+          viewMoreButton.hidden = !isLong;
+        }
+
+        if (isLong) {
+          card.setAttribute('role', 'button');
+          card.tabIndex = 0;
+          card.setAttribute('aria-label', `View full content for ${name}`);
+          card.onclick = () => openModal(name, info, email, password);
+          card.onkeydown = (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              openModal(name, info, email, password);
+            }
+          };
+        } else {
+          card.removeAttribute('role');
+          card.removeAttribute('tabindex');
+          card.removeAttribute('aria-label');
+          card.onclick = null;
+          card.onkeydown = null;
+        }
+
+        card.classList.remove('card-pending');
+      }
+
+      function cardTextOverflows(textElement) {
+        if (!textElement) return false;
+        return textElement.scrollHeight - textElement.clientHeight > 1;
+      }
+
+      function refreshCardOverflowState(scope = document) {
+        const cards = scope.querySelectorAll ? scope.querySelectorAll('.info-card') : [];
+        cards.forEach((card) => {
+          const text = card.querySelector('.card-text');
+          if (!text) return;
+
+          text.classList.add('card-text-snippet');
+          const isLong = cardTextOverflows(text);
+          applyLongCardState(card, isLong);
+        });
+      }
+
       function buildCard(item, displayIndex, batchIndex) {
         const info = String(item.info ?? '');
         const name = String(item.name ?? '');
         const email = String(item.email ?? '');
         const password = String(item.password ?? '');
         const id = String(item._id ?? '');
-        const isLong = info.length > 120;
-        const snippet = isLong ? info.substring(0, 115) : info;
         const card = document.createElement('article');
-        card.className = `info-card card-${isLong ? 'long' : 'plain'}`;
+        card.className = 'info-card card-plain card-pending';
         card.dataset.index = String(displayIndex - 1);
+        card.dataset.name = name;
+        card.dataset.info = info;
+        card.dataset.email = email;
+        card.dataset.password = password;
         card.style.animationDelay = `${batchIndex * 60}ms`;
-
-        const openFullNote = () => openModal(name, info, email, password);
-        if (isLong) {
-          card.setAttribute('role', 'button');
-          card.tabIndex = 0;
-          card.setAttribute('aria-label', `View full content for ${name}`);
-          card.addEventListener('click', openFullNote);
-          card.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              openFullNote();
-            }
-          });
-        }
 
         const typeStrip = document.createElement('div');
         typeStrip.className = 'card-type-strip';
         typeStrip.setAttribute('aria-hidden', 'true');
-        appendStaticIcon(typeStrip, isLong ? `
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="17" y1="10" x2="3" y2="10"></line>
-            <line x1="21" y1="6" x2="3" y2="6"></line>
-            <line x1="21" y1="14" x2="3" y2="14"></line>
-            <line x1="17" y1="18" x2="3" y2="18"></line>
-          </svg>
-        ` : `
+        appendStaticIcon(typeStrip, `
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
           </svg>
         `);
-        typeStrip.append(document.createTextNode(isLong ? ' Note' : ' Data'));
+        typeStrip.append(document.createTextNode(' Data'));
         card.append(typeStrip);
 
         const header = document.createElement('header');
@@ -2042,36 +2109,26 @@
         const body = document.createElement('div');
         body.className = 'card-body';
         const content = document.createElement('p');
-        content.className = isLong
-          ? 'card-text card-text-snippet'
-          : 'card-text';
-        appendLinkedContent(content, isLong ? snippet : info);
-
-        if (isLong) {
-          const ellipsis = document.createElement('span');
-          ellipsis.className = 'ellipsis-fade';
-          ellipsis.textContent = '\u2026';
-          content.append(ellipsis);
-        }
+        content.className = 'card-text card-text-snippet';
+        appendLinkedContent(content, info);
         body.append(content);
 
-        if (isLong) {
-          const viewMoreButton = document.createElement('button');
-          viewMoreButton.type = 'button';
-          viewMoreButton.className = 'view-more-btn';
-          appendStaticIcon(viewMoreButton, `
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          `);
-          viewMoreButton.append(document.createTextNode(' View full note'));
-          viewMoreButton.addEventListener('click', (event) => {
-            event.stopPropagation();
-            openFullNote();
-          });
-          body.append(viewMoreButton);
-        }
+        const viewMoreButton = document.createElement('button');
+        viewMoreButton.type = 'button';
+        viewMoreButton.className = 'view-more-btn';
+        viewMoreButton.hidden = true;
+        appendStaticIcon(viewMoreButton, `
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        `);
+        viewMoreButton.append(document.createTextNode(' View full note'));
+        viewMoreButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+          openModal(name, info, email, password);
+        });
+        body.append(viewMoreButton);
         card.append(body);
 
         const footer = document.createElement('footer');
@@ -2162,7 +2219,9 @@
             limit: '20'
           });
           const response = await fetch(`/api/entries?${params}`, {
-            headers: { Accept: 'application/json' }
+            headers: {
+              Accept: 'application/json'
+            }
           });
 
           if (response.status === 401) {
@@ -2185,6 +2244,7 @@
           const wall = document.getElementById('masonryWall');
           if (wall && page.items.length > 0) {
             wall.append(renderCards(page.items));
+            refreshCardOverflowState(wall);
             updateAllCardBadges();
           }
 
@@ -2371,13 +2431,30 @@
         card.style.animationDelay = `${i * 60}ms`;
       });
 
+      requestAnimationFrame(() => {
+        refreshCardOverflowState();
+      });
+
+      let overflowRefreshFrame = null;
+      window.addEventListener('resize', () => {
+        if (overflowRefreshFrame) {
+          cancelAnimationFrame(overflowRefreshFrame);
+        }
+
+        overflowRefreshFrame = requestAnimationFrame(() => {
+          refreshCardOverflowState();
+          overflowRefreshFrame = null;
+        });
+      });
+
       const scrollSentinel = document.getElementById('scroll-sentinel');
       if (!exhausted && nextCursor && scrollSentinel) {
         observer = new IntersectionObserver(
           ([entry]) => {
             if (entry.isIntersecting) loadMore();
-          },
-          { rootMargin: '0px 0px 200px 0px' }
+          }, {
+            rootMargin: '0px 0px 200px 0px'
+          }
         );
         observer.observe(scrollSentinel);
       }
