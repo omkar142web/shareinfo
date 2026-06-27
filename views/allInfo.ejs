@@ -2356,7 +2356,8 @@
         mTitle.textContent = name || '';
         mEmail.textContent = email || '';
         mAvatar.textContent = name ? name.charAt(0).toUpperCase() : '?';
-        mContent.textContent = (info || '').replace(/\\n/g, '\n');
+        mContent.textContent = '';
+        appendLinkedContent(mContent, (info || '').replace(/\\n/g, '\n'));
         mCount.textContent = `${(info || '').length} characters`;
         resetCopyButton();
 
