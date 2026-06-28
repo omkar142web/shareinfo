@@ -407,6 +407,40 @@
       outline: none;
     }
 
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+    }
+
+    .search-input-wrap input {
+      width: 100%;
+      padding-right: 36px;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      border-radius: 50%;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .search-clear[hidden] {
+      display: none;
+    }
+
+    .search-clear:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
     .masonry-wall {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1020,9 +1054,14 @@
           <h2>Latest Public Notes</h2>
         </div>
         <form class="search-row" id="searchForm">
-          <input id="searchInput" type="search" placeholder="Search public knowledge..." autocomplete="off" />
-          <button class="btn btn-primary" type="submit">Search</button>
-          <button class="btn btn-ghost" type="button" id="clearSearch" hidden>Clear</button>
+          <div class="search-input-wrap">
+            <input id="searchInput" type="text" placeholder="Search public knowledge..." autocomplete="off" />
+            <button class="search-clear" id="clearSearch" hidden type="button" aria-label="Clear search">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
         </form>
       </div>
 
@@ -1303,16 +1342,31 @@
       nextCursor = page.nextCursor || null;
       hasMore = page.hasMore === true;
       endOfFeed.hidden = hasMore;
-      document.getElementById('clearSearch').hidden = !searchKeyword;
+      setClearSearchVisibility(searchKeyword);
     }
+
+    function setClearSearchVisibility(value) {
+      document.getElementById('clearSearch').hidden = !value.trim();
+    }
+
+    let searchTimer;
 
     document.getElementById('searchForm').addEventListener('submit', (event) => {
       event.preventDefault();
-      runSearch(document.getElementById('searchInput').value);
+    });
+
+    document.getElementById('searchInput').addEventListener('input', (event) => {
+      setClearSearchVisibility(event.target.value);
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        runSearch(event.target.value);
+      }, 500);
     });
 
     document.getElementById('clearSearch').addEventListener('click', () => {
+      clearTimeout(searchTimer);
       document.getElementById('searchInput').value = '';
+      setClearSearchVisibility('');
       runSearch('');
     });
 
