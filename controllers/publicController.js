@@ -38,12 +38,14 @@ const sendPublicPage = (res, page) => {
 export const getLandingPage = async (req, res) => {
   try {
     const page = await getPagedPublicEntries(null, DEFAULT_PAGE_SIZE);
+    const isLoggedIn = !!(req.cookies.email && req.cookies.password);
 
     return res.render("landing", {
       data: page.items.map(normalizePublicEntry),
       initialCursor: page.nextCursor,
       hasMore: page.hasMore,
       totalCount: page.totalCount,
+      isLoggedIn,
     });
   } catch (err) {
     console.error("Landing page error:", err);
