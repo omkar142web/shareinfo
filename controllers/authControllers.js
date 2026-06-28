@@ -296,7 +296,7 @@ export const postRegister = async (req, res) => {
 //! LOGOUT
 export const logoutUser = (req, res) => {
   clearUserCookies(res);
-  res.redirect("/login");
+  res.redirect("/");
 };
 
 //! getting CREATE POST

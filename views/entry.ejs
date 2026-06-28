@@ -11,16 +11,23 @@
     :root {
       --bg: #0d1628;
       --surface: rgba(22, 34, 58, 0.86);
+      --surface-1: rgba(22, 34, 58, 0.86);
+      --surface-2: rgba(30, 46, 74, 0.62);
       --text: #f0f6ff;
       --text-2: #a8bdd4;
       --text-3: #607a96;
       --cyan: #38bdf8;
       --cyan-faint: rgba(56, 189, 248, 0.1);
       --cyan-border: rgba(56, 189, 248, 0.28);
+      --cyan-glow: rgba(56, 189, 248, 0.22);
       --border: rgba(255, 255, 255, 0.12);
+      --border-md: rgba(255, 255, 255, 0.13);
+      --border-hi: rgba(255, 255, 255, 0.2);
+      --shadow-card: 0 0 0 1px var(--border), 0 8px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
       --font-display: "Sora", system-ui, sans-serif;
       --font-body: "DM Sans", system-ui, sans-serif;
       --font-mono: "JetBrains Mono", monospace;
+      --radius: 18px;
     }
 
     * {
@@ -34,9 +41,11 @@
       font-family: var(--font-body);
       background:
         radial-gradient(circle at 16% 8%, rgba(56, 189, 248, 0.14), transparent 28rem),
+        radial-gradient(circle at 82% 18%, rgba(139, 92, 246, 0.08), transparent 24rem),
         linear-gradient(180deg, #0d1628 0%, #09111f 100%);
       color: var(--text);
-      padding: 28px 18px;
+      padding: 32px 24px;
+      overflow-x: hidden;
     }
 
     body::before {
@@ -50,11 +59,24 @@
       pointer-events: none;
     }
 
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 10% 24%, rgba(56, 189, 248, 0.09), transparent 18rem),
+        radial-gradient(circle at 88% 78%, rgba(52, 211, 153, 0.08), transparent 20rem),
+        radial-gradient(circle at 72% 10%, rgba(139, 92, 246, 0.08), transparent 18rem);
+      filter: blur(12px);
+      pointer-events: none;
+    }
+
     .shell {
       position: relative;
       width: min(760px, 100%);
       margin: 0 auto;
       padding: 28px 0 60px;
+      isolation: isolate;
     }
 
     .topbar {
@@ -81,6 +103,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 6px;
       min-height: 38px;
       padding: 0 14px;
       border-radius: 8px;
@@ -91,18 +114,44 @@
       font-weight: 700;
       font-size: 13px;
       cursor: pointer;
+      transition:
+        transform 0.14s,
+        background 0.14s,
+        border-color 0.14s,
+        color 0.14s;
+    }
+
+    .btn-copy {
+      border-color: var(--cyan-border);
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--cyan);
+      font-weight: 600;
     }
 
     .article {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      border-radius: 18px;
-      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+      position: relative;
+      border: 1px solid var(--border-hi);
+      background: var(--surface-1);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+      backdrop-filter: blur(24px) saturate(1.25);
+      -webkit-backdrop-filter: blur(24px) saturate(1.25);
       overflow: hidden;
     }
 
+    .article::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan) 42%, #a78bfa 58%, transparent);
+      opacity: 0.82;
+    }
+
     .article-header {
-      padding: 30px;
+      padding: 34px 36px;
       border-bottom: 1px solid var(--border);
     }
 
@@ -121,25 +170,29 @@
 
     h1 {
       font-family: var(--font-display);
-      font-size: clamp(2rem, 6vw, 4rem);
-      line-height: 1.02;
-      letter-spacing: -0.055em;
+      font-size: clamp(1.65rem, 4vw, 2.4rem);
+      line-height: 1.15;
+      letter-spacing: -0.04em;
       margin-bottom: 16px;
     }
 
     .meta {
       color: var(--text-3);
       font-size: 13px;
+      /* font-family: var(--font-mono); */
+      font-family: var(--font-body);
+      letter-spacing: 0.02em;
     }
 
     .article-body {
-      padding: 30px;
+      padding: 36px;
     }
 
     .content {
-      color: var(--text-2);
-      font-size: 16px;
-      line-height: 1.82;
+      color: var(--text);
+      font-size: 15.5px;
+      line-height: 1.75;
+      letter-spacing: 0.01em;
       white-space: pre-wrap;
       word-break: break-word;
     }
@@ -171,10 +224,51 @@
       opacity: 1;
     }
 
+    @media (min-width: 480px) {
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(8, 13, 26, 0.9);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, rgba(56, 189, 248, 0.6), rgba(14, 165, 233, 0.4));
+        border-radius: 100px;
+        border: 2px solid rgba(8, 13, 26, 0.9);
+      }
+
+      @media (hover: hover) {
+        ::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, rgba(125, 211, 252, 0.8), rgba(56, 189, 248, 0.6));
+        }
+      }
+    }
+
+    html {
+      /* scrollbar-width: thin; */
+      scrollbar-color: rgba(56, 189, 248, 0.5) rgba(8, 13, 26, 0.9);
+    }
+
+    @media (hover: hover) {
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        transform: translateY(-1px);
+      }
+
+      .btn-copy:hover {
+        background: rgba(56, 189, 248, 0.16);
+        color: #bae6fd;
+        border-color: rgba(56, 189, 248, 0.45);
+      }
+    }
+
     @media (max-width: 560px) {
       .article-header,
       .article-body {
-        padding: 22px;
+        padding: 24px;
       }
     }
   </style>
@@ -183,7 +277,12 @@
 <body>
   <main class="shell">
     <nav class="topbar">
-      <a class="btn" href="/">Back to Home</a>
+      <a class="btn" href="/#public-notes">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        Back to Home
+      </a>
       <div class="topbar-group">
         <button class="btn" type="button" id="copyLink">Copy Link</button>
         <button class="btn btn-copy" type="button" id="copyLinkIcon" title="Copy public link" style="display: flex; align-items: center; gap: 6px;">
