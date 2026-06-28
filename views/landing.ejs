@@ -1091,12 +1091,12 @@
     }
 
     function copyModalContent() {
-      const link = `${window.location.origin}/entry/${encodeURIComponent(currentItemId)}`;
+      const text = currentItemContent || '';
       if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(link).catch(() => {});
+        navigator.clipboard.writeText(text).catch(() => {});
       } else {
         const textarea = document.createElement('textarea');
-        textarea.value = link;
+        textarea.value = text;
         textarea.setAttribute('readonly', '');
         textarea.style.position = 'fixed';
         textarea.style.opacity = '0';
@@ -1107,13 +1107,15 @@
       }
       modalCopy.classList.add('is-copied');
       modalCopy.querySelector('span').textContent = 'Copied!';
-      showToast('Public link copied');
+      showToast('Content copied');
     }
 
     let currentItemId = '';
+    let currentItemContent = '';
 
     function openModal(item) {
       currentItemId = item._id;
+      currentItemContent = item.info || '';
       modalTitle.textContent = item.name || '';
       modalContent.textContent = '';
       appendLinkedContent(modalContent, item.info || '');
@@ -1134,6 +1136,7 @@
     function buildCard(item) {
       const card = document.createElement('article');
       card.className = 'info-card';
+      card.id = item._id;
 
       const strip = document.createElement('div');
       strip.className = 'card-strip';
@@ -1181,7 +1184,7 @@
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
-        Copy
+        Share
       `;
       copy.addEventListener('click', () => copyLink(item._id));
       footer.append(copy);
@@ -1246,6 +1249,49 @@
     document.getElementById('clearSearch').addEventListener('click', () => {
       document.getElementById('searchInput').value = '';
       runSearch('');
+    });
+
+    function scrollElementToCenter(hash) {
+      const id = String(hash || '').replace(/^#/, '');
+      if (!id) return false;
+
+      const target = document.getElementById(id);
+      if (!target) return false;
+
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+
+      return true;
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', (event) => {
+        const hash = anchor.getAttribute('href');
+        if (!hash) return;
+
+        if (!scrollElementToCenter(hash)) return;
+
+        event.preventDefault();
+        if (window.location.hash !== hash) {
+          history.pushState(null, '', hash);
+        }
+      });
+    });
+
+    window.addEventListener('load', () => {
+      if (window.location.hash) {
+        setTimeout(() => {
+          scrollElementToCenter(window.location.hash);
+        }, 50);
+      }
+    });
+
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash) {
+        scrollElementToCenter(window.location.hash);
+      }
     });
 
     modalOverlay.addEventListener('click', (event) => {
