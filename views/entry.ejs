@@ -224,6 +224,46 @@
       opacity: 1;
     }
 
+    #backToTop {
+      position: fixed;
+      right: 28px;
+      bottom: 28px;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: white;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(15px);
+      transition: 0.25s ease;
+      z-index: 55;
+      font: inherit;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    #backToTop.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    #backToTop:active {
+      transform: scale(0.95);
+    }
+
+    #backToTop svg {
+      transition: transform 0.25s ease;
+    }
+
     @media (min-width: 480px) {
       ::-webkit-scrollbar {
         width: 10px;
@@ -262,6 +302,16 @@
         background: rgba(56, 189, 248, 0.16);
         color: #bae6fd;
         border-color: rgba(56, 189, 248, 0.45);
+      }
+
+      #backToTop:hover {
+        background: #1e293b;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      #backToTop:hover svg {
+        transform: translateY(-2px);
       }
     }
 
@@ -310,11 +360,17 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <button id="backToTop" aria-label="Back to top">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="m18 15-6-6-6 6" />
+    </svg>
+  </button>
 
   <script>
     const entry = <%- JSON.stringify(entry) %>;
     const content = document.getElementById('content');
     const toast = document.getElementById('toast');
+    const backToTop = document.getElementById('backToTop');
 
     function appendLinkedContent(container, text = '') {
       const rawText = String(text || '');
@@ -396,6 +452,19 @@
     appendLinkedContent(content, entry.info || '');
     document.getElementById('copyLink').addEventListener('click', copyCurrentLink);
     document.getElementById('copyLinkIcon').addEventListener('click', copyContent);
+
+    if (backToTop) {
+      window.addEventListener('scroll', () => {
+        backToTop.classList.toggle('show', window.scrollY > window.innerHeight * 0.5);
+      });
+
+      backToTop.addEventListener('click', () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+      });
+    }
   </script>
 </body>
 

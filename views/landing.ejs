@@ -152,9 +152,59 @@
       color: var(--text-2);
     }
 
+    #backToTop {
+      position: fixed;
+      right: 28px;
+      bottom: 28px;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: white;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(15px);
+      transition: 0.25s ease;
+      z-index: 55;
+      font: inherit;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    #backToTop.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    #backToTop:active {
+      transform: scale(0.95);
+    }
+
+    #backToTop svg {
+      transition: transform 0.25s ease;
+    }
+
     @media (hover: hover) {
       .btn:hover {
         transform: translateY(-1px);
+      }
+
+      #backToTop:hover {
+        background: #1e293b;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      #backToTop:hover svg {
+        transform: translateY(-2px);
       }
     }
 
@@ -1020,6 +1070,11 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <button id="backToTop" aria-label="Back to latest public notes">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="m18 15-6-6-6 6" />
+    </svg>
+  </button>
 
   <script>
     const initialItems = <%- JSON.stringify(data || []) %>;
@@ -1040,6 +1095,7 @@
     const modalCopy = document.getElementById('modalCopy');
     const modalClose = document.getElementById('modalClose');
     const toast = document.getElementById('toast');
+    const backToTop = document.getElementById('backToTop');
 
     function appendLinkedContent(container, text = '') {
       const rawText = String(text || '');
@@ -1275,6 +1331,21 @@
       return true;
     }
 
+    function scrollElementToStart(hash) {
+      const id = String(hash || '').replace(/^#/, '');
+      if (!id) return false;
+
+      const target = document.getElementById(id);
+      if (!target) return false;
+
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+
+      return true;
+    }
+
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       anchor.addEventListener('click', (event) => {
         const hash = anchor.getAttribute('href');
@@ -1302,6 +1373,18 @@
         scrollElementToCenter(window.location.hash);
       }
     });
+
+    if (backToTop) {
+      const notesSection = document.getElementById('public-notes');
+      const threshold = notesSection ? notesSection.offsetTop : window.innerHeight * 0.8;
+      window.addEventListener('scroll', () => {
+        backToTop.classList.toggle('show', window.scrollY > threshold);
+      });
+
+      backToTop.addEventListener('click', () => {
+        scrollElementToStart('#public-notes');
+      });
+    }
 
     modalOverlay.addEventListener('click', (event) => {
       if (event.target === modalOverlay) closeModal();
