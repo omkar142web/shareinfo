@@ -116,7 +116,7 @@
           <textarea id="info" name="info" rows="3" placeholder="Paste links, notes, codes or any useful info.. Enter to send. Shift+Enter for newline. Ctrl/Cmd+Enter to send" required autocomplete="on"><%= person?.info || '' %></textarea>
           <span class="char-counter" id="charCounter">0 chars</span>
         </div>
-        <div class="vis-row">
+        <div class="vis-row" id="visibilityRow">
           <span class="vis-label">Visibility</span>
           <span class="vis-icon" id="visIcon" aria-hidden="true">
             <% if (person?.isPublic === true) { %>
@@ -189,14 +189,17 @@
       const info = document.querySelector(".field-info");
       const title = document.querySelector(".field-title");
       const actions = document.querySelector(".form-actions");
+      const visibility = document.getElementById("visibilityRow");
       const mql = window.matchMedia("(max-width: 768px)");
 
       function adjustDOMOrder(e) {
         if (e.matches) {
-          // Mobile layout: info before title
+          // Mobile: info (textarea) -> title -> email -> visibility -> actions
           form.insertBefore(info, title);
+          form.insertBefore(visibility, actions);
         } else {
-          // Desktop layout: info before actions
+          // Desktop: put visibility back inside info, then info before actions
+          info.appendChild(visibility);
           form.insertBefore(info, actions);
         }
       }
