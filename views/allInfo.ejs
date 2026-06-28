@@ -593,7 +593,8 @@
     }
 
     .info-card.card-pending .card-text,
-    .info-card.card-pending .view-more-btn {
+    .info-card.card-pending .view-more-btn,
+    .info-card.card-pending .card-copy-note {
       opacity: 0;
     }
 
@@ -642,6 +643,10 @@
       letter-spacing: 0.01em;
     }
 
+    .view-more-btn[hidden] {
+      display: none;
+    }
+
     @media (hover: hover) {
       .view-more-btn:hover {
         background: rgba(139, 92, 246, 0.18);
@@ -649,6 +654,50 @@
         transform: translateY(-1px);
         box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
       }
+    }
+
+    .card-copy-note {
+      margin-top: 12px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cyan);
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid var(--cyan-border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition:
+        background 0.15s,
+        color 0.15s,
+        transform 0.12s,
+        box-shadow 0.15s,
+        border-color 0.15s;
+      letter-spacing: 0.01em;
+    }
+
+    .card-copy-note[hidden] {
+      display: none;
+    }
+
+    @media (hover: hover) {
+      .card-copy-note:hover {
+        background: rgba(56, 189, 248, 0.16);
+        color: #bae6fd;
+        border-color: rgba(56, 189, 248, 0.45);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.22);
+      }
+    }
+
+    .card-copy-note.is-copied {
+      background: var(--success-faint);
+      color: var(--success);
+      border-color: var(--success-border);
     }
 
     .inline-link {
@@ -1714,6 +1763,13 @@
               </svg>
               View full note
             </button>
+            <button class="card-copy-note" type="button" hidden aria-label="Copy note content" onclick="event.stopPropagation(); copyCardContent(this)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span>Copy</span>
+            </button>
           </div>
 
           <!-- Card footer with actions -->
@@ -2164,6 +2220,7 @@
         const typeStrip = card.querySelector('.card-type-strip');
         const text = card.querySelector('.card-text');
         const viewMoreButton = card.querySelector('.view-more-btn');
+        const copyNoteButton = card.querySelector('.card-copy-note');
 
         card.classList.toggle('card-long', isLong);
         card.classList.toggle('card-plain', !isLong);
@@ -2202,6 +2259,10 @@
 
         if (viewMoreButton) {
           viewMoreButton.hidden = !isLong;
+        }
+
+        if (copyNoteButton) {
+          copyNoteButton.hidden = isLong;
         }
 
         if (isLong) {
@@ -2248,6 +2309,43 @@
         } catch (err) {
           console.error('Failed to copy public link:', err);
           showToast('Failed to copy link', 'error');
+        }
+      }
+
+      function resetCardCopyButton(button) {
+        if (!button) return;
+        const copyLabel = button.querySelector('span');
+        button.classList.remove('is-copied');
+        if (copyLabel) copyLabel.textContent = 'Copy';
+      }
+
+      async function copyCardContent(button) {
+        const card = button?.closest('.info-card');
+        const text = card?.dataset.info || '';
+        if (!text) return;
+
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+          }
+
+          const copyLabel = button.querySelector('span');
+          button.classList.add('is-copied');
+          if (copyLabel) copyLabel.textContent = 'Copied';
+          setTimeout(() => resetCardCopyButton(button), 1400);
+        } catch (err) {
+          console.error('Failed to copy note:', err);
+          showToast('Failed to copy note', 'error');
         }
       }
 
@@ -2355,6 +2453,26 @@
           openModal(name, info, email, password);
         });
         body.append(viewMoreButton);
+
+        const copyNoteButton = document.createElement('button');
+        copyNoteButton.type = 'button';
+        copyNoteButton.className = 'card-copy-note';
+        copyNoteButton.hidden = true;
+        copyNoteButton.setAttribute('aria-label', 'Copy note content');
+        appendStaticIcon(copyNoteButton, `
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        `);
+        const copyNoteLabel = document.createElement('span');
+        copyNoteLabel.textContent = 'Copy';
+        copyNoteButton.append(copyNoteLabel);
+        copyNoteButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+          copyCardContent(copyNoteButton);
+        });
+        body.append(copyNoteButton);
         card.append(body);
 
         const footer = document.createElement('footer');
