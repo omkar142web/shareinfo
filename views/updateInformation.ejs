@@ -133,8 +133,8 @@
             </svg>
             <% } %>
           </span>
-          <label class="vis-switch" aria-label="Make entry public">
-            <input type="checkbox" id="visCheck" <%= person?.isPublic === true ? 'checked' : '' %> />
+          <label class="vis-switch" aria-label="Keep entry private">
+            <input type="checkbox" id="visCheck" <%= person?.isPublic === true ? '' : 'checked' %> />
             <span class="vis-slider"></span>
           </label>
           <span class="vis-state" id="visState"><%= person?.isPublic === true ? 'Public' : 'Private' %></span>
@@ -236,12 +236,12 @@
     const visIcon = document.getElementById("visIcon");
 
     function renderVisibilityState() {
-      const isPublic = visCheck.checked;
-      visState.textContent = isPublic ? "Public" : "Private";
-      visState.style.color = isPublic ? "var(--success)" : "var(--text-3)";
-      visIcon.innerHTML = isPublic ?
-        `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 0 20" /><path d="M12 2a15.3 15.3 0 0 0 0 20" /></svg>` :
-        `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>`;
+      const isPrivate = visCheck.checked;
+      visState.textContent = isPrivate ? "Private" : "Public";
+      visState.style.color = isPrivate ? "var(--success)" : "var(--danger)";
+      visIcon.innerHTML = isPrivate ?
+        `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>` :
+        `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 0 20" /><path d="M12 2a15.3 15.3 0 0 0 0 20" /></svg>`;
     }
 
     visCheck.addEventListener("change", renderVisibilityState);
@@ -338,7 +338,7 @@
           form.name.value.trim() === form.name.defaultValue.trim() &&
           form.email.value.trim() === form.email.defaultValue.trim() &&
           form.info.value.trim() === form.info.defaultValue.trim() &&
-          visCheck.checked === <%= person?.isPublic === true ? 'true' : 'false' %>
+          visCheck.checked === <%= person?.isPublic === true ? 'false' : 'true' %>
         ) {
           btn.disabled = true;
           btn.innerHTML = `
@@ -362,7 +362,7 @@
           body: JSON.stringify({
             name: form.elements['name'].value.trim(),
             info: form.elements['info'].value.trim(),
-            isPublic: visCheck.checked,
+            isPublic: !visCheck.checked,
           }),
         });
 
@@ -436,7 +436,7 @@
           body: JSON.stringify({
             name: form.elements['name'].value.trim(),
             info: form.elements['info'].value.trim(),
-            isPublic: visCheck.checked,
+            isPublic: !visCheck.checked,
           }),
         });
 
