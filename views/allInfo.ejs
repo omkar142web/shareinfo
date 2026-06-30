@@ -529,6 +529,11 @@
       padding: 12px 16px 10px;
     }
 
+    .info-card:focus-within .card-copy-icon {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
     .card-avatar {
       flex-shrink: 0;
       width: 36px;
@@ -593,8 +598,7 @@
     }
 
     .info-card.card-pending .card-text,
-    .info-card.card-pending .view-more-btn,
-    .info-card.card-pending .card-copy-note {
+    .info-card.card-pending .view-more-btn {
       opacity: 0;
     }
 
@@ -656,48 +660,75 @@
       }
     }
 
-    .card-copy-note {
-      margin-top: 12px;
+    .card-copy-icon {
+      position: absolute;
+      /* top: 10px; */
+      top: 2px;
+      /* right: 10px; */
+      right: 3px;
+      width: 32px;
+      height: 32px;
       font-family: var(--font-body);
-      font-size: 12px;
       font-weight: 600;
       color: var(--cyan);
-      background: rgba(56, 189, 248, 0.08);
-      border: 1px solid var(--cyan-border);
+      /* background: rgba(17, 24, 39, 0.65); */
+      background: transparent;
+      /* border: 1px solid var(--border); */
+      border: none;
       border-radius: 8px;
-      padding: 7px 12px;
+      padding: 0;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      opacity: 0;
+      transform: translateY(-2px) scale(0.92);
+      z-index: 3;
+      backdrop-filter: blur(8px);
       transition:
+        opacity 0.18s,
+        transform 0.18s,
         background 0.15s,
         color 0.15s,
-        transform 0.12s,
-        box-shadow 0.15s,
-        border-color 0.15s;
-      letter-spacing: 0.01em;
-    }
-
-    .card-copy-note[hidden] {
-      display: none;
+        border-color 0.15s,
+        box-shadow 0.15s;
     }
 
     @media (hover: hover) {
-      .card-copy-note:hover {
-        background: rgba(56, 189, 248, 0.16);
+      .info-card:hover .card-copy-icon,
+      .card-copy-icon:hover,
+      .card-copy-icon:focus-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .card-copy-icon:hover {
+        /* background: rgba(56, 189, 248, 0.16); */
         color: #bae6fd;
-        border-color: rgba(56, 189, 248, 0.45);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.22);
+        /* border-color: rgba(56, 189, 248, 0.45); */
+        /* box-shadow: 0 4px 16px rgba(56, 189, 248, 0.22); */
+        text-shadow: 0 4px 16px rgba(56, 189, 248, 0.22);
       }
     }
 
-    .card-copy-note.is-copied {
-      background: var(--success-faint);
+    @media (hover: none) {
+      .card-copy-icon {
+        opacity: 0.75;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .card-copy-icon:focus-visible {
+      outline: 2px solid var(--cyan-border);
+      outline-offset: 2px;
+    }
+
+    .card-copy-icon.is-copied {
+      /* background: var(--success-faint); */
       color: var(--success);
-      border-color: var(--success-border);
+      /* border-color: var(--success-border); */
+      opacity: 1;
+      transform: translateY(0) scale(1.08);
     }
 
     .inline-link {
@@ -1751,6 +1782,12 @@
               <% } %>
             </div>
             <div class="card-index-badge" aria-hidden="true">#<%= String(entryTotal - index).padStart(2, '0') %></div>
+            <button class="card-copy-icon" type="button" aria-label="Copy note content" onclick="event.stopPropagation(); copyCardContent(this)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+            </button>
           </header>
 
           <!-- Card body -->
@@ -1762,13 +1799,6 @@
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
               View full note
-            </button>
-            <button class="card-copy-note" type="button" hidden aria-label="Copy note content" onclick="event.stopPropagation(); copyCardContent(this)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-              </svg>
-              <span>Copy</span>
             </button>
           </div>
 
@@ -2220,7 +2250,6 @@
         const typeStrip = card.querySelector('.card-type-strip');
         const text = card.querySelector('.card-text');
         const viewMoreButton = card.querySelector('.view-more-btn');
-        const copyNoteButton = card.querySelector('.card-copy-note');
 
         card.classList.toggle('card-long', isLong);
         card.classList.toggle('card-plain', !isLong);
@@ -2259,10 +2288,6 @@
 
         if (viewMoreButton) {
           viewMoreButton.hidden = !isLong;
-        }
-
-        if (copyNoteButton) {
-          copyNoteButton.hidden = isLong;
         }
 
         if (isLong) {
@@ -2314,9 +2339,7 @@
 
       function resetCardCopyButton(button) {
         if (!button) return;
-        const copyLabel = button.querySelector('span');
         button.classList.remove('is-copied');
-        if (copyLabel) copyLabel.textContent = 'Copy';
       }
 
       async function copyCardContent(button) {
@@ -2339,9 +2362,7 @@
             textarea.remove();
           }
 
-          const copyLabel = button.querySelector('span');
           button.classList.add('is-copied');
-          if (copyLabel) copyLabel.textContent = 'Copied';
           setTimeout(() => resetCardCopyButton(button), 1400);
         } catch (err) {
           console.error('Failed to copy note:', err);
@@ -2428,6 +2449,22 @@
         badge.setAttribute('aria-hidden', 'true');
         badge.textContent = formatCardIndexBadge(displayIndex);
         header.append(badge);
+
+        const copyIconButton = document.createElement('button');
+        copyIconButton.type = 'button';
+        copyIconButton.className = 'card-copy-icon';
+        copyIconButton.setAttribute('aria-label', 'Copy note content');
+        appendStaticIcon(copyIconButton, `
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        `);
+        copyIconButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+          copyCardContent(copyIconButton);
+        });
+        header.append(copyIconButton);
         card.append(header);
 
         const body = document.createElement('div');
@@ -2454,25 +2491,6 @@
         });
         body.append(viewMoreButton);
 
-        const copyNoteButton = document.createElement('button');
-        copyNoteButton.type = 'button';
-        copyNoteButton.className = 'card-copy-note';
-        copyNoteButton.hidden = true;
-        copyNoteButton.setAttribute('aria-label', 'Copy note content');
-        appendStaticIcon(copyNoteButton, `
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-        `);
-        const copyNoteLabel = document.createElement('span');
-        copyNoteLabel.textContent = 'Copy';
-        copyNoteButton.append(copyNoteLabel);
-        copyNoteButton.addEventListener('click', (event) => {
-          event.stopPropagation();
-          copyCardContent(copyNoteButton);
-        });
-        body.append(copyNoteButton);
         card.append(body);
 
         const footer = document.createElement('footer');
