@@ -172,7 +172,7 @@
       visibility: hidden;
       transform: translateY(15px);
       transition: 0.25s ease;
-      z-index: 55;
+      z-index: 45;
       font: inherit;
       appearance: none;
       -webkit-appearance: none;
@@ -1405,7 +1405,8 @@
         const hash = anchor.getAttribute('href');
         if (!hash) return;
 
-        if (!scrollElementToCenter(hash)) return;
+      const scrollFn = hash === '#public-notes' ? scrollElementToStart : scrollElementToCenter;
+      if (!scrollFn(hash)) return;
 
         event.preventDefault();
         if (window.location.hash !== hash) {
@@ -1415,7 +1416,11 @@
     });
 
     window.addEventListener('load', () => {
-      if (window.location.hash) {
+      if (window.location.hash == '#public-notes') {
+        setTimeout(() => {
+          scrollElementToStart('#public-notes');
+        }, 50);
+      } else if (window.location.hash) {
         setTimeout(() => {
           scrollElementToCenter(window.location.hash);
         }, 50);
@@ -1423,7 +1428,9 @@
     });
 
     window.addEventListener('hashchange', () => {
-      if (window.location.hash) {
+      if (window.location.hash == '#public-notes') {
+        scrollElementToStart('#public-notes');
+      } else if (window.location.hash) {
         scrollElementToCenter(window.location.hash);
       }
     });
