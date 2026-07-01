@@ -172,7 +172,7 @@
           </svg>
           See All
         </a> -->
-        <button type="button" class="btn-secondary" onclick="goBackSafely()">
+        <button type="button" class="btn-secondary" onclick="goBackSafely('<%= person?._id || '' %>')">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="8" y1="6" x2="21" y2="6" />
             <line x1="8" y1="12" x2="21" y2="12" />
@@ -214,7 +214,12 @@
       mql.addEventListener("change", adjustDOMOrder);
     })();
 
-    function goBackSafely() {
+    function goBackSafely(id) {
+      if (id) {
+        window.location.href = `/dashboard#${id}`;
+        return;
+      }
+
       const referrer = document.referrer;
 
       try {
@@ -356,7 +361,7 @@
             Nothing to update!
           `;
           // window.location.replace("/");
-          goBackSafely();
+          window.location.replace("/dashboard#<%= person._id %>");
           return;
         }
 
@@ -384,7 +389,7 @@
           Updated!
         `;
         // window.location.href = "/";
-        window.location.replace("/dashboard");
+        window.location.replace("/dashboard#<%= person._id %>");
         // goBackSafely();
 
       } catch (err) {

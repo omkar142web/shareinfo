@@ -1765,7 +1765,7 @@
       %>
 
         <!-- Card: <%= cardType %> -->
-        <article class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" data-id="<%= person._id %>" data-is-public="<%= person.isPublic === true ? 'true' : 'false' %>" style="--stagger: <%= index %>">
+        <article id="<%= person._id %>" class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" data-id="<%= person._id %>" data-is-public="<%= person.isPublic === true ? 'true' : 'false' %>" style="--stagger: <%= index %>">
 
           <!-- Card type indicator -->
           <div class="card-type-strip" aria-hidden="true">
@@ -2409,6 +2409,7 @@
         card.dataset.email = email;
         card.dataset.password = password;
         card.dataset.id = id;
+        card.id = id;
         card.dataset.isPublic = isPublic ? 'true' : 'false';
         card.style.animationDelay = `${batchIndex * 60}ms`;
 
@@ -2861,6 +2862,33 @@
         );
         observer.observe(scrollSentinel);
       }
+
+      function scrollElementToCenter(hash) {
+        const id = String(hash || '').replace(/^#/, '');
+        if (!id) return false;
+
+        const target = document.getElementById(id);
+        if (!target) return false;
+
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+
+        return true;
+      }
+
+      window.addEventListener('load', () => {
+        if (!window.location.hash) return;
+
+        setTimeout(() => {
+          scrollElementToCenter(window.location.hash);
+        }, 50);
+      });
+
+      window.addEventListener('hashchange', () => {
+        scrollElementToCenter(window.location.hash);
+      });
     </script>
 
   </body>
