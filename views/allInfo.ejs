@@ -2350,8 +2350,9 @@
 
       async function copyCardContent(button) {
         const card = button?.closest('.info-card');
-        const text = card?.dataset.info || '';
-        if (!text) return;
+        const raw = card?.dataset.info || '';
+        if (!raw) return;
+        const text = raw.replace(/\\n/g, '\n');
 
         try {
           if (navigator.clipboard && window.isSecureContext) {
