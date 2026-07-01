@@ -1229,6 +1229,7 @@
     const modalClose = document.getElementById('modalClose');
     const toast = document.getElementById('toast');
     const backToTop = document.getElementById('backToTop');
+    let modalOpenCount = 0;
 
     function appendLinkedContent(container, text = '') {
       const rawText = String(text || '');
@@ -1323,9 +1324,15 @@
       modalOverlay.hidden = false;
       requestAnimationFrame(() => modalOverlay.classList.add('is-open'));
       document.body.style.overflow = 'hidden';
+      history.pushState({ modalOpen: true }, '');
+      modalOpenCount++;
     }
 
-    function closeModal() {
+    function closeModal(fromPopstate = false) {
+      if (!fromPopstate && modalOpenCount > 0) {
+        history.back();
+        return;
+      }
       modalOverlay.classList.remove('is-open');
       modalOverlay.hidden = true;
       document.body.style.overflow = '';
@@ -1548,6 +1555,13 @@
 
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && !modalOverlay.hidden) closeModal();
+    });
+
+    window.addEventListener('popstate', () => {
+      if (!modalOverlay.hidden && modalOpenCount > 0) {
+        modalOpenCount--;
+        closeModal(true);
+      }
     });
 
     renderCards(initialItems);
