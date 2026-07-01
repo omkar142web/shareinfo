@@ -811,6 +811,11 @@
         transform 0.12s;
     }
 
+    nav a[href*="dashboard" i].btn-ghost {
+      min-height: 35px;
+      font-weight: 700;
+    }
+
     @media (hover: hover) {
       .btn-ghost:hover {
         background: rgba(255, 255, 255, 0.08);
@@ -1015,7 +1020,7 @@
       <div class="hero-grid">
         <div>
           <nav class="breadcrumb" aria-label="Breadcrumb">
-          <a href="/#public-notes" aria-label="Explore public notes">
+          <a href="/#public-notes" aria-label="Explore public notes" class="current">
             <svg xmlns="http://www.w3.org/2000/svg"
                 width="16"
                 height="16"
@@ -1025,15 +1030,27 @@
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                style="position: relative; top: 1px; margin-right: 1px;"
                 aria-hidden="true">
               <circle cx="12" cy="12" r="10" />
               <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
             </svg>
-            <span class="current">Explore</span>
+            <span>Explore</span>
           </a>
           <span class="sep" aria-hidden="true">/</span>
+          <a href="/dashboard" aria-current="page">
+          <!-- <svg xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true">
+            <path d="M12 3.2 3.5 10a1 1 0 0 0-.4.8V20a2 2 0 0 0 2 2h4v-6h6v6h4a2 2 0 0 0 2-2v-9.2a1 1 0 0 0-.4-.8L12 3.2Z"/>
+          </svg> -->
           <span>Dashboard</span>
+        </a>
         </nav>
+        <br>
           <span class="eyebrow">Private by default. Public when needed.</span>
           <h1>Your personal knowledge wall.</h1>
           <p class="hero-copy">Save notes, links, snippets, references and ideas in one fast place. Keep them private, or publish the ones worth sharing.</p>
