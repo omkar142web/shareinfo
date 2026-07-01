@@ -2638,6 +2638,7 @@
             wall.append(renderCards(page.items));
             refreshCardOverflowState(wall);
             updateAllCardBadges();
+            scrollToHashedCard();
           }
 
           nextCursor = page.nextCursor || null;
@@ -2878,16 +2879,77 @@
         return true;
       }
 
-      window.addEventListener('load', () => {
-        if (!window.location.hash) return;
+      let hashScrollInterval = null;
+      let activeHashLoadId = null;
 
-        setTimeout(() => {
-          scrollElementToCenter(window.location.hash);
-        }, 50);
-      });
+      function startHashPolling(hash) {
+        if (hashScrollInterval) return;
+
+        let attempts = 0;
+        const maxAttempts = 50;
+        hashScrollInterval = setInterval(() => {
+          attempts += 1;
+          if (scrollElementToCenter(hash) || attempts >= maxAttempts) {
+            clearInterval(hashScrollInterval);
+            hashScrollInterval = null;
+          }
+        }, 200);
+      }
+
+      async function autoLoadUntilHashFound(id) {
+        activeHashLoadId = id;
+
+        while (!document.getElementById(id)) {
+          if (activeHashLoadId !== id || exhausted || !nextCursor) break;
+
+          if (isFetching) {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            continue;
+          }
+
+          await loadMore();
+        }
+
+        if (activeHashLoadId !== id) return;
+
+        activeHashLoadId = null;
+        if (hashScrollInterval) {
+          clearInterval(hashScrollInterval);
+          hashScrollInterval = null;
+        }
+        scrollElementToCenter(`#${id}`);
+      }
+
+      function scrollToHashedCard() {
+        if (!window.location.hash) return;
+        const hash = window.location.hash;
+        const id = hash.replace(/^#/, '');
+        if (!id) return;
+
+        if (scrollElementToCenter(hash)) {
+          activeHashLoadId = null;
+          if (hashScrollInterval) {
+            clearInterval(hashScrollInterval);
+            hashScrollInterval = null;
+          }
+          return;
+        }
+
+        if (activeHashLoadId === id) return;
+
+        startHashPolling(hash);
+        autoLoadUntilHashFound(id);
+      }
+
+      window.addEventListener('load', scrollToHashedCard);
 
       window.addEventListener('hashchange', () => {
-        scrollElementToCenter(window.location.hash);
+        activeHashLoadId = null;
+        if (hashScrollInterval) {
+          clearInterval(hashScrollInterval);
+          hashScrollInterval = null;
+        }
+        scrollToHashedCard();
       });
     </script>
 
