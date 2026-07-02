@@ -199,7 +199,7 @@
         border-right: 2px solid var(--primary);
         opacity: 0.5;
       }
-      
+
       /* Inner scanline inside terminal */
       .terminal-scanline {
         position: absolute;
@@ -217,10 +217,14 @@
         animation: terminal-scan 4s linear infinite;
         pointer-events: none;
       }
-      
+
       @keyframes terminal-scan {
-        0% { transform: translateY(-100%); }
-        100% { transform: translateY(100%); }
+        0% {
+          transform: translateY(-100%);
+        }
+        100% {
+          transform: translateY(100%);
+        }
       }
 
       /* Glitch */
@@ -413,7 +417,7 @@
       button:hover::after {
         opacity: 1;
       }
-      
+
       button:active {
         transform: scale(0.97);
       }
@@ -442,7 +446,9 @@
         background: rgba(239, 68, 68, 0.12);
         border: 1px solid rgba(239, 68, 68, 0.5);
         text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
-        box-shadow: 0 0 15px rgba(239, 68, 68, 0.15), inset 0 0 10px rgba(239, 68, 68, 0.1);
+        box-shadow:
+          0 0 15px rgba(239, 68, 68, 0.15),
+          inset 0 0 10px rgba(239, 68, 68, 0.1);
         animation: blink-tag 2s step-end infinite;
         letter-spacing: 1px;
         text-transform: uppercase;
@@ -607,16 +613,16 @@
       const handleMouseMove = (e) => {
         const { clientX, clientY } = e;
         const { innerWidth, innerHeight } = window;
-        
+
         // Calculate mouse position relative to center of screen (-1 to 1)
         const xPos = (clientX / innerWidth - 0.5) * 2;
         const yPos = (clientY / innerHeight - 0.5) * 2;
-        
+
         // Tilt bounds (max 5 degrees)
         const maxTilt = 5;
         const tiltX = yPos * maxTilt * -1; // Invert Y axis for natural feel
         const tiltY = xPos * maxTilt;
-        
+
         terminal.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`;
       };
 

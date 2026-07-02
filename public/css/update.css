@@ -597,8 +597,6 @@ textarea::-webkit-scrollbar-thumb {
     opacity 0.16s;
 }
 
-
-
 .btn-submit:active {
   transform: scale(0.97);
   transition-duration: 0.07s;

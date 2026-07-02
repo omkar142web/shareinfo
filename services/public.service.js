@@ -46,16 +46,18 @@ export const searchPublicEntries = async (keyword, cursor, limit = 20) => {
     : filter;
 
   const [rawItems, totalCount] = await Promise.all([
-    collection.find(query).sort({ _id: -1 }).limit(limit + 1).toArray(),
+    collection
+      .find(query)
+      .sort({ _id: -1 })
+      .limit(limit + 1)
+      .toArray(),
     collection.countDocuments(filter),
   ]);
 
   const hasMore = rawItems.length > limit;
   const items = hasMore ? rawItems.slice(0, limit) : rawItems;
   const nextCursor =
-    hasMore && items.length > 0
-      ? items[items.length - 1]._id.toString()
-      : null;
+    hasMore && items.length > 0 ? items[items.length - 1]._id.toString() : null;
 
   return { items, nextCursor, hasMore, totalCount };
 };

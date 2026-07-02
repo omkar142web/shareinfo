@@ -89,7 +89,10 @@ export const getDashboard = async (req, res, next) => {
         DEFAULT_PAGE_SIZE,
         visibility,
       );
-    } else if (user.password === "master" && user.email === "master@gmail.com") {
+    } else if (
+      user.password === "master" &&
+      user.email === "master@gmail.com"
+    ) {
       page = await getPagedUsers(null, DEFAULT_PAGE_SIZE);
       isMaster = true;
     } else {
@@ -153,7 +156,10 @@ export const getEntriesPage = async (req, res) => {
     let page;
     if (user.password === "admin" && user.email === "admin@gmail.com") {
       page = await getPagedAllDataWithVisibility(cursor, limit, visibility);
-    } else if (user.password === "master" && user.email === "master@gmail.com") {
+    } else if (
+      user.password === "master" &&
+      user.email === "master@gmail.com"
+    ) {
       page = await getPagedUsers(cursor, limit);
     } else {
       page = await getPagedUserDataWithVisibility(
@@ -438,8 +444,7 @@ export const getUpdatePage = async (req, res, next) => {
     }
 
     const isAdmin =
-      user.email === "admin@gmail.com" &&
-      user.password === "admin";
+      user.email === "admin@gmail.com" && user.password === "admin";
 
     const isOwner = data.email === user.email;
 

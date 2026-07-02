@@ -80,7 +80,10 @@ export const getPublicEntries = async (req, res) => {
     const pagination = parsePagination(req, res);
     if (!pagination) return;
 
-    const page = await getPagedPublicEntries(pagination.cursor, pagination.limit);
+    const page = await getPagedPublicEntries(
+      pagination.cursor,
+      pagination.limit,
+    );
     return sendPublicPage(res, page);
   } catch (err) {
     console.error("Public entries API error:", err);

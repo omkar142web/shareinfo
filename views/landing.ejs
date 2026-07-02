@@ -12,37 +12,37 @@
   <meta name="twitter:card" content="summary_large_image" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-:root {
-  --bg: #0d1628;
-  --surface-1: rgba(22, 34, 58, 0.82);
-  --surface-2: rgba(30, 46, 74, 0.62);
-  --text: #f0f6ff;
-  --text-2: #a8bdd4;
-  --text-3: #607a96;
-  --cyan: #38bdf8;
-  --cyan-faint: rgba(56, 189, 248, 0.1);
-  --cyan-border: rgba(56, 189, 248, 0.28);
-  --cyan-glow: rgba(56, 189, 248, 0.22);
-  --success: #34d399;
-  --success-faint: rgba(52, 211, 153, 0.1);
-  --success-border: rgba(52, 211, 153, 0.28);
-  --border: rgba(255, 255, 255, 0.09);
-  --border-md: rgba(255, 255, 255, 0.13);
-  --border-hi: rgba(255, 255, 255, 0.2);
-  --shadow-card: 0 0 0 1px var(--border), 0 8px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-hover: 0 0 0 1px var(--cyan-border), 0 16px 60px rgba(0, 0, 0, 0.65), 0 0 40px var(--cyan-glow);
-  --font-display: "Sora", system-ui, sans-serif;
-  --font-body: "DM Sans", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --radius: 16px;
-  --radius-sm: 10px;
-  --gap: 18px;
-  --z-modal: 50;
-  --shadow-modal: 0 0 0 1px var(--border-hi), 0 32px 80px rgba(0, 0, 0, 0.7), 0 8px 24px rgba(0, 0, 0, 0.5);
-  --danger: #f87171;
-  --danger-faint: rgba(248, 113, 113, 0.1);
-  --danger-border: rgba(248, 113, 113, 0.28);
-}
+    :root {
+      --bg: #0d1628;
+      --surface-1: rgba(22, 34, 58, 0.82);
+      --surface-2: rgba(30, 46, 74, 0.62);
+      --text: #f0f6ff;
+      --text-2: #a8bdd4;
+      --text-3: #607a96;
+      --cyan: #38bdf8;
+      --cyan-faint: rgba(56, 189, 248, 0.1);
+      --cyan-border: rgba(56, 189, 248, 0.28);
+      --cyan-glow: rgba(56, 189, 248, 0.22);
+      --success: #34d399;
+      --success-faint: rgba(52, 211, 153, 0.1);
+      --success-border: rgba(52, 211, 153, 0.28);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-md: rgba(255, 255, 255, 0.13);
+      --border-hi: rgba(255, 255, 255, 0.2);
+      --shadow-card: 0 0 0 1px var(--border), 0 8px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-hover: 0 0 0 1px var(--cyan-border), 0 16px 60px rgba(0, 0, 0, 0.65), 0 0 40px var(--cyan-glow);
+      --font-display: "Sora", system-ui, sans-serif;
+      --font-body: "DM Sans", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --gap: 18px;
+      --z-modal: 50;
+      --shadow-modal: 0 0 0 1px var(--border-hi), 0 32px 80px rgba(0, 0, 0, 0.7), 0 8px 24px rgba(0, 0, 0, 0.5);
+      --danger: #f87171;
+      --danger-faint: rgba(248, 113, 113, 0.1);
+      --danger-border: rgba(248, 113, 113, 0.28);
+    }
 
     * {
       box-sizing: border-box;
@@ -50,7 +50,7 @@
       padding: 0;
     }
 
-    html{
+    html {
       scroll-behavior: smooth;
     }
 
@@ -375,8 +375,8 @@
       background: rgba(13, 22, 40, 0.58);
       border-radius: 12px;
       transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
-                  border-color 0.22s,
-                  box-shadow 0.22s;
+        border-color 0.22s,
+        box-shadow 0.22s;
     }
 
     @media (hover: hover) {
@@ -528,6 +528,7 @@
       .info-card:hover::before {
         opacity: 0.9;
       }
+
       .info-card:hover {
         box-shadow: var(--shadow-hover);
         transform: translateY(-3px);
@@ -847,7 +848,7 @@
         transform 0.12s;
     }
 
-    nav a[href*="dashboard" i].btn-ghost {
+    nav a[href*="dashboard"i].btn-ghost {
       min-height: 35px;
       font-weight: 700;
     }
@@ -1025,7 +1026,8 @@
     }
 
     #public-notes {
-    scroll-margin-top: 84px; /* 68px navbar + ~16px breathing room */
+      scroll-margin-top: 84px;
+      /* 68px navbar + ~16px breathing room */
     }
   </style>
 </head>
@@ -1058,26 +1060,16 @@
       <div class="hero-grid">
         <div>
           <nav class="breadcrumb" aria-label="Breadcrumb">
-          <a href="/#public-notes" aria-label="Explore public notes" class="current">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                style="position: relative; top: 1px; margin-right: 1px;"
-                aria-hidden="true">
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-            </svg>
-            <span>Explore</span>
-          </a>
-          <span class="sep" aria-hidden="true">/</span>
-          <a href="/dashboard" aria-current="page">
-          <!-- <svg xmlns="http://www.w3.org/2000/svg"
+            <a href="/#public-notes" aria-label="Explore public notes" class="current">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: relative; top: 1px; margin-right: 1px;" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+              </svg>
+              <span>Explore</span>
+            </a>
+            <span class="sep" aria-hidden="true">/</span>
+            <a href="/dashboard" aria-current="page">
+              <!-- <svg xmlns="http://www.w3.org/2000/svg"
               width="15"
               height="15"
               viewBox="0 0 24 24"
@@ -1085,10 +1077,10 @@
               aria-hidden="true">
             <path d="M12 3.2 3.5 10a1 1 0 0 0-.4.8V20a2 2 0 0 0 2 2h4v-6h6v6h4a2 2 0 0 0 2-2v-9.2a1 1 0 0 0-.4-.8L12 3.2Z"/>
           </svg> -->
-          <span>Dashboard</span>
-        </a>
-        </nav>
-        <br>
+              <span>Dashboard</span>
+            </a>
+          </nav>
+          <br>
           <span class="eyebrow">Private by default. Public when needed.</span>
           <h1>Your personal knowledge wall.</h1>
           <p class="hero-copy">Save notes, links, snippets, references and ideas in one fast place. Keep them private, or publish the ones worth sharing.</p>
@@ -1190,7 +1182,8 @@
             <input id="searchInput" type="text" placeholder="Search public knowledge..." autocomplete="off" />
             <button class="search-clear" id="clearSearch" hidden type="button" aria-label="Clear search">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
           </div>
@@ -1362,7 +1355,9 @@
       modalOverlay.hidden = false;
       requestAnimationFrame(() => modalOverlay.classList.add('is-open'));
       document.body.style.overflow = 'hidden';
-      history.pushState({ modalOpen: true }, '');
+      history.pushState({
+        modalOpen: true
+      }, '');
       modalOpenCount++;
     }
 
@@ -1450,7 +1445,10 @@
       loadSpinner.hidden = false;
 
       try {
-        const params = new URLSearchParams({ cursor: nextCursor, limit: '20' });
+        const params = new URLSearchParams({
+          cursor: nextCursor,
+          limit: '20'
+        });
         const endpoint = searchKeyword ? '/api/public/search' : '/api/public';
         if (searchKeyword) params.set('keyword', searchKeyword);
 
@@ -1472,7 +1470,9 @@
 
     async function runSearch(keyword) {
       searchKeyword = keyword.trim();
-      const params = new URLSearchParams({ limit: '20' });
+      const params = new URLSearchParams({
+        limit: '20'
+      });
       if (searchKeyword) params.set('keyword', searchKeyword);
       const endpoint = searchKeyword ? '/api/public/search' : '/api/public';
       const response = await fetch(`${endpoint}?${params}`);
@@ -1544,8 +1544,8 @@
         const hash = anchor.getAttribute('href');
         if (!hash) return;
 
-      const scrollFn = hash === '#public-notes' ? scrollElementToStart : scrollElementToCenter;
-      if (!scrollFn(hash)) return;
+        const scrollFn = hash === '#public-notes' ? scrollElementToStart : scrollElementToCenter;
+        if (!scrollFn(hash)) return;
 
         event.preventDefault();
         if (window.location.hash !== hash) {
@@ -1608,7 +1608,9 @@
     if (sentinel) {
       observer = new IntersectionObserver(([entry]) => {
         if (entry.isIntersecting) loadMore();
-      }, { rootMargin: '0px 0px 220px 0px' });
+      }, {
+        rootMargin: '0px 0px 220px 0px'
+      });
       observer.observe(sentinel);
     }
   </script>

@@ -40,22 +40,13 @@ const passInvalidIdToNotFound = (req, res, next) => {
   return next();
 };
 
-router
-  .route("/")
-  .get(getHome)
-  .post(createPost);
+router.route("/").get(getHome).post(createPost);
 
 router.get("/dashboard", getDashboard);
 
-router
-  .route("/login")
-  .get(getLogin)
-  .post(postLogin);
+router.route("/login").get(getLogin).post(postLogin);
 
-router
-  .route("/register")
-  .get(getRegister)
-  .post(postRegister);
+router.route("/register").get(getRegister).post(postRegister);
 
 router.get("/logout", logoutUser);
 

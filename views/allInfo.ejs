@@ -695,6 +695,7 @@
     }
 
     @media (hover: hover) {
+
       .info-card:hover .card-copy-icon,
       .card-copy-icon:hover,
       .card-copy-icon:focus-visible {
@@ -1961,7 +1962,10 @@
           backToTop.classList.toggle('show', window.scrollY > window.innerHeight * 0.5);
         });
         backToTop.addEventListener('click', () => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
         });
       }
       const overlayState = new WeakMap();

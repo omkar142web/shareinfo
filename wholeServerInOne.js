@@ -17,7 +17,6 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 // ! Cookie parser middleware
 import cookieParser from "cookie-parser";
 app.use(cookieParser());
@@ -26,7 +25,7 @@ app.use(cookieParser());
 app.use((req, res, next) => {
   res.setHeader(
     "Cache-Control",
-    "no-store, no-cache, must-revalidate, private"
+    "no-store, no-cache, must-revalidate, private",
   );
   next();
 });
@@ -63,7 +62,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
-
 
 // ==========================================
 // FILE: structure.js
@@ -369,7 +367,6 @@ const newPostFromForm = {
   isDeleted: false,
 };
 
-
 // ==========================================
 // FILE: config/mongodb.js
 // ==========================================
@@ -423,7 +420,6 @@ export function getCollection(collectionName = "anyInformation") {
 
   return actuallDB.collection(collectionName);
 }
-
 
 // ==========================================
 // FILE: controllers/authControllers.js
@@ -864,7 +860,6 @@ export const deleteMasterUser = async (req, res) => {
   }
 };
 
-
 // ==========================================
 // FILE: routes/authRoutes.js
 // ==========================================
@@ -904,7 +899,6 @@ router.route("/:id").get(getCreatePost).put(updatePost).delete(deletePost);
 
 export default router;
 
-
 // ==========================================
 // FILE: services/auth.service.js
 // ==========================================
@@ -933,9 +927,7 @@ const getPagedCollection = async ({
   const hasMore = rawItems.length > limit;
   const items = hasMore ? rawItems.slice(0, limit) : rawItems;
   const nextCursor =
-    hasMore && items.length > 0
-      ? items[items.length - 1]._id.toString()
-      : null;
+    hasMore && items.length > 0 ? items[items.length - 1]._id.toString() : null;
 
   return { items, nextCursor, hasMore, totalCount };
 };
@@ -970,30 +962,30 @@ export const getAllUsers = async () => {
 };
 
 export const getAllUsersForMaster = async () => {
-  return await getCollection('users').find().sort({ _id: -1 }).toArray();
+  return await getCollection("users").find().sort({ _id: -1 }).toArray();
 };
 //
 
 // GET USER BY EMAIL
 export const findUserByEmail = async (email) => {
-  const collection = getCollection('users');
+  const collection = getCollection("users");
   return await collection.findOne({ email });
 };
 
 // CREATE USER
 export const createUser = async (userData) => {
-  const collection = getCollection('users');
+  const collection = getCollection("users");
   return await collection.insertOne(userData);
 };
 
 // UPDATE USER
 export const updateUser = async (email, updateData) => {
-  const collection = getCollection('users');
+  const collection = getCollection("users");
   return await collection.updateOne({ email }, { $set: updateData });
 };
 
 // DELETE USER
 export const deleteUser = async (email) => {
-  const collection = getCollection('users');
+  const collection = getCollection("users");
   return await collection.deleteOne({ email });
 };

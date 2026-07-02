@@ -14,7 +14,9 @@ export const createHttpError = (statusCode, message) => {
 };
 
 const wantsJson = (req) => {
-  return req.path.startsWith("/api/") || req.accepts(["html", "json"]) === "json";
+  return (
+    req.path.startsWith("/api/") || req.accepts(["html", "json"]) === "json"
+  );
 };
 
 const sendErrorPage = (res, viewsPath, statusCode) => {
