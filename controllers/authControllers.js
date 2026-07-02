@@ -384,16 +384,6 @@ export const getAddPage = async (req, res, next) => {
       return res.redirect("/login");
     }
 
-    const isAdmin =
-      user.email === "admin@gmail.com" &&
-      user.password === "admin";
-
-    const isOwner = data.email === user.email;
-
-    if (!isAdmin && !isOwner) {
-      return next(createHttpError(404, "Post not found"));
-    }
-
     return res.render("updateInformation", {
       person: {
         // email: user?.email || "",
