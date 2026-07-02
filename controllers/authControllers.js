@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 
 import { getCollection } from "../config/mongodb.js";
+import { createHttpError } from "../middleware/errorHandlers.js";
 
 // GET USER BY EMAIL and all..
 import {
@@ -56,7 +57,7 @@ export const getHome = async (req, res) => {
   return res.redirect("/");
 };
 
-export const getDashboard = async (req, res) => {
+export const getDashboard = async (req, res, next) => {
   try {
     if (!req.cookies.email || !req.cookies.password) {
       return res.redirect("/login");
@@ -110,7 +111,7 @@ export const getDashboard = async (req, res) => {
     });
   } catch (err) {
     console.error("Dashboard error ❌", err);
-    res.status(500).send("Internal Server Error");
+    return next(err);
   }
 };
 
@@ -182,7 +183,7 @@ export const getEntriesPage = async (req, res) => {
 };
 
 //! LOGIN GET
-export const getLogin = async (req, res) => {
+export const getLogin = async (req, res, next) => {
   try {
     if (!req.cookies.email || !req.cookies.password) {
       return res.render("login");
@@ -199,7 +200,7 @@ export const getLogin = async (req, res) => {
     return res.redirect("/dashboard");
   } catch (err) {
     console.error("Login GET error ❌", err);
-    res.status(500).send("Internal Server Error");
+    return next(err);
   }
 };
 
@@ -300,7 +301,7 @@ export const logoutUser = (req, res) => {
 };
 
 //! getting CREATE POST
-export const getCreatePost = async (req, res) => {
+export const getCreatePost = async (req, res, next) => {
   if (!req.cookies.email || !req.cookies.password) {
     return res.redirect("/login");
   }
@@ -320,12 +321,12 @@ export const getCreatePost = async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching user in getCreatePost:", err);
-    res.status(500).send("Internal Server Error");
+    return next(err);
   }
 };
 
 //! CREATE POST
-export const createPost = async (req, res) => {
+export const createPost = async (req, res, next) => {
   if (!req.cookies.email || !req.cookies.password) {
     return res.redirect("/login");
   }
@@ -358,7 +359,7 @@ export const createPost = async (req, res) => {
     });
   } catch (err) {
     console.error("Error creating post:", err);
-    res.status(500).send("Internal Server Error");
+    return next(err);
   }
 };
 
@@ -370,47 +371,116 @@ export const createPost = async (req, res) => {
 //   });
 // };
 
-export const getAddPage = async (req, res) => {
-  const user = await findUserByEmail(req.cookies.email);
-
-  res.render("updateInformation", {
-    person: {
-      email: user?.email || "",
-    },
-    title: "Add Info",
-    buttonText: "Save Entry",
-  });
-};
-
-export const getUpdatePage = async (req, res) => {
-  const id = req.params.id;
-
-  const collection = getCollection("anyInformation");
-
-  const data = await collection.findOne({
-    _id: new ObjectId(id),
-  });
-
-  res.render("updateInformation", {
-    person: data,
-    title: "Update Info",
-    buttonText: "Update Entry",
-  });
-};
-
-export const updatePost = async (req, res) => {
+export const getAddPage = async (req, res, next) => {
   try {
-    const id = req.params.id;
-
     if (!req.cookies.email || !req.cookies.password) {
-      return res.status(401).send("Unauthorized");
+      return res.redirect("/login");
     }
 
     const user = await findUserByEmail(req.cookies.email);
 
     if (!user || user.password !== req.cookies.password) {
       clearUserCookies(res);
-      return res.status(401).send("Unauthorized");
+      return res.redirect("/login");
+    }
+
+    const isAdmin =
+      user.email === "admin@gmail.com" &&
+      user.password === "admin";
+
+    const isOwner = data.email === user.email;
+
+    if (!isAdmin && !isOwner) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    return res.render("updateInformation", {
+      person: {
+        // email: user?.email || "",
+        email: user.email,
+      },
+      title: "Add Info",
+      buttonText: "Save Entry",
+    });
+  } catch (err) {
+    console.error("Add page error:", err);
+    return next(err);
+  }
+};
+
+// export const getUpdatePage = async (req, res) => {
+//   const id = req.params.id;
+
+//   const collection = getCollection("anyInformation");
+
+//   const data = await collection.findOne({
+//     _id: new ObjectId(id),
+//   });
+
+//   res.render("updateInformation", {
+//     person: data,
+//     title: "Update Info",
+//     buttonText: "Update Entry",
+//   });
+// };
+
+export const getUpdatePage = async (req, res, next) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.redirect("/login");
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.redirect("/login");
+    }
+
+    const collection = getCollection("anyInformation");
+
+    const data = await collection.findOne({
+      _id: new ObjectId(req.params.id),
+    });
+
+    if (!data) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const isAdmin =
+      user.email === "admin@gmail.com" &&
+      user.password === "admin";
+
+    const isOwner = data.email === user.email;
+
+    if (!isAdmin && !isOwner) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    return res.render("updateInformation", {
+      person: data,
+      title: "Update Info",
+      buttonText: "Update Entry",
+    });
+  } catch (err) {
+    console.error(err);
+    return next(err);
+  }
+};
+
+export const updatePost = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    if (!req.cookies.email || !req.cookies.password) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return next(createHttpError(404, "Post not found"));
     }
 
     const collection = getCollection("anyInformation");
@@ -438,23 +508,28 @@ export const updatePost = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Update failed");
+    return next(err);
   }
 };
 
-export const deletePost = async (req, res) => {
-  const id = req.params.id;
+export const deletePost = async (req, res, next) => {
+  try {
+    const id = req.params.id;
 
-  const collection = getCollection("anyInformation");
+    const collection = getCollection("anyInformation");
 
-  const deleteData = await collection.deleteOne({
-    _id: new ObjectId(id),
-  });
+    const deleteData = await collection.deleteOne({
+      _id: new ObjectId(id),
+    });
 
-  res.status(200).json({ deleteData });
+    return res.status(200).json({ deleteData });
+  } catch (err) {
+    console.error(err);
+    return next(err);
+  }
 };
 
-export const deleteMasterUser = async (req, res) => {
+export const deleteMasterUser = async (req, res, next) => {
   try {
     const id = req.params.id;
 
@@ -470,6 +545,6 @@ export const deleteMasterUser = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Delete failed");
+    return next(err);
   }
 };

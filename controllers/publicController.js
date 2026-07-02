@@ -4,6 +4,7 @@ import {
   normalizePublicEntry,
   searchPublicEntries,
 } from "../services/public.service.js";
+import { createHttpError } from "../middleware/errorHandlers.js";
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
@@ -35,7 +36,7 @@ const sendPublicPage = (res, page) => {
   });
 };
 
-export const getLandingPage = async (req, res) => {
+export const getLandingPage = async (req, res, next) => {
   try {
     const page = await getPagedPublicEntries(null, DEFAULT_PAGE_SIZE);
     const isLoggedIn = !!(req.cookies.email && req.cookies.password);
@@ -49,20 +50,20 @@ export const getLandingPage = async (req, res) => {
     });
   } catch (err) {
     console.error("Landing page error:", err);
-    return res.status(500).send("Internal Server Error");
+    return next(err);
   }
 };
 
-export const getEntryPage = async (req, res) => {
+export const getEntryPage = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!/^[a-f\d]{24}$/i.test(id)) {
-      return res.status(404).send("Entry not found");
+      return next(createHttpError(404, "Entry not found"));
     }
 
     const entry = await findPublicEntryById(id);
     if (!entry) {
-      return res.status(404).send("Entry not found");
+      return next(createHttpError(404, "Entry not found"));
     }
 
     return res.render("entry", {
@@ -70,7 +71,7 @@ export const getEntryPage = async (req, res) => {
     });
   } catch (err) {
     console.error("Public entry page error:", err);
-    return res.status(500).send("Internal Server Error");
+    return next(err);
   }
 };
 

@@ -107,7 +107,7 @@ body {
 
 .glitch::before,
 .glitch::after {
-  content: "404";
+  content: "FS";
   position: absolute;
   top: 0;
   left: 0;

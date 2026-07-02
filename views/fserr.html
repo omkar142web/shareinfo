@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>404 // Signal Lost</title>
+    <title>File Read Error // System Failure</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=JetBrains+Mono:wght@400;700&display=swap"
       rel="stylesheet"
@@ -119,7 +119,7 @@
 
       .glitch::before,
       .glitch::after {
-        content: "404";
+        content: "FS";
         position: absolute;
         top: 0;
         left: 0;
@@ -253,7 +253,7 @@
         z-index: 10;
         pointer-events: none;
       }
-    </style> -->
+    </style>
   </head>
   <body>
     <div class="grid-floor"></div>
@@ -261,7 +261,7 @@
 
     <div class="terminal">
       <div class="glitch-wrapper">
-        <span class="glitch">404</span>
+        <span class="glitch">FS</span>
       </div>
 
       <h2>FILE_READ_ERROR // 0x44</h2>

@@ -1,4 +1,6 @@
 import express from "express";
+import { ObjectId } from "mongodb";
+
 import {
   getHome,
   getDashboard,
@@ -19,20 +21,55 @@ import {
 
 const router = express.Router();
 
-router.route("/").get(getHome).post(createPost);
+const requireObjectId = (req, res, next) => {
+  if (!ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid id",
+    });
+  }
+
+  return next();
+};
+
+const passInvalidIdToNotFound = (req, res, next) => {
+  if (!ObjectId.isValid(req.params.id)) {
+    return next("route");
+  }
+
+  return next();
+};
+
+router
+  .route("/")
+  .get(getHome)
+  .post(createPost);
 
 router.get("/dashboard", getDashboard);
 
-router.route("/login").get(getLogin).post(postLogin);
+router
+  .route("/login")
+  .get(getLogin)
+  .post(postLogin);
 
-router.route("/register").get(getRegister).post(postRegister);
+router
+  .route("/register")
+  .get(getRegister)
+  .post(postRegister);
 
 router.get("/logout", logoutUser);
 
-router.route("/add").get(getAddPage);
-router.delete("/user/:id", deleteMasterUser);
-router.route("/update/:id").get(getUpdatePage);
+router.get("/add", getAddPage);
 router.get("/api/entries", getEntriesPage);
-router.route("/:id").get(getCreatePost).put(updatePost).delete(deletePost);
+
+router.delete("/user/:id", requireObjectId, deleteMasterUser);
+
+router.get("/update/:id", passInvalidIdToNotFound, getUpdatePage);
+
+router
+  .route("/:id")
+  .get(passInvalidIdToNotFound, getCreatePost)
+  .put(requireObjectId, updatePost)
+  .delete(requireObjectId, deletePost);
 
 export default router;
