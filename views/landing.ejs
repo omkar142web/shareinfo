@@ -429,6 +429,7 @@
     .search-row {
       display: flex;
       gap: 10px;
+      align-items: stretch;
     }
 
     .search-row input {
@@ -446,6 +447,7 @@
     .search-input-wrap {
       position: relative;
       flex: 1;
+      min-width: 0;
     }
 
     .search-input-wrap input {
@@ -475,6 +477,98 @@
     .search-clear:hover {
       color: var(--text);
       background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sort-wrap {
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .sort-btn {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border-hi);
+      border-radius: 8px;
+      background: rgba(13, 22, 40, 0.72);
+      color: var(--text-2);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        background 0.14s,
+        border-color 0.14s,
+        color 0.14s,
+        transform 0.12s;
+    }
+
+    .sort-btn[aria-expanded="true"] {
+      color: var(--cyan);
+      border-color: var(--cyan-border);
+      background: rgba(56, 189, 248, 0.09);
+    }
+
+    .sort-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 35;
+      width: 180px;
+      padding: 6px;
+      border: 1px solid var(--border-hi);
+      border-radius: 10px;
+      background: rgba(12, 20, 36, 0.96);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(18px) saturate(1.25);
+      -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    }
+
+    .sort-menu[hidden] {
+      display: none;
+    }
+
+    .sort-option {
+      width: 100%;
+      min-height: 36px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-2);
+      cursor: pointer;
+      font: 700 12px var(--font-body);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .sort-option svg {
+      opacity: 0;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    .sort-option.is-active {
+      color: var(--text);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .sort-option.is-active svg {
+      opacity: 1;
+    }
+
+    @media (hover: hover) {
+      .sort-btn:hover,
+      .sort-option:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .sort-btn:hover {
+        transform: translateY(-1px);
+      }
     }
 
     .masonry-wall {
@@ -966,10 +1060,6 @@
       .masonry-wall {
         grid-template-columns: 1fr;
       }
-
-      .search-row {
-        flex-direction: column;
-      }
     }
 
     /* ── Breadcrumb ── */
@@ -1194,6 +1284,30 @@
               </svg>
             </button>
           </div>
+          <div class="sort-wrap">
+            <button class="sort-btn" id="sortToggle" type="button" aria-label="Sort public notes" aria-haspopup="menu" aria-expanded="false" title="Sort public notes">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m3 16 4 4 4-4" />
+                <path d="M7 20V4" />
+                <path d="m21 8-4-4-4 4" />
+                <path d="M17 4v16" />
+              </svg>
+            </button>
+            <div class="sort-menu" id="sortMenu" role="menu" hidden>
+              <button class="sort-option is-active" type="button" role="menuitemradio" aria-checked="true" data-sort="updated">
+                <span>Last updated</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </button>
+              <button class="sort-option" type="button" role="menuitemradio" aria-checked="false" data-sort="created">
+                <span>Recently added</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </form>
       </div>
 
@@ -1253,6 +1367,7 @@
     let hasMore = <%- JSON.stringify(hasMore === true) %>;
     let isFetching = false;
     let searchKeyword = '';
+    let currentSort = 'updated';
     let observer;
 
     const wall = document.getElementById('masonryWall');
@@ -1267,6 +1382,9 @@
     const modalClose = document.getElementById('modalClose');
     const toast = document.getElementById('toast');
     const backToTop = document.getElementById('backToTop');
+    const sortToggle = document.getElementById('sortToggle');
+    const sortMenu = document.getElementById('sortMenu');
+    const sortOptions = document.querySelectorAll('.sort-option');
     let modalOpenCount = 0;
 
     function appendLinkedContent(container, text = '') {
@@ -1454,7 +1572,8 @@
       try {
         const params = new URLSearchParams({
           cursor: nextCursor,
-          limit: '20'
+          limit: '20',
+          sort: currentSort
         });
         const endpoint = searchKeyword ? '/api/public/search' : '/api/public';
         if (searchKeyword) params.set('keyword', searchKeyword);
@@ -1478,7 +1597,8 @@
     async function runSearch(keyword) {
       searchKeyword = keyword.trim();
       const params = new URLSearchParams({
-        limit: '20'
+        limit: '20',
+        sort: currentSort
       });
       if (searchKeyword) params.set('keyword', searchKeyword);
       const endpoint = searchKeyword ? '/api/public/search' : '/api/public';
@@ -1489,6 +1609,25 @@
       hasMore = page.hasMore === true;
       endOfFeed.hidden = hasMore;
       setClearSearchVisibility(searchKeyword);
+    }
+
+    function closeSortMenu() {
+      sortMenu.hidden = true;
+      sortToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function openSortMenu() {
+      sortMenu.hidden = false;
+      sortToggle.setAttribute('aria-expanded', 'true');
+    }
+
+    function setActiveSort(sort) {
+      currentSort = sort === 'created' ? 'created' : 'updated';
+      sortOptions.forEach((option) => {
+        const isActive = option.dataset.sort === currentSort;
+        option.classList.toggle('is-active', isActive);
+        option.setAttribute('aria-checked', String(isActive));
+      });
     }
 
     function setClearSearchVisibility(value) {
@@ -1514,6 +1653,32 @@
       document.getElementById('searchInput').value = '';
       setClearSearchVisibility('');
       runSearch('');
+    });
+
+    sortToggle.addEventListener('click', () => {
+      if (sortMenu.hidden) {
+        openSortMenu();
+      } else {
+        closeSortMenu();
+      }
+    });
+
+    sortOptions.forEach((option) => {
+      option.addEventListener('click', () => {
+        const nextSort = option.dataset.sort || 'updated';
+        closeSortMenu();
+        if (nextSort === currentSort) return;
+
+        setActiveSort(nextSort);
+        clearTimeout(searchTimer);
+        runSearch(document.getElementById('searchInput').value);
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      if (sortMenu.hidden) return;
+      if (event.target.closest('.sort-wrap')) return;
+      closeSortMenu();
     });
 
     function scrollElementToCenter(hash) {
@@ -1599,6 +1764,7 @@
     modalClose.addEventListener('click', closeModal);
 
     document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !sortMenu.hidden) closeSortMenu();
       if (event.key === 'Escape' && !modalOverlay.hidden) closeModal();
     });
 

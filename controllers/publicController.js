@@ -8,10 +8,11 @@ import { createHttpError } from "../middleware/errorHandlers.js";
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
+const SORT_OPTIONS = new Set(["updated", "created"]);
 
 const parsePagination = (req, res) => {
   const cursor = req.query.cursor ? String(req.query.cursor) : null;
-  if (cursor && !/^[a-f\d]{24}$/i.test(cursor)) {
+  if (cursor && !/^\d{4}-\d{2}-\d{2}T[\d:.]+Z_[a-f\d]{24}$/i.test(cursor)) {
     res.status(400).json({
       success: false,
       message: "Invalid cursor",
@@ -24,7 +25,10 @@ const parsePagination = (req, res) => {
     ? Math.min(Math.max(requestedLimit, 1), MAX_PAGE_SIZE)
     : DEFAULT_PAGE_SIZE;
 
-  return { cursor, limit };
+  const requestedSort = String(req.query.sort || "updated");
+  const sort = SORT_OPTIONS.has(requestedSort) ? requestedSort : "updated";
+
+  return { cursor, limit, sort };
 };
 
 const sendPublicPage = (res, page) => {
@@ -38,7 +42,7 @@ const sendPublicPage = (res, page) => {
 
 export const getLandingPage = async (req, res, next) => {
   try {
-    const page = await getPagedPublicEntries(null, DEFAULT_PAGE_SIZE);
+    const page = await getPagedPublicEntries(null, DEFAULT_PAGE_SIZE, "updated");
     const isLoggedIn = !!(req.cookies.email && req.cookies.password);
 
     return res.render("landing", {
@@ -83,6 +87,7 @@ export const getPublicEntries = async (req, res) => {
     const page = await getPagedPublicEntries(
       pagination.cursor,
       pagination.limit,
+      pagination.sort,
     );
     return sendPublicPage(res, page);
   } catch (err) {
@@ -104,6 +109,7 @@ export const searchPublicEntriesController = async (req, res) => {
       keyword,
       pagination.cursor,
       pagination.limit,
+      pagination.sort,
     );
 
     return sendPublicPage(res, page);
