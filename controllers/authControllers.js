@@ -80,6 +80,11 @@ export const getDashboard = async (req, res, next) => {
       ? req.query.visibility
       : "all";
 
+    const keyword = req.query.keyword ? String(req.query.keyword).trim() : "";
+    const sort = ["updated", "created"].includes(req.query.sort)
+      ? req.query.sort
+      : "updated";
+
     let page;
     let isMaster = false;
 
@@ -88,12 +93,14 @@ export const getDashboard = async (req, res, next) => {
         null,
         DEFAULT_PAGE_SIZE,
         visibility,
+        keyword,
+        sort,
       );
     } else if (
       user.password === "master" &&
       user.email === "master@gmail.com"
     ) {
-      page = await getPagedUsers(null, DEFAULT_PAGE_SIZE);
+      page = await getPagedUsers(null, DEFAULT_PAGE_SIZE, keyword, sort);
       isMaster = true;
     } else {
       page = await getPagedUserDataWithVisibility(
@@ -101,6 +108,8 @@ export const getDashboard = async (req, res, next) => {
         null,
         DEFAULT_PAGE_SIZE,
         visibility,
+        keyword,
+        sort,
       );
     }
 
@@ -110,6 +119,8 @@ export const getDashboard = async (req, res, next) => {
       hasMore: page.hasMore,
       totalCount: page.totalCount,
       activeVisibility: visibility,
+      activeKeyword: keyword,
+      activeSort: sort,
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {
@@ -137,11 +148,14 @@ export const getEntriesPage = async (req, res) => {
     }
 
     const cursor = req.query.cursor ? String(req.query.cursor) : null;
-    if (cursor && !/^[a-f\d]{24}$/i.test(cursor)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid cursor",
-      });
+    if (cursor) {
+      const isComposite = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z_[a-f\d]{24}$/i.test(cursor);
+      if (!isComposite) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid cursor",
+        });
+      }
     }
 
     const requestedLimit = Number.parseInt(req.query.limit, 10);
@@ -153,20 +167,27 @@ export const getEntriesPage = async (req, res) => {
       ? req.query.visibility
       : "all";
 
+    const keyword = req.query.keyword ? String(req.query.keyword).trim() : "";
+    const sort = ["updated", "created"].includes(req.query.sort)
+      ? req.query.sort
+      : "updated";
+
     let page;
     if (user.password === "admin" && user.email === "admin@gmail.com") {
-      page = await getPagedAllDataWithVisibility(cursor, limit, visibility);
+      page = await getPagedAllDataWithVisibility(cursor, limit, visibility, keyword, sort);
     } else if (
       user.password === "master" &&
       user.email === "master@gmail.com"
     ) {
-      page = await getPagedUsers(cursor, limit);
+      page = await getPagedUsers(cursor, limit, keyword, sort);
     } else {
       page = await getPagedUserDataWithVisibility(
         user.email,
         cursor,
         limit,
         visibility,
+        keyword,
+        sort,
       );
     }
 

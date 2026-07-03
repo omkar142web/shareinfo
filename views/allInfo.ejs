@@ -179,6 +179,153 @@
       z-index: 0;
     }
 
+    /* ── Search + Sort UI ───────────────────────────── */
+    .search-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+
+    .search-row input {
+      flex: 1;
+      min-height: 44px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-hi);
+      background: rgba(13, 22, 40, 0.72);
+      color: var(--text);
+      font: 500 14px var(--font-body);
+      outline: none;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .search-input-wrap input {
+      width: 100%;
+      padding-right: 36px;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      border-radius: 50%;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .search-clear[hidden] {
+      display: none;
+    }
+
+    .search-clear:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sort-wrap {
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .sort-btn {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border-hi);
+      border-radius: 8px;
+      background: rgba(13, 22, 40, 0.72);
+      color: var(--text-2);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        background 0.14s,
+        border-color 0.14s,
+        color 0.14s,
+        transform 0.12s;
+    }
+
+    .sort-btn[aria-expanded="true"] {
+      color: var(--cyan);
+      border-color: var(--cyan-border);
+      background: rgba(56, 189, 248, 0.09);
+    }
+
+    .sort-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 35;
+      width: 180px;
+      padding: 6px;
+      border: 1px solid var(--border-hi);
+      border-radius: 10px;
+      background: rgba(12, 20, 36, 0.96);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(18px) saturate(1.25);
+      -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    }
+
+    .sort-menu[hidden] {
+      display: none;
+    }
+
+    .sort-option {
+      width: 100%;
+      min-height: 36px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-2);
+      cursor: pointer;
+      font: 700 12px var(--font-body);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .sort-option svg {
+      opacity: 0;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    .sort-option.is-active {
+      color: var(--text);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .sort-option.is-active svg {
+      opacity: 1;
+    }
+
+    @media (hover: hover) {
+      .sort-btn:hover,
+      .sort-option:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .sort-btn:hover {
+        transform: translateY(-1px);
+      }
+    }
+
     /* ── Header ─────────────────────────────────────── */
     .site-header {
       position: sticky;
@@ -1634,6 +1781,42 @@
 
     <!-- ── Main content ── -->
     <main class="main-content">
+      <form class="search-row" id="searchForm">
+        <div class="search-input-wrap">
+          <input id="searchInput" type="text" placeholder="Search your entries..." autocomplete="off" value="<%= typeof activeKeyword !== 'undefined' ? activeKeyword : '' %>" />
+          <button class="search-clear" id="clearSearch" <%= typeof activeKeyword !== 'undefined' && activeKeyword ? '' : 'hidden' %> type="button" aria-label="Clear search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div class="sort-wrap">
+          <button class="sort-btn" id="sortToggle" type="button" aria-label="Sort entries" aria-haspopup="menu" aria-expanded="false" title="Sort entries">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m3 16 4 4 4-4" />
+              <path d="M7 20V4" />
+              <path d="m21 8-4-4-4 4" />
+              <path d="M17 4v16" />
+            </svg>
+          </button>
+          <div class="sort-menu" id="sortMenu" role="menu" hidden>
+            <button class="sort-option <%= (typeof activeSort === 'undefined' || activeSort === 'updated') ? 'is-active' : '' %>" type="button" role="menuitemradio" aria-checked="<%= (typeof activeSort === 'undefined' || activeSort === 'updated') ? 'true' : 'false' %>" data-sort="updated">
+              <span>Last updated</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </button>
+            <button class="sort-option <%= activeSort === 'created' ? 'is-active' : '' %>" type="button" role="menuitemradio" aria-checked="<%= activeSort === 'created' ? 'true' : 'false' %>" data-sort="created">
+              <span>Recently added</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </form>
+
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/#public-notes" aria-label="Explore public notes">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1675,8 +1858,8 @@
         </button>
       </div>
       <% } %>
-
       <!-- ── Masonry wall ── -->
+      <div class="masonry-wall" id="masonryWall">
       <% if (typeof data !== 'undefined' && data.length > 0) { %>
       <%
       const escapeHTML = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({
@@ -1702,6 +1885,7 @@
       const isExternalUrl = (value) => {
         const clean = value.replace(/^https?:\/\//i, '');
         const host = clean.split(/[/?#]/)[0].replace(/^www\./i, '');
+
         const tld = host.split('.').pop();
 
         return /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(host) && /^[a-z]{2,}$/i.test(tld);
@@ -1755,7 +1939,6 @@
 
       const entryTotal = typeof totalCount !== 'undefined' ? totalCount : data.length;
     %>
-      <div class="masonry-wall" id="masonryWall">
 
         <% data.forEach((person, index) => {
         const cardType = 'plain';
@@ -1844,8 +2027,8 @@
         </article>
 
         <% }) %>
-      </div>
       <% } %>
+      </div>
 
       <div class="feed-loading" id="load-spinner" role="status" aria-label="Loading more entries" hidden>
         <svg class="spinner" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1946,6 +2129,141 @@
       let exhausted = !initialPagination.hasMore;
       let observer;
       const activeVisibility = '<%= activeVisibility || "all" %>';
+      let searchKeyword = <%- JSON.stringify(typeof activeKeyword !== "undefined" ? activeKeyword : "") %>;
+      let currentSort = '<%= typeof activeSort !== "undefined" ? activeSort : "updated" %>';
+
+      /* ── Search + Sort Functions ── */
+
+      function closeSortMenu() {
+        const menu = document.getElementById('sortMenu');
+        const toggle = document.getElementById('sortToggle');
+        if (menu) menu.hidden = true;
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      }
+
+      function openSortMenu() {
+        const menu = document.getElementById('sortMenu');
+        const toggle = document.getElementById('sortToggle');
+        if (menu) menu.hidden = false;
+        if (toggle) toggle.setAttribute('aria-expanded', 'true');
+      }
+
+      function setActiveSort(sort) {
+        currentSort = sort === 'created' ? 'created' : 'updated';
+        document.querySelectorAll('.sort-option').forEach((option) => {
+          const isActive = option.dataset.sort === currentSort;
+          option.classList.toggle('is-active', isActive);
+          option.setAttribute('aria-checked', String(isActive));
+        });
+      }
+
+      setActiveSort(currentSort);
+
+      function setClearSearchVisibility(value) {
+        const btn = document.getElementById('clearSearch');
+        if (btn) btn.hidden = !value.trim();
+      }
+
+      function setupObserver() {
+        const sentinel = document.getElementById('scroll-sentinel');
+        if (!exhausted && nextCursor && sentinel) {
+          if (observer) observer.disconnect();
+          observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) loadMore(); },
+            { rootMargin: '0px 0px 200px 0px' }
+          );
+          observer.observe(sentinel);
+        }
+      }
+
+      async function runSearch(keyword) {
+        searchKeyword = keyword.trim();
+        try {
+          const params = new URLSearchParams({ limit: '20', sort: currentSort });
+          if (searchKeyword) params.set('keyword', searchKeyword);
+          if (activeVisibility !== 'all') params.set('visibility', activeVisibility);
+          const response = await fetch(`/api/entries?${params}`, { headers: { Accept: 'application/json' } });
+          if (response.status === 401) { window.location.href = '/login'; return; }
+          if (!response.ok) throw new Error('Search request failed');
+          const page = await response.json();
+          if (typeof page.totalCount === 'number') {
+            totalEntryCount = page.totalCount;
+          }
+          const wall = document.getElementById('masonryWall');
+          const emptyState = document.querySelector('.empty-state');
+          if (wall) {
+            wall.textContent = '';
+            wall.style.display = '';
+            if (page.items?.length) {
+              wall.append(renderCards(page.items));
+              refreshCardOverflowState(wall);
+              updateAllCardBadges();
+            }
+          }
+          if (emptyState) emptyState.style.display = 'none';
+          nextCursor = page.nextCursor || null;
+          exhausted = !page.hasMore || !nextCursor;
+          if (exhausted) finishFeed();
+          else { const eof = document.getElementById('end-of-feed'); if (eof) eof.hidden = true; }
+          setupObserver();
+          setClearSearchVisibility(searchKeyword);
+        } catch (err) {
+          console.error('Search failed:', err);
+          showToast('Search failed', 'error');
+        }
+      }
+
+      let searchTimer;
+
+      document.getElementById('searchForm')?.addEventListener('submit', (event) => { event.preventDefault(); });
+
+      document.getElementById('searchInput')?.addEventListener('input', (event) => {
+        setClearSearchVisibility(event.target.value);
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => { runSearch(event.target.value); }, 500);
+      });
+
+      document.getElementById('clearSearch')?.addEventListener('click', () => {
+        clearTimeout(searchTimer);
+        const input = document.getElementById('searchInput');
+        if (input) input.value = '';
+        setClearSearchVisibility('');
+        runSearch('');
+      });
+
+      document.getElementById('sortToggle')?.addEventListener('click', () => {
+        const menu = document.getElementById('sortMenu');
+        if (menu) {
+          if (menu.hidden) openSortMenu();
+          else closeSortMenu();
+        }
+      });
+
+      document.querySelectorAll('.sort-option').forEach((option) => {
+        option.addEventListener('click', () => {
+          const nextSort = option.dataset.sort || 'updated';
+          closeSortMenu();
+          if (nextSort === currentSort) return;
+          setActiveSort(nextSort);
+          clearTimeout(searchTimer);
+          const input = document.getElementById('searchInput');
+          runSearch(input ? input.value : '');
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        const menu = document.getElementById('sortMenu');
+        if (!menu || menu.hidden) return;
+        if (event.target.closest('.sort-wrap')) return;
+        closeSortMenu();
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          const menu = document.getElementById('sortMenu');
+          if (menu && !menu.hidden) closeSortMenu();
+        }
+      });
 
       /* ── Modern Deletion & Feedback Logic ── */
       let type = document.body.dataset.type;
@@ -2610,8 +2928,10 @@
         try {
           const params = new URLSearchParams({
             cursor: nextCursor,
-            limit: '20'
+            limit: '20',
+            sort: currentSort
           });
+          if (searchKeyword) params.set('keyword', searchKeyword);
           if (activeVisibility !== 'all') {
             params.set('visibility', activeVisibility);
           }
@@ -2856,17 +3176,7 @@
         });
       });
 
-      const scrollSentinel = document.getElementById('scroll-sentinel');
-      if (!exhausted && nextCursor && scrollSentinel) {
-        observer = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting) loadMore();
-          }, {
-            rootMargin: '0px 0px 200px 0px'
-          }
-        );
-        observer.observe(scrollSentinel);
-      }
+      setupObserver();
 
       function scrollElementToCenter(hash) {
         const id = String(hash || '').replace(/^#/, '');

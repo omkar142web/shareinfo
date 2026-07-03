@@ -2,28 +2,107 @@ import { ObjectId } from "mongodb";
 
 import { getCollection } from "../config/mongodb.js";
 
+const escapeRegex = (value = "") => {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+const SORT_OPTIONS = new Set(["updated", "created"]);
+
+const normalizeSort = (sort = "updated") => {
+  return SORT_OPTIONS.has(sort) ? sort : "updated";
+};
+
+const getEntrySortDate = (entry, sort) => {
+  const field = normalizeSort(sort) === "created" ? "createdAt" : "updatedAt";
+  return entry[field] || entry.createdAt || entry._id?.getTimestamp?.() || new Date(0);
+};
+
+const encodeCursor = (entry, sort) => {
+  if (!entry?._id) return null;
+
+  return `${getEntrySortDate(entry, sort).toISOString()}_${entry._id.toString()}`;
+};
+
+const decodeCursor = (cursor) => {
+  const [dateValue, id] = String(cursor || "").split("_");
+  const date = new Date(dateValue);
+
+  if (!dateValue || Number.isNaN(date.getTime()) || !ObjectId.isValid(id)) {
+    return null;
+  }
+
+  return { date, id: new ObjectId(id) };
+};
+
+const getSortQuery = (cursor) => {
+  const parsedCursor = decodeCursor(cursor);
+  if (!parsedCursor) return {};
+
+  return {
+    $or: [
+      { sortDate: { $lt: parsedCursor.date } },
+      { sortDate: parsedCursor.date, _id: { $lt: parsedCursor.id } },
+    ],
+  };
+};
+
+const getSortDateExpression = (sort) => {
+  if (normalizeSort(sort) === "created") {
+    return { $ifNull: ["$createdAt", { $toDate: "$_id" }] };
+  }
+
+  return {
+    $ifNull: ["$updatedAt", { $ifNull: ["$createdAt", { $toDate: "$_id" }] }],
+  };
+};
+
 const getPagedCollection = async ({
   collectionName = "anyInformation",
   cursor = null,
   filter = {},
   limit = 20,
+  search = "",
+  sort = "updated",
+  searchFields = ["name", "info"],
 }) => {
   const collection = getCollection(collectionName);
-  const query = cursor
-    ? { ...filter, _id: { $lt: new ObjectId(cursor) } }
-    : filter;
+  const trimmedSearch = String(search || "").trim();
+  const normalizedSort = normalizeSort(sort);
+
+  const queryFilter = { ...filter };
+  const regex = trimmedSearch ? new RegExp(escapeRegex(trimmedSearch), "i") : null;
+  const searchFilter = regex
+    ? { $or: searchFields.map((field) => ({ [field]: regex })) }
+    : null;
+  const baseFilter = searchFilter
+    ? { $and: [queryFilter, searchFilter] }
+    : queryFilter;
+
+  const cursorQuery = getSortQuery(cursor);
+
+  const pipeline = [
+    { $match: baseFilter },
+    { $addFields: { sortDate: getSortDateExpression(normalizedSort) } },
+  ];
+
+  if (Object.keys(cursorQuery).length > 0) {
+    pipeline.push({ $match: cursorQuery });
+  }
+
+  pipeline.push(
+    { $sort: { sortDate: -1, _id: -1 } },
+    { $limit: limit + 1 },
+    { $project: { sortDate: 0 } },
+  );
+
   const [rawItems, totalCount] = await Promise.all([
-    collection
-      .find(query)
-      .sort({ _id: -1 })
-      .limit(limit + 1)
-      .toArray(),
-    collection.countDocuments(filter),
+    collection.aggregate(pipeline).toArray(),
+    collection.countDocuments(baseFilter),
   ]);
   const hasMore = rawItems.length > limit;
   const items = hasMore ? rawItems.slice(0, limit) : rawItems;
   const nextCursor =
-    hasMore && items.length > 0 ? items[items.length - 1]._id.toString() : null;
+    hasMore && items.length > 0 ? encodeCursor(items[items.length - 1], normalizedSort) : null;
 
   return { items, nextCursor, hasMore, totalCount };
 };
@@ -43,6 +122,8 @@ export const getPagedUserDataWithVisibility = async (
   cursor,
   limit = 20,
   visibility = "all",
+  search = "",
+  sort = "updated",
 ) => {
   const filter = { email };
 
@@ -56,6 +137,8 @@ export const getPagedUserDataWithVisibility = async (
     cursor,
     filter,
     limit,
+    search,
+    sort,
   });
 };
 
@@ -75,6 +158,8 @@ export const getPagedAllDataWithVisibility = async (
   cursor,
   limit = 20,
   visibility = "all",
+  search = "",
+  sort = "updated",
 ) => {
   const filter = {};
 
@@ -84,14 +169,22 @@ export const getPagedAllDataWithVisibility = async (
     filter.isPublic = { $ne: true };
   }
 
-  return getPagedCollection({ cursor, filter, limit });
+  return getPagedCollection({ cursor, filter, limit, search, sort });
 };
 
-export const getPagedUsers = async (cursor, limit = 20) => {
+export const getPagedUsers = async (
+  cursor,
+  limit = 20,
+  search = "",
+  sort = "updated",
+) => {
   return getPagedCollection({
     collectionName: "users",
     cursor,
     limit,
+    search,
+    sort,
+    searchFields: ["name", "email"],
   });
 };
 
