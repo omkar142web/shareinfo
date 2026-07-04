@@ -256,8 +256,9 @@ Rules:
 - Do not exceed 5 words unless absolutely necessary.
 - Make the title clear, concise, and descriptive.
 - Capture the main topic or intent, not minor details.
-- Do not use quotes, punctuation at the end, emojis, or markdown.
+- Do not use quotes, punctuation at the end, or markdown.
 - Return plain text only.
+- You may add a single relevant emoji at the end if it naturally fits the content. Do not force or overuse emojis.
 - Do not include explanations or any extra text.`;
 
     let model = "openai/gpt-oss-20b";
