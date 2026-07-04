@@ -31,8 +31,8 @@ const COOKIE_OPTIONS = {
 };
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const openai = process.env.GROQ_API_KEY
+  ? new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: "https://api.groq.com/openai/v1" })
   : null;
 
 const setUserCookies = (res, user) => {
@@ -247,9 +247,15 @@ export const generateTitle = async (req, res) => {
       });
     }
 
-    const response = await openai.responses.create({
-      model: "gpt-5.4-mini",
-      instructions: `You generate short titles for user content.
+    let model = "openai/gpt-oss-20b";
+    let response;
+    try {
+      response = await openai.chat.completions.create({
+        model,
+        messages: [
+          {
+            role: "system",
+            content: `You generate short titles for user content.
 Rules:
 - Read the provided content and return only a title.
 - Prefer 3-5 words.
@@ -260,10 +266,39 @@ Rules:
 - Do not use quotes, punctuation at the end, emojis, or markdown.
 - Return plain text only.
 - Do not include explanations or any extra text.`,
-      input: content,
-    });
+          },
+          { role: "user", content },
+        ],
+      });
+    } catch (primaryErr) {
+      if (primaryErr.status === 404) {
+        model = "llama-3.3-70b-versatile";
+        response = await openai.chat.completions.create({
+          model,
+          messages: [
+            {
+              role: "system",
+              content: `You generate short titles for user content.
+Rules:
+- Read the provided content and return only a title.
+- Prefer 3-5 words.
+- 1-2 words are acceptable if they describe the content well.
+- Do not exceed 5 words unless absolutely necessary.
+- Make the title clear, concise, and descriptive.
+- Capture the main topic or intent, not minor details.
+- Do not use quotes, punctuation at the end, emojis, or markdown.
+- Return plain text only.
+- Do not include explanations or any extra text.`,
+            },
+            { role: "user", content },
+          ],
+        });
+      } else {
+        throw primaryErr;
+      }
+    }
 
-    const title = String(response.output_text || "")
+    const title = String(response.choices[0]?.message?.content || "")
       .trim()
       .replace(/^["'`]+|["'`.!?:;]+$/g, "");
 
