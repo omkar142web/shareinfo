@@ -139,3 +139,21 @@ export const findPublicEntryById = async (id) => {
     isPublic: true,
   });
 };
+
+export const getPublicEntriesForSitemap = async () => {
+  const collection = getCollection("anyInformation");
+
+  return collection
+    .find(
+      { isPublic: true },
+      {
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    )
+    .sort({ updatedAt: -1, createdAt: -1, _id: -1 })
+    .toArray();
+};

@@ -78,7 +78,17 @@
         </label>
         <div class="input-wrap">
           <input type="text" id="name" name="name" placeholder="What is this entry about?" value="<%= person?.name || '' %>" required autocomplete="on" />
+          <button type="button" class="ai-title-btn" id="aiTitleBtn" aria-label="Generate title with AI" title="Generate title with AI">
+            <span class="ai-title-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3z" />
+                <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z" />
+              </svg>
+            </span>
+            <span class="ai-title-text">AI</span>
+          </button>
         </div>
+        <span class="ai-title-status" id="aiTitleStatus" role="status" aria-live="polite"></span>
       </div>
 
       <div class="field-group field-email">
@@ -261,6 +271,69 @@
     // <!-- ── Textarea auto-resize + char counter ── -->
     const textarea = document.querySelector("textarea");
     const counter = document.getElementById("charCounter");
+    const titleInput = document.getElementById("name");
+    const aiTitleBtn = document.getElementById("aiTitleBtn");
+    const aiTitleStatus = document.getElementById("aiTitleStatus");
+
+    function showAiTitleStatus(message, type = "") {
+      aiTitleStatus.textContent = message;
+      aiTitleStatus.className = `ai-title-status ${type}`.trim();
+    }
+
+    aiTitleBtn.addEventListener("click", async () => {
+      const content = textarea.value.trim();
+
+      if (!content) {
+        showAiTitleStatus("Add content first before using AI.", "error");
+        textarea.focus();
+        textarea.classList.add("input-error");
+        textarea.addEventListener("input", () => textarea.classList.remove("input-error"), {
+          once: true
+        });
+        return;
+      }
+
+      const originalLabel = aiTitleBtn.innerHTML;
+
+      try {
+        aiTitleBtn.disabled = true;
+        showAiTitleStatus("Generating title...", "loading");
+        aiTitleBtn.innerHTML = `
+          <span class="spin-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.3"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+            </svg>
+          </span>
+          <span class="ai-title-text">AI</span>
+        `;
+
+        const response = await fetch("/api/generate-title", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            content
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.title) {
+          throw new Error(data.message || "Unable to generate title");
+        }
+
+        titleInput.value = data.title;
+        titleInput.focus();
+        showAiTitleStatus("Title generated.", "success");
+      } catch (err) {
+        showAiTitleStatus(err.message || "Unable to generate title right now.", "error");
+      } finally {
+        aiTitleBtn.disabled = false;
+        aiTitleBtn.innerHTML = originalLabel;
+      }
+    });
 
     function autoResize() {
       const parent = textarea.parentElement;

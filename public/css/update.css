@@ -380,6 +380,67 @@ input {
   height: 48px;
 }
 
+.field-title input {
+  padding-right: 82px;
+}
+
+.ai-title-btn {
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  height: 34px;
+  min-width: 62px;
+  padding: 0 10px;
+  border: 1px solid var(--cyan-border);
+  border-radius: var(--radius-xs);
+  background: var(--cyan-faint);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    transform 0.14s,
+    opacity 0.15s;
+}
+
+.ai-title-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+}
+
+.ai-title-icon {
+  display: inline-flex;
+}
+
+.ai-title-status {
+  min-height: 14px;
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.25;
+}
+
+.ai-title-status.error {
+  color: var(--danger);
+}
+
+.ai-title-status.success {
+  color: var(--success);
+}
+
+.ai-title-status.loading {
+  color: var(--cyan);
+}
+
 /* Lock icon offset for readonly email */
 .readonly {
   /* pointer-events: none; */
@@ -399,6 +460,13 @@ textarea::placeholder {
   textarea:hover:not(:focus) {
     background: var(--input-hover);
     border-color: var(--border-hi);
+  }
+
+  .ai-title-btn:hover {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: rgba(56, 189, 248, 0.45);
+    color: #7dd3fc;
+    transform: translateY(-1px);
   }
 }
 

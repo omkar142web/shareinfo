@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import "dotenv/config";
 import Path from "path";
 import { fileURLToPath } from "url";
 

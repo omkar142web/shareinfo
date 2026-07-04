@@ -1,6 +1,7 @@
 import {
   findPublicEntryById,
   getPagedPublicEntries,
+  getPublicEntriesForSitemap,
   normalizePublicEntry,
   searchPublicEntries,
 } from "../services/public.service.js";
@@ -9,6 +10,17 @@ import { createHttpError } from "../middleware/errorHandlers.js";
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
 const SORT_OPTIONS = new Set(["updated", "created"]);
+const SITE_URL = (process.env.SITE_URL || "https://opdev.site").replace(/\/+$/, "");
+
+const escapeXml = (value = "") => {
+  return String(value).replace(/[<>&'"]/g, (char) => ({
+    "<": "&lt;",
+    ">": "&gt;",
+    "&": "&amp;",
+    "'": "&apos;",
+    '"': "&quot;",
+  }[char]));
+};
 
 const parsePagination = (req, res) => {
   const cursor = req.query.cursor ? String(req.query.cursor) : null;
@@ -51,6 +63,8 @@ export const getLandingPage = async (req, res, next) => {
       hasMore: page.hasMore,
       totalCount: page.totalCount,
       isLoggedIn,
+      siteUrl: SITE_URL,
+      canonicalUrl: `${SITE_URL}/`,
     });
   } catch (err) {
     console.error("Landing page error:", err);
@@ -72,10 +86,64 @@ export const getEntryPage = async (req, res, next) => {
 
     return res.render("entry", {
       entry: normalizePublicEntry(entry),
+      siteUrl: SITE_URL,
+      canonicalUrl: `${SITE_URL}/entry/${encodeURIComponent(id)}`,
     });
   } catch (err) {
     console.error("Public entry page error:", err);
     return next(err);
+  }
+};
+
+export const getRobotsTxt = (req, res) => {
+  res.type("text/plain");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  return res.send(`User-agent: *
+Allow: /
+
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /api
+Disallow: /logout
+Disallow: /add
+Disallow: /update/
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`);
+};
+
+export const getSitemapXml = async (req, res) => {
+  try {
+    const entries = await getPublicEntriesForSitemap();
+    const urls = [
+      `  <url>
+    <loc>${escapeXml(`${SITE_URL}/`)}</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>`,
+      ...entries.map((entry) => {
+        const id = entry._id.toString();
+        const lastmod = (entry.updatedAt || entry.createdAt || entry._id.getTimestamp()).toISOString();
+        return `  <url>
+    <loc>${escapeXml(`${SITE_URL}/entry/${encodeURIComponent(id)}`)}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+      }),
+    ];
+
+    res.type("application/xml");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    return res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.join("\n")}
+</urlset>
+`);
+  } catch (err) {
+    console.error("Sitemap error:", err);
+    return res.status(500).type("text/plain").send("Unable to generate sitemap");
   }
 };
 

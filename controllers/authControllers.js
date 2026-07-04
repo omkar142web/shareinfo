@@ -1,4 +1,6 @@
+import "dotenv/config";
 import { ObjectId } from "mongodb";
+import OpenAI from "openai";
 
 import { getCollection } from "../config/mongodb.js";
 import { createHttpError } from "../middleware/errorHandlers.js";
@@ -29,6 +31,9 @@ const COOKIE_OPTIONS = {
 };
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
 const setUserCookies = (res, user) => {
   const cookies = {
@@ -205,6 +210,72 @@ export const getEntriesPage = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
+    });
+  }
+};
+
+export const generateTitle = async (req, res) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({
+        success: false,
+        message: "Please login first.",
+      });
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({
+        success: false,
+        message: "Please login again.",
+      });
+    }
+
+    const content = String(req.body.content || "").trim();
+    if (!content) {
+      return res.status(400).json({
+        success: false,
+        message: "Add content first before using AI.",
+      });
+    }
+
+    if (!openai) {
+      return res.status(500).json({
+        success: false,
+        message: "OpenAI API key is not configured.",
+      });
+    }
+
+    const response = await openai.responses.create({
+      model: "gpt-5.4-mini",
+      instructions: `You generate short titles for user content.
+Rules:
+- Read the provided content and return only a title.
+- Prefer 3-5 words.
+- 1-2 words are acceptable if they describe the content well.
+- Do not exceed 5 words unless absolutely necessary.
+- Make the title clear, concise, and descriptive.
+- Capture the main topic or intent, not minor details.
+- Do not use quotes, punctuation at the end, emojis, or markdown.
+- Return plain text only.
+- Do not include explanations or any extra text.`,
+      input: content,
+    });
+
+    const title = String(response.output_text || "")
+      .trim()
+      .replace(/^["'`]+|["'`.!?:;]+$/g, "");
+
+    return res.json({
+      success: true,
+      title,
+    });
+  } catch (err) {
+    console.error("AI title generation error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to generate title right now.",
     });
   }
 };
