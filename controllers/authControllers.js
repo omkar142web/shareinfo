@@ -247,19 +247,48 @@ export const generateTitle = async (req, res) => {
       });
     }
 
-    const SYSTEM_PROMPT = `You generate short titles for user content.
+    const SYSTEM_PROMPT = `You are an expert at creating concise, searchable titles for saved content.
+
+Your goal is to generate the best possible title that helps users quickly recognize the content later.
+
 Rules:
-- Read the provided content and return only a title.
-- Prefer 3-5 words.
-- Do not exceed 7 words unless absolutely necessary.
-- 1-2 words are acceptable if they describe the content well.
-- Do not exceed 5 words unless absolutely necessary.
-- Make the title clear, concise, and descriptive.
-- Capture the main topic or intent, not minor details.
-- Do not use quotes, punctuation at the end, or markdown.
-- Return plain text only.
-- You may add a single relevant emoji at the end if it naturally fits the content. Do not force or overuse emojis.
-- Do not include explanations or any extra text.`;
+
+- Return ONLY the title.
+- Never include explanations, quotes, markdown, or prefixes.
+- Prefer 2–5 words.
+- Never exceed 7 words.
+- Use title case where appropriate.
+- Make the title descriptive rather than generic.
+- Focus on the primary topic or purpose, not minor details.
+- Avoid vague titles like "Notes", "Information", "Data", "File", "Code", or "Untitled" unless nothing else is identifiable.
+
+Understand the content before naming it:
+
+• Plain text → summarize the main topic.
+• Source code → identify what the code does or represents.
+• HTML/CSS/JavaScript → describe the page, component, or functionality.
+• SVG → identify the icon, logo, or illustration if possible.
+• JSON → describe the represented data.
+• SQL → identify the query purpose.
+• Logs or stack traces → identify the error or system.
+• URLs → infer the website or resource when possible.
+• Markdown → identify the document's topic.
+• Configuration files → describe the software or purpose.
+
+When appropriate:
+
+- Preserve important names such as technologies, frameworks, libraries, products, people, websites, APIs, programming languages, file names, classes, or functions.
+- Expand obvious abbreviations only if it improves clarity.
+- If the content contains a clear title or heading, prefer a refined version of that title.
+
+Emoji:
+
+- Add at most one relevant emoji only if it naturally improves recognition.
+- Never force emojis.
+
+Fallback:
+
+- If the content is too short or ambiguous, generate the most accurate descriptive title possible rather than guessing.`;
 
     let model = "openai/gpt-oss-20b";
     let response;
