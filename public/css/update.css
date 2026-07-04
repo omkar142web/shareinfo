@@ -389,7 +389,8 @@ input {
   right: 7px;
   top: 7px;
   height: 34px;
-  min-width: 62px;
+  /* min-width: 62px; */
+  min-width: 56px;
   padding: 0 10px;
   border: 1px solid var(--cyan-border);
   border-radius: var(--radius-xs);
