@@ -243,9 +243,22 @@ export const generateTitle = async (req, res) => {
     if (!openai) {
       return res.status(500).json({
         success: false,
-        message: "OpenAI API key is not configured.",
+        message: "GROQ_API_KEY is not configured.",
       });
     }
+
+    const SYSTEM_PROMPT = `You generate short titles for user content.
+Rules:
+- Read the provided content and return only a title.
+- Prefer 3-5 words.
+- Do not exceed 7 words unless absolutely necessary.
+- 1-2 words are acceptable if they describe the content well.
+- Do not exceed 5 words unless absolutely necessary.
+- Make the title clear, concise, and descriptive.
+- Capture the main topic or intent, not minor details.
+- Do not use quotes, punctuation at the end, emojis, or markdown.
+- Return plain text only.
+- Do not include explanations or any extra text.`;
 
     let model = "openai/gpt-oss-20b";
     let response;
@@ -253,47 +266,25 @@ export const generateTitle = async (req, res) => {
       response = await openai.chat.completions.create({
         model,
         messages: [
-          {
-            role: "system",
-            content: `You generate short titles for user content.
-Rules:
-- Read the provided content and return only a title.
-- Prefer 3-5 words.
-- 1-2 words are acceptable if they describe the content well.
-- Do not exceed 5 words unless absolutely necessary.
-- Make the title clear, concise, and descriptive.
-- Capture the main topic or intent, not minor details.
-- Do not use quotes, punctuation at the end, emojis, or markdown.
-- Return plain text only.
-- Do not include explanations or any extra text.`,
-          },
+          { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content },
         ],
       });
     } catch (primaryErr) {
-      if (primaryErr.status === 404) {
-        model = "llama-3.3-70b-versatile";
+      if (primaryErr.status !== 404) {
+        throw primaryErr;
+      }
+      model = "llama-3.3-70b-versatile";
+      try {
         response = await openai.chat.completions.create({
           model,
           messages: [
-            {
-              role: "system",
-              content: `You generate short titles for user content.
-Rules:
-- Read the provided content and return only a title.
-- Prefer 3-5 words.
-- 1-2 words are acceptable if they describe the content well.
-- Do not exceed 5 words unless absolutely necessary.
-- Make the title clear, concise, and descriptive.
-- Capture the main topic or intent, not minor details.
-- Do not use quotes, punctuation at the end, emojis, or markdown.
-- Return plain text only.
-- Do not include explanations or any extra text.`,
-            },
+            { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content },
           ],
         });
-      } else {
+      } catch (fallbackErr) {
+        console.error("Fallback model also failed:", fallbackErr);
         throw primaryErr;
       }
     }
