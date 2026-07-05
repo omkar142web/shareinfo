@@ -2,12 +2,12 @@
 
 # SHARE_INFO
 
-_Personal information wall for saving, organizing, and updating links, notes, and useful data._
+_Personal knowledge wall for saving, organizing, and sharing notes, links, code snippets, and ideas._
 
-SHARE_INFO is a small full-stack Express application for storing user-owned snippets of information in MongoDB. It combines cookie-based login, EJS-rendered dashboards, editable note cards, and simple JSON endpoints so a developer can run a personal info manager locally or deploy it as a private web app.
+SHARE_INFO is a full-stack Express application that lets users store snippets of information in MongoDB, toggle visibility between private and public, browse a community landing page, and manage everything through a responsive glassmorphism dashboard. It supports cookie-based auth, cursor-paginated infinite scroll, AI-generated titles, public API endpoints, and SEO-friendly entry pages.
 
 ![Build](https://img.shields.io/badge/build-passing-brightgreen?style=flat-square&logo=githubactions&logoColor=white)
-![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square&logo=npm&logoColor=white)
+![Version](https://img.shields.io/badge/version-2.0.0-blue?style=flat-square&logo=npm&logoColor=white)
 ![License](https://img.shields.io/badge/license-ISC-green?style=flat-square&logo=opensourceinitiative&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/language-JavaScript%20ESM-f7df1e?style=flat-square&logo=javascript&logoColor=white)
 ![Express](https://img.shields.io/badge/tech-Express%205.2.1-000000?style=flat-square&logo=express&logoColor=white)
@@ -22,36 +22,49 @@ SHARE_INFO is a small full-stack Express application for storing user-owned snip
 ## 🖼 Preview
 
 <div align="center">
-  <!-- Screenshot or GIF — replace src with your actual asset -->
   <img src=".github/assets/preview.png" alt="Project preview" width="800" />
 </div>
 
-The preview shows the ShareInfo dashboard: a responsive card wall for saved notes, links, and snippets, with add, edit, delete, logout, and long-note modal interactions.
+The preview shows the ShareInfo dashboard: a responsive glassmorphism card wall for saved notes, links, and snippets, with add, edit, delete, visibility toggle, infinite scroll, and long-note modal interactions.
 
 ## ✨ Features
 
 **Core workflow**
 
 - **Cookie-based authentication** keeps registered users signed in with HTTP-only browser cookies.
-- **User registration and login** provide dedicated HTML pages for account creation and session start.
-- **Personal info wall** renders each saved entry as a dashboard card with title, owner email, and content.
-- **Create, edit, and delete entries** are available through EJS screens and JSON-powered fetch calls.
-- **Owner-prefilled entries** automatically attach the logged-in email when a user adds new information.
+- **User registration and login** provide dedicated EJS pages for account creation and session start.
+- **Personal dashboard** renders each saved entry as a glassmorphism card with title, owner name, and content.
+- **Create, edit, and delete entries** through EJS screens and JSON-powered fetch calls.
+- **Owner-prefilled entries** automatically attach the logged-in user's email and name server-side.
+
+**Public features**
+
+- **Landing page** with hero section, feature highlights, and a masonry wall of the latest public notes — no auth required.
+- **Visibility toggle** on every entry — switch between public (🌍) and private (🔒) with a slide control.
+- **Public entry page** (`/entry/:id`) — clean reading view for shared notes, with canonical URL and SEO metadata.
+- **Public API** (`/api/public`) — cursor-paginated JSON endpoint for public entries.
+- **Search** across public notes by keyword with case-insensitive regex matching.
+- **Sitemap & robots.txt** — auto-generated for search engine indexing.
 
 **Dashboard experience**
 
 - **Responsive masonry layout** adapts from desktop grids to mobile-friendly single-column cards.
-- **Infinite scrolling** loads entries in batches using a cursor-based paginated API to ensure smooth performance with large datasets.
-- **Long-note modal view** opens extended content in a focused overlay instead of forcing oversized cards.
-- **Automatic URL detection** converts valid external links inside notes into clickable links.
-- **Modern UX Feedback** provides real-time interaction cues via toast notifications for success/error states and confirmation modals for destructive actions.
+- **Infinite scrolling** loads entries in batches using composite cursor-based pagination (supports `created`/`updated` sort).
+- **Long-note modal view** opens extended content in a focused overlay with backdrop blur.
+- **Automatic URL detection** converts valid external links inside notes into clickable anchors.
+- **Filter bar** — toggle between All / Public / Private entries.
+- **Search bar** — keyword search across your own entries with sort by created or updated date.
+- **AI title generation** — uses Groq (LLaMA / GPT) to auto-generate concise titles from content.
+- **Copy Link button** on public entries for quick sharing.
+- **Toast notifications** for real-time success/error feedback.
+- **Confirmation modals** for destructive actions.
 - **Empty state UI** guides new users to add their first saved item.
 - **Custom 404 and 500 pages** keep errors inside the app experience.
 
 **Admin-style access**
 
-- **Admin data view** shows all stored information when the logged-in user's password is `admin` and email is `admin@gmail.com`.
-- **Master user view** lists registered users when the logged-in user's password is `master` and email is `master@gmail.com`.
+- **Admin view** (password: `admin`, email: `admin@gmail.com`) — see all information across all users.
+- **Master view** (password: `master`, email: `master@gmail.com`) — list and delete registered users.
 
 ## 🛠 Tech Stack
 
@@ -60,10 +73,11 @@ The preview shows the ShareInfo dashboard: a responsive card wall for saved note
 | Runtime | Node.js 20+ | JavaScript runtime for the server |
 | Language | JavaScript ESM | Module-based application code |
 | Framework | Express 5.2.1 | HTTP server, routing, middleware, and API handlers |
-| Views | EJS 5.0.2, HTML | Server-rendered dashboard and auth screens |
+| Views | EJS 5.0.2 | Server-rendered dashboard, landing, auth, and entry pages |
 | Database | MongoDB Atlas / MongoDB 7.2 driver | Persistent users and saved information |
 | Auth | Cookie Parser 1.4.7 | HTTP-only cookie session state |
-| Styling | CSS, inline EJS styles | Responsive dashboard, forms, and error pages |
+| AI | Groq SDK (OpenAI-compatible) | Title generation from entry content |
+| Styling | Vanilla CSS (glassmorphism design system) | Responsive dashboard, forms, landing, and error pages |
 | Development | Nodemon 3.1.14 | Auto-restart local development server |
 | Testing | npm script placeholder | Test suite is not implemented yet |
 | CI/CD | GitHub Actions ready | Add workflow once tests and linting are introduced |
@@ -74,25 +88,34 @@ The preview shows the ShareInfo dashboard: a responsive card wall for saved note
 ```text
 SHARE_INFO/
 ├── config/
-│   └── mongodb.js                 # MongoDB client connection and collection helper
+│   └── mongodb.js                 # MongoDB client connection, indexes, and collection helper
 ├── controllers/
-│   └── authControllers.js         # Page handlers, auth flow, and entry CRUD handlers
+│   ├── authControllers.js         # Auth flow, dashboard, CRUD, AI title generation
+│   └── publicController.js        # Landing page, public API, entry page, sitemap
+├── middleware/
+│   └── errorHandlers.js           # 404/500 error pages, JSON error responses, createHttpError
 ├── public/
 │   └── css/                       # Static CSS assets for pages and errors
 ├── routes/
-│   └── authRoutes.js              # Express routes for auth, dashboard, and CRUD endpoints
+│   ├── authRoutes.js              # Auth, dashboard, and CRUD routes with ObjectId validation
+│   └── publicRoutes.js            # Landing, public API, entry page, sitemap, robots.txt
 ├── services/
-│   └── auth.service.js            # Database access helpers for users and information
+│   ├── auth.service.js            # User queries, cursor pagination, visibility/search/sort helpers
+│   └── public.service.js          # Public entry queries, search, sitemap, normalizePublicEntry
 ├── views/
-│   ├── allInfo.ejs                # Main information dashboard
-│   ├── updateInformation.ejs      # Add/edit information form
-│   ├── login.html                 # Login page
-│   ├── register.html              # Registration page
+│   ├── landing.ejs                # Public landing page with hero, features, masonry wall
+│   ├── allInfo.ejs                # Authenticated dashboard with masonry, modal, filter bar
+│   ├── updateInformation.ejs      # Add/edit form with visibility toggle
+│   ├── entry.ejs                  # Public individual note reading page
+│   ├── login.ejs                  # Login page
+│   ├── register.ejs               # Registration page
 │   ├── 404.html                   # Not found page
-│   └── 500.html                   # Server error page
+│   ├── 500.html                   # Server error page
+│   └── fserr.html                 # Fallback file-read error page
+├── wholeServerInOne.js            # Self-contained single-file deployment (all code inlined)
 ├── package.json                   # Scripts and runtime dependencies
-├── package-lock.json              # Locked npm dependency graph
-├── server.js                      # Express app bootstrap and middleware setup
+├── server.js                      # Express app bootstrap, middleware, route mounting
+├── .env                           # Environment configuration (not committed)
 └── README.md                      # Project documentation
 ```
 
@@ -131,13 +154,13 @@ cd SHARE_INFO
 npm install
 ```
 
-4. Configure MongoDB.
+4. Configure environment.
 
 ```powershell
 New-Item -ItemType File -Path .env -Force
 ```
 
-Add the values from the environment table below to `.env`, then update `config/mongodb.js` to read `process.env.MONGO_URI` before deploying publicly.
+Add the values from the environment table below to `.env`.
 
 5. Start the development server.
 
@@ -151,9 +174,6 @@ npm run dev
 Start-Process http://localhost:3000
 ```
 
-> [!NOTE]
-> The current `server.js` listens on port `3000`. If you need dynamic ports for deployment, change `const PORT = 3000` to `const PORT = process.env.PORT || 3000`.
-
 ## ⚙️ Environment Variables
 
 | Variable | Required | Default | Description |
@@ -162,18 +182,22 @@ Start-Process http://localhost:3000
 | `MONGO_DB_NAME` | ✅ | `contacts-api` | Database name used for `users` and `anyInformation` collections. |
 | `PORT` | ⬜ | `3000` | HTTP port for the Express server. |
 | `NODE_ENV` | ⬜ | `development` | Runtime environment: `development`, `production`, or `test`. |
-| `COOKIE_MAX_AGE_DAYS` | ⬜ | `30` | Intended session cookie lifetime in days. |
+| `SESSION_SECRET` | ⬜ | — | Secret for signing session data (future use; currently cookie-based). |
+| `GROQ_API_KEY` | ⬜ | — | Groq API key for AI title generation. Get one at [console.groq.com](https://console.groq.com). |
+| `SITE_URL` | ⬜ | `https://opdev.site` | Base URL used for sitemap/canonical URLs in production. |
 
 ```env
-MONGO_URI=mongodb+srv://shareinfo_user:replace-with-a-strong-password@cluster0.mongodb.net/
+MONGO_URI=mongodb+srv://username:password@cluster0.mongodb.net/
 MONGO_DB_NAME=contacts-api
 PORT=3000
 NODE_ENV=development
-COOKIE_MAX_AGE_DAYS=30
+SESSION_SECRET=replace-with-at-least-32-random-characters
+GROQ_API_KEY=gsk_your_key_here
+SITE_URL=https://yourdomain.com
 ```
 
 > [!IMPORTANT]
-> Never commit real MongoDB credentials. This repository currently contains a hardcoded MongoDB URI in `config/mongodb.js`; rotate that credential if it was ever pushed publicly and switch the code to environment variables before production use.
+> Never commit real credentials. The `.env` file is in `.gitignore` by default. The MongoDB URI and database name are read from environment variables — no hardcoded credentials in production code.
 
 ## 💻 Development
 
@@ -189,41 +213,68 @@ npm test
 | `npm start` | Start the Express server with Nodemon. |
 | `npm test` | Runs the current placeholder test script and exits with an error. |
 | `node server.js` | Start the server directly without Nodemon. |
-| `npm install` | Install dependencies from `package-lock.json`. |
+| `node wholeServerInOne.js` | Start the self-contained single-file version. |
 
 > [!WARNING]
 > `npm test` is not wired to a real test runner yet. Add integration tests before relying on this app for shared or public data.
 
 ## 📡 API Reference
 
-### Pages and Authentication
+### Pages
 
 | Method | Endpoint | Auth Required | Description |
 |--------|----------|---------------|-------------|
-| `GET` | `/` | 🔒 Cookie | Render the dashboard for the logged-in user; guest users receive login/register links. |
+| `GET` | `/` | ⬜ | Render the public landing page with hero, features, and latest public notes. |
+| `GET` | `/dashboard` | 🔒 Cookie | Render the authenticated dashboard with user's entries. |
+| `GET` | `/entry/:id` | ⬜ | Render a public entry reading page (404 if not found or private). |
 | `GET` | `/login` | ⬜ | Render the login page. |
-| `POST` | `/login` | ⬜ | Authenticate by email and password, set cookies, and redirect to `/`. |
 | `GET` | `/register` | ⬜ | Render the registration page. |
-| `POST` | `/register` | ⬜ | Create a user, set cookies, and redirect to `/`. |
-| `GET` | `/logout` | 🔒 Cookie | Clear auth cookies and redirect to `/login`. |
+| `GET` | `/add` | 🔒 Cookie | Render an add-entry form with the logged-in email prefilled. |
+| `GET` | `/update/:id` | 🔒 Cookie | Render the update form for a specific entry (owner or admin). |
+| `GET` | `/:id` | 🔒 Cookie | Render a create-post form (legacy route). |
 
-### Information Entries
+### Authentication
 
 | Method | Endpoint | Auth Required | Description |
 |--------|----------|---------------|-------------|
-| `GET` | `/add` | 🔒 Cookie | Render an add-entry form with the logged-in email prefilled. |
-| `POST` | `/` | 🔒 Cookie | Create a new information entry in `anyInformation`. |
-| `GET` | `/api/entries` | 🔒 Cookie | Fetch a paginated list of entries for infinite scrolling. |
-| `GET` | `/:id` | 🔒 Cookie | Render a create/update form route currently wired to create-post behavior. |
-| `GET` | `/update/:id` | 🔒 Cookie | Render the update form for a specific entry. |
-| `PUT` | `/:id` | 🔒 Cookie | Update an information entry by MongoDB ObjectId. |
-| `DELETE` | `/:id` | 🔒 Cookie | Delete an information entry by MongoDB ObjectId. |
+| `POST` | `/login` | ⬜ | Authenticate by email and password, set cookies, redirect to `/dashboard`. |
+| `POST` | `/register` | ⬜ | Create a user, set cookies, redirect to `/dashboard`. |
+| `GET` | `/logout` | 🔒 Cookie | Clear auth cookies and redirect to `/`. |
+
+### Information Entries (Authenticated)
+
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| `POST` | `/` | 🔒 Cookie | Create a new information entry (`name`, `info`, `isPublic`). |
+| `GET` | `/api/entries?cursor=&limit=&visibility=&keyword=&sort=` | 🔒 Cookie | Fetch paginated entries with cursor, filter by visibility, keyword search, sort by `created` or `updated`. |
+| `PUT` | `/:id` | 🔒 Cookie | Update an entry by ObjectId. |
+| `DELETE` | `/:id` | 🔒 Cookie | Delete an entry by ObjectId. |
+
+### Public API
+
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| `GET` | `/api/public?cursor=&limit=&sort=` | ⬜ | Fetch paginated public entries (filtered to `isPublic: true`). |
+| `GET` | `/api/public/search?keyword=&cursor=&limit=&sort=` | ⬜ | Search public entries by keyword (case-insensitive on `name` and `info`). |
+
+### AI
+
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| `POST` | `/api/generate-title` | 🔒 Cookie | Generate a concise title from content using Groq AI. |
 
 ### Master User Management
 
 | Method | Endpoint | Auth Required | Description |
 |--------|----------|---------------|-------------|
-| `DELETE` | `/user/:id` | 🔒 Master cookie | Delete a registered user by MongoDB ObjectId when viewing the master dashboard. |
+| `DELETE` | `/user/:id` | 🔒 Master cookie | Delete a registered user by ObjectId. |
+
+### SEO
+
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| `GET` | `/robots.txt` | ⬜ | Robots.txt disallowing private routes, linking to sitemap. |
+| `GET` | `/sitemap.xml` | ⬜ | Auto-generated sitemap of all public entries. |
 
 <details>
 <summary><strong>POST /login request and response</strong></summary>
@@ -236,11 +287,12 @@ email=omkar@example.com&password=strong-password
 ```
 
 ```http
-HTTP/1.1 302 Found
+HTTP/1.1 200 OK
 Set-Cookie: name=Omkar; HttpOnly
 Set-Cookie: email=omkar@example.com; HttpOnly
 Set-Cookie: password=strong-password; HttpOnly
-Location: /
+
+{"success":true,"redirect":"/dashboard"}
 ```
 
 </details>
@@ -255,8 +307,8 @@ Cookie: email=omkar@example.com; password=strong-password
 
 {
   "name": "MongoDB Atlas Notes",
-  "email": "omkar@example.com",
-  "info": "Cluster URL, setup notes, and deployment checklist"
+  "info": "Cluster setup and deployment checklist",
+  "isPublic": true
 }
 ```
 
@@ -267,6 +319,31 @@ Cookie: email=omkar@example.com; password=strong-password
     "acknowledged": true,
     "insertedId": "6659f7f8c29b2f7a9b5f0a11"
   }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>GET /api/public response</strong></summary>
+
+```json
+{
+  "items": [
+    {
+      "_id": "6659f7f8c29b2f7a9b5f0a11",
+      "name": "MongoDB Atlas Notes",
+      "info": "Cluster setup and deployment checklist",
+      "ownerName": "Omkar",
+      "email": "omkar@example.com",
+      "isPublic": true,
+      "createdAt": "2026-06-13T...",
+      "updatedAt": "2026-06-13T..."
+    }
+  ],
+  "nextCursor": "2026-06-13T..._6659f7f8c29b2f7a9b5f0a10",
+  "hasMore": true,
+  "totalCount": 42
 }
 ```
 
@@ -290,26 +367,38 @@ curl.exe -i -c cookies.txt -X POST http://localhost:3000/login `
   --data "email=omkar@example.com&password=strong-password"
 ```
 
-### Add a New Information Entry
+### Add a New Public Entry
 
 ```powershell
 curl.exe -i -b cookies.txt -X POST http://localhost:3000/ `
   -H "Content-Type: application/json" `
-  --data "{\"name\":\"Deployment Notes\",\"email\":\"omkar@example.com\",\"info\":\"Render start command: npm start\"}"
+  --data "{\"name\":\"Deployment Notes\",\"info\":\"Render start command: npm start\",\"isPublic\":true}"
 ```
 
-### Update an Existing Entry from Browser JavaScript
+### Search Public Entries
+
+```powershell
+curl.exe "http://localhost:3000/api/public/search?keyword=mongodb&limit=5"
+```
+
+### Generate AI Title
+
+```powershell
+curl.exe -b cookies.txt -X POST http://localhost:3000/api/generate-title `
+  -H "Content-Type: application/json" `
+  --data "{\"content\":\"MongoDB is a NoSQL database that stores data in flexible, JSON-like documents.\"}"
+```
+
+### Update an Existing Entry
 
 ```javascript
 await fetch("/6659f7f8c29b2f7a9b5f0a11", {
   method: "PUT",
-  headers: {
-    "Content-Type": "application/json"
-  },
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     name: "Deployment Notes",
-    email: "omkar@example.com",
-    info: "Render start command: npm start. Health check: /."
+    info: "Render start command: npm start. Health check: /.",
+    isPublic: false
   })
 });
 ```
@@ -319,10 +408,9 @@ await fetch("/6659f7f8c29b2f7a9b5f0a11", {
 SHARE_INFO can be deployed on any Node.js host that supports a long-running Express server, including Render, Railway, Fly.io, a VPS, or Docker.
 
 1. Create a production MongoDB database.
-2. Move the MongoDB URI and database name into environment variables.
-3. Set the production environment variables.
-4. Install dependencies.
-5. Start the Node server.
+2. Set all environment variables (see [Environment Variables](#-environment-variables) table).
+3. Install dependencies.
+4. Start the Node server.
 
 ```bash
 npm install --omit=dev
@@ -332,12 +420,20 @@ npm install --omit=dev
 node server.js
 ```
 
+For a single-file deployment that requires no project structure (all code inlined):
+
+```bash
+node wholeServerInOne.js
+```
+
 **Production environment checklist**
 
 - `MONGO_URI`
 - `MONGO_DB_NAME`
 - `PORT`
 - `NODE_ENV=production`
+- `SITE_URL` — set to your production domain for sitemap/canonical URLs
+- `GROQ_API_KEY` — optional, enables AI title generation
 - Rotated database password with least-privilege MongoDB user permissions
 
 **Build command**
@@ -358,7 +454,7 @@ node server.js
 GET /
 ```
 
-The root route verifies that Express, cookies, view rendering, and the MongoDB-backed auth flow are reachable.
+The root route renders the landing page, verifying that Express, view rendering, database connectivity, and cookie parsing are all functional.
 
 **Docker Compose**
 
@@ -392,42 +488,58 @@ volumes:
 ```
 
 > [!TIP]
-> Express 5 works well on most Node hosts, but platforms that inject a dynamic port require `process.env.PORT`. Update `server.js` before deploying to Render, Railway, or Fly.io.
+> Express 5 works well on most Node hosts. Platforms that inject a dynamic port already read `process.env.PORT` from `.env`.
 
 ## 🔒 Security & Performance
 
 **Security measures**
 
-- HTTP-only cookies are used for login state.
+- HTTP-only cookies are used for login state (inaccessible via JavaScript).
 - Cache-control headers disable browser caching for dynamic pages.
-- Database IDs are converted through MongoDB `ObjectId` before updates and deletes.
+- ObjectId validation on all parameterized routes prevents injection.
+- Server-side visibility enforcement — private notes are never returned by public API.
+- Old entries without `isPublic` field default to private (falsy `undefined`).
 - Static files are served from the controlled `public/` directory.
-- Custom 404 and 500 handlers avoid exposing stack traces in normal browser responses.
+- Custom 404 and 500 handlers avoid exposing stack traces in responses.
+- All configuration is read from environment variables — no secrets in code.
 
 **Performance**
 
 - A single MongoDB client connection is reused after the initial connection.
-- Dashboard queries sort by newest entries first using `_id: -1`.
-- Static assets are served directly through Express static middleware.
+- Composite cursor pagination (`sortDate_id`) — O(limit) per query, no `skip()`.
+- Indexes on `{ email: 1, _id: -1 }` and `{ isPublic: 1, _id: -1 }` for all major query patterns.
+- Aggregation pipeline with `$addFields` for dynamic sort-date computation.
 - Long entries are truncated in cards and opened in a modal to keep the dashboard scannable.
 - Client-side fetch calls update and delete entries without full-page form posts.
+- Debounced resize handlers for masonry overflow detection.
 
 > [!WARNING]
-> Passwords are currently stored and compared as plain text, and the password is also stored in a cookie. Before using this for real accounts, add password hashing, signed session IDs, CSRF protection, stricter authorization checks, and input validation.
+> Passwords are currently stored and compared as plain text, and the password is also stored in a cookie. Before using this for real accounts, add password hashing (bcrypt/argon2), signed session IDs, CSRF protection, stricter authorization checks, and input validation.
 
 ## 🗺 Roadmap
 
 - [x] Express server with EJS views
-- [x] MongoDB connection helper
+- [x] MongoDB connection with environment variables
 - [x] Registration and login pages
 - [x] Create, update, and delete information entries
-- [x] Responsive dashboard with long-note modal
-- [ ] Move database configuration to environment variables
+- [x] Responsive dashboard with glassmorphism design
+- [x] Long-note modal and URL auto-detection
+- [x] Infinite scroll with composite cursor pagination
+- [x] Public notes with visibility toggle (public/private)
+- [x] Landing page with hero, features, and public masonry wall
+- [x] Public API endpoints (`/api/public`, `/api/public/search`)
+- [x] Public entry page (`/entry/:id`) with SEO metadata
+- [x] AI title generation via Groq
+- [x] Search and sort (keyword, visibility filter, created/updated)
+- [x] Sitemap and robots.txt for SEO
+- [x] Self-contained single-file deployment (`wholeServerInOne.js`)
 - [ ] Hash passwords with bcrypt or argon2
 - [ ] Replace password cookies with signed session IDs
 - [ ] Add validation and sanitization for all request bodies
 - [ ] Add Vitest or Jest integration tests
 - [ ] Add Dockerfile and GitHub Actions workflow
+- [ ] Collections and tags for organizing entries
+- [ ] Public user profiles (`/u/username`)
 
 ## 🤝 Contributing
 
@@ -487,9 +599,11 @@ Full-stack JavaScript developer building practical Node.js apps with Express, Mo
 - [Express](https://expressjs.com/) for the HTTP server and routing model.
 - [MongoDB Node.js Driver](https://www.mongodb.com/docs/drivers/node/current/) for direct database access.
 - [EJS](https://ejs.co/) for server-rendered templates.
+- [Groq](https://groq.com/) for fast AI inference.
 - [Nodemon](https://nodemon.io/) for fast local development.
+- [OpenAI SDK](https://www.npmjs.com/package/openai) — OpenAI-compatible client used with Groq's API.
 - Dashboard UI patterns inspired by modern note-taking and card-based productivity tools.
 
 <div align="center">
-  <sub>Built with ❤️ by <a href="https://github.com/OmkarP">Omkar P</a> · If this helped you, consider giving it a ⭐</sub>
+  <sub>Built with ❤️ by <a href="https://github.com/omkar142web">Omkar P</a> · If this helped you, consider giving it a ⭐</sub>
 </div>
