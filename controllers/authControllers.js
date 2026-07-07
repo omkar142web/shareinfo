@@ -31,7 +31,10 @@ const COOKIE_OPTIONS = {
 };
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
-const openai = process.env.GROQ_API_KEY
+const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+
+const groq = process.env.GROQ_API_KEY
   ? new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: "https://api.groq.com/openai/v1" })
   : null;
 
@@ -240,10 +243,10 @@ export const generateTitle = async (req, res) => {
       });
     }
 
-    if (!openai) {
+    if (!process.env.GEMINI_API_KEY && !groq) {
       return res.status(500).json({
         success: false,
-        message: "GROQ_API_KEY is not configured.",
+        message: "No AI API key configured. Set GEMINI_API_KEY or GROQ_API_KEY.",
       });
     }
 
@@ -290,38 +293,77 @@ Fallback:
 
 - If the content is too short or ambiguous, generate the most accurate descriptive title possible rather than guessing.`;
 
-    let model = "openai/gpt-oss-20b";
-    let response;
-    try {
-      response = await openai.chat.completions.create({
-        model,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content },
-        ],
-      });
-    } catch (primaryErr) {
-      if (primaryErr.status !== 404) {
-        throw primaryErr;
-      }
-      model = "llama-3.3-70b-versatile";
+    let title = null;
+
+    if (process.env.GEMINI_API_KEY) {
       try {
-        response = await openai.chat.completions.create({
+        const res = await fetch(
+          `${GEMINI_BASE_URL}/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+              contents: [{ parts: [{ text: content }] }],
+            }),
+          },
+        );
+
+        const data = await res.json();
+
+        if (!data.error && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          title = String(data.candidates[0].content.parts[0].text)
+            .trim()
+            .replace(/^["'`]+|["'`.!?:;]+$/g, "");
+        } else {
+          console.error("Gemini API error:", data.error);
+        }
+      } catch (geminiErr) {
+        console.error("Gemini failed, falling back to Groq:", geminiErr.message);
+      }
+    }
+
+    if (!title && groq) {
+      let model = "openai/gpt-oss-20b";
+      let response;
+      try {
+        response = await groq.chat.completions.create({
           model,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content },
           ],
         });
-      } catch (fallbackErr) {
-        console.error("Fallback model also failed:", fallbackErr);
-        throw primaryErr;
+      } catch (primaryErr) {
+        if (primaryErr.status !== 404) {
+          throw primaryErr;
+        }
+        model = "llama-3.3-70b-versatile";
+        try {
+          response = await groq.chat.completions.create({
+            model,
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              { role: "user", content },
+            ],
+          });
+        } catch (fallbackErr) {
+          console.error("Fallback model also failed:", fallbackErr);
+          throw primaryErr;
+        }
       }
+
+      title = String(response.choices[0]?.message?.content || "")
+        .trim()
+        .replace(/^["'`]+|["'`.!?:;]+$/g, "");
     }
 
-    const title = String(response.choices[0]?.message?.content || "")
-      .trim()
-      .replace(/^["'`]+|["'`.!?:;]+$/g, "");
+    if (!title) {
+      return res.status(500).json({
+        success: false,
+        message: "Unable to generate title right now.",
+      });
+    }
 
     return res.json({
       success: true,
