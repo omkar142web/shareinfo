@@ -571,7 +571,10 @@ Fallback:
 
     if (process.env.GEMINI_API_KEY) {
       try {
-        const res = await fetch(
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+
+        const geminiRes = await fetch(
           `${GEMINI_BASE_URL}/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
           {
             method: "POST",
@@ -580,10 +583,12 @@ Fallback:
               systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
               contents: [{ parts: [{ text: content }] }],
             }),
+            signal: controller.signal,
           },
         );
 
-        const data = await res.json();
+        clearTimeout(timeout);
+        const data = await geminiRes.json();
 
         if (!data.error && data.candidates?.[0]?.content?.parts?.[0]?.text) {
           title = String(data.candidates[0].content.parts[0].text)
