@@ -588,14 +588,17 @@ Fallback:
         );
 
         clearTimeout(timeout);
-        const data = await geminiRes.json();
 
-        if (!data.error && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-          title = String(data.candidates[0].content.parts[0].text)
-            .trim()
-            .replace(/^["'`]+|["'`.!?:;]+$/g, "");
+        if (geminiRes.ok) {
+          const data = await geminiRes.json();
+          if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            title = String(data.candidates[0].content.parts[0].text)
+              .trim()
+              .replace(/^["'`]+|["'`.!?:;]+$/g, "");
+          }
         } else {
-          console.error("Gemini API error:", data.error);
+          const errBody = await geminiRes.json().catch(() => ({}));
+          console.error("Gemini API error:", errBody.error || errBody);
         }
       } catch (geminiErr) {
         console.error("Gemini failed, falling back to Groq:", geminiErr.message);
