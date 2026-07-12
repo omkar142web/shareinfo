@@ -3355,6 +3355,14 @@
         }
         refreshCardOverflowState(card);
         applyLongCardState(card, cardTextOverflows(card.querySelector('.card-text')));
+
+        if (currentSort === 'updated') {
+          const wall = document.getElementById('masonryWall');
+          if (wall) {
+            wall.prepend(card);
+            updateAllCardBadges();
+          }
+        }
       });
 
       socket.on('entry:deleted', (data) => {

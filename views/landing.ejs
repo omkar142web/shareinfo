@@ -1859,6 +1859,28 @@
       showToast('New public note appeared');
     });
 
+    socket.on('entry:updated', (data) => {
+      if (data.actionId && data.actionId === lastActionId) return;
+      const card = document.getElementById(data._id);
+      if (!card) return;
+
+      card.dataset.name = data.name || '';
+      card.dataset.info = data.info || '';
+
+      const titleEl = card.querySelector('.card-title');
+      if (titleEl) titleEl.textContent = data.name || 'Untitled';
+
+      const textEl = card.querySelector('.card-text');
+      if (textEl) {
+        textEl.textContent = '';
+        appendLinkedContent(textEl, data.info || '');
+      }
+
+      if (currentSort === 'updated') {
+        wall.prepend(card);
+      }
+    });
+
     socket.on('entry:deleted', (data) => {
       if (data.actionId && data.actionId === lastActionId) return;
       const card = document.getElementById(data._id);
