@@ -1396,6 +1396,7 @@
     </svg>
   </button>
 
+  <script src="/socket.io/socket.io.js"></script>
   <script>
     const initialItems = <%- JSON.stringify(data || []) %>;
     let nextCursor = <%- JSON.stringify(initialCursor || null) %>;
@@ -1842,6 +1843,32 @@
       });
       observer.observe(sentinel);
     }
+
+    const socket = io();
+    let lastActionId = null;
+
+    socket.on('entry:created', (data) => {
+      if (data.actionId && data.actionId === lastActionId) return;
+      if (!data.isPublic) return;
+      if (document.getElementById(data._id)) return;
+
+      const card = buildCard(data);
+      card.classList.add('card-pending');
+      wall.prepend(card);
+      emptyPublic.hidden = wall.children.length > 0;
+      showToast('New public note appeared');
+    });
+
+    socket.on('entry:deleted', (data) => {
+      if (data.actionId && data.actionId === lastActionId) return;
+      const card = document.getElementById(data._id);
+      if (!card) return;
+      card.classList.add('is-removing');
+      setTimeout(() => {
+        card.remove();
+        emptyPublic.hidden = wall.children.length > 0;
+      }, 600);
+    });
   </script>
 </body>
 

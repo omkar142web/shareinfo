@@ -1,4 +1,6 @@
 import express from "express";
+import http from "http";
+import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
 import "dotenv/config";
 import Path from "path";
@@ -47,6 +49,19 @@ app.use("/", authRoutes);
 app.use(notFoundHandler(viewsPath));
 app.use(errorHandler(viewsPath));
 
-app.listen(PORT, () => {
+// ! http server + socket.io
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.set("io", io);
+
+io.on("connection", (socket) => {
+  console.log(`Socket connected: ${socket.id}`);
+  socket.on("disconnect", () => {
+    console.log(`Socket disconnected: ${socket.id}`);
+  });
+});
+
+server.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });

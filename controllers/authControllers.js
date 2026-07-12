@@ -547,6 +547,21 @@ export const createPost = async (req, res, next) => {
       email: user.email, // trusted email from backend
     });
 
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("entry:created", {
+        _id: addedData.insertedId,
+        name,
+        info,
+        isPublic: req.body.isPublic === true,
+        ownerName: user.name,
+        email: user.email,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        actionId: req.body.actionId || null,
+      });
+    }
+
     return res.status(201).json({
       message: "Post created successfully",
       addedData,
@@ -685,6 +700,18 @@ export const updatePost = async (req, res, next) => {
       },
     );
 
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("entry:updated", {
+        _id: id,
+        name,
+        info,
+        isPublic: req.body.isPublic === true,
+        updatedAt: new Date().toISOString(),
+        actionId: req.body.actionId || null,
+      });
+    }
+
     res.status(200).json({
       message: "Updated successfully",
       updatedData,
@@ -705,6 +732,14 @@ export const deletePost = async (req, res, next) => {
       _id: new ObjectId(id),
     });
 
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("entry:deleted", {
+        _id: id,
+        actionId: req.query.actionId || null,
+      });
+    }
+
     return res.status(200).json({ deleteData });
   } catch (err) {
     console.error(err);
@@ -718,9 +753,20 @@ export const deleteMasterUser = async (req, res, next) => {
 
     const collection = getCollection("users");
 
+    const userToDelete = await collection.findOne({ _id: new ObjectId(id) });
+
     const deletedUser = await collection.deleteOne({
       _id: new ObjectId(id),
     });
+
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("user:deleted", {
+        _id: id,
+        email: userToDelete?.email || null,
+        actionId: req.query.actionId || null,
+      });
+    }
 
     res.status(200).json({
       message: "User deleted",
