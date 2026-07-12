@@ -1166,7 +1166,7 @@
       </a>
       <nav class="header-actions">
         <% if (isLoggedIn) { %>
-        <a class="btn btn-ghost home-btn" href="/dashboard">
+        <a class="btn btn-ghost home-btn" href="/">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="position: relative;top: -2px;">
             <path d="M12 3.2 3.5 10a1 1 0 0 0-.4.8V20a2 2 0 0 0 2 2h4v-6h6v6h4a2 2 0 0 0 2-2v-9.2a1 1 0 0 0-.4-.8L12 3.2Z"></path>
           </svg>
@@ -1192,7 +1192,7 @@
       <div class="hero-grid">
         <div>
           <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="/#public-notes" aria-label="Explore public notes" class="current">
+            <a href="#public-notes" aria-label="Explore public notes" class="current">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: relative; top: 1px; margin-right: 1px;" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
                 <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
@@ -1200,7 +1200,7 @@
               <span>Explore</span>
             </a>
             <span class="sep" aria-hidden="true">/</span>
-            <a href="/dashboard" aria-current="page">
+            <a href="/" aria-current="page">
               <!-- <svg xmlns="http://www.w3.org/2000/svg"
               width="15"
               height="15"
@@ -1218,7 +1218,7 @@
           <p class="hero-copy">Save notes, links, snippets, references and ideas in one fast place. Keep them private, or publish the ones worth sharing.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#public-notes">Explore Public Notes</a>
-            <a class="btn btn-ghost" href="<%= isLoggedIn ? '/dashboard' : '/login' %>">Open Dashboard</a>
+            <a class="btn btn-ghost" href="<%= isLoggedIn ? '/' : '/login' %>">Open Dashboard</a>
           </div>
         </div>
         <div class="hero-panel" aria-hidden="true">

@@ -23,7 +23,7 @@
     <!-- Header -->
     <div class="form-header">
       <div class="form-header-top">
-        <a href="/dashboard" class="back-link" aria-label="Back to dashboard">
+        <a href="/" class="back-link" aria-label="Back to dashboard">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
@@ -226,7 +226,7 @@
 
     function goBackSafely(id) {
       if (id) {
-        window.location.href = `/dashboard#${id}`;
+        window.location.href = `/#${id}`;
         return;
       }
 
@@ -234,21 +234,21 @@
 
       try {
         if (!referrer) {
-          window.location.href = "/dashboard";
+          window.location.href = "/";
           return;
         }
 
         const previousUrl = new URL(referrer);
         const sameOrigin = previousUrl.origin === window.location.origin;
-        const isDashboard = previousUrl.pathname === "/dashboard";
+        const isDashboard = previousUrl.pathname === "/";
 
         if (sameOrigin && isDashboard) {
           history.back();
         } else {
-          window.location.href = "/dashboard";
+          window.location.href = "/";
         }
       } catch {
-        window.location.href = "/dashboard";
+        window.location.href = "/";
       }
     }
 
@@ -434,7 +434,7 @@
             Nothing to update!
           `;
           // window.location.replace("/");
-          window.location.replace("/dashboard#<%= person._id %>");
+          window.location.replace("/#<%= person._id %>");
           return;
         }
 
@@ -462,7 +462,7 @@
           Updated!
         `;
         // window.location.href = "/";
-        window.location.replace("/dashboard#<%= person._id %>");
+        window.location.replace("/#<%= person._id %>");
         // goBackSafely();
 
       } catch (err) {
@@ -536,7 +536,7 @@
           Added!
         `;
         // window.location.href = "/";
-        window.location.replace("/dashboard");
+        window.location.replace("/");
         // goBackSafely();
 
       } catch (err) {

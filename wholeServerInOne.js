@@ -387,7 +387,7 @@ function clearUserCookies(res) {
 
 const getHome = async (req, res) => {
   if (req.cookies.email && req.cookies.password) {
-    return res.redirect("/dashboard");
+    return res.redirect("/");
   }
 
   return res.redirect("/");
@@ -664,7 +664,7 @@ const getLogin = async (req, res, next) => {
       return res.render("login");
     }
 
-    return res.redirect("/dashboard");
+    return res.redirect("/");
   } catch (err) {
     console.error("Login GET error ❌", err);
     return next(err);
@@ -691,7 +691,7 @@ const postLogin = async (req, res) => {
 
     setUserCookies(res, user);
 
-    return res.json({ success: true, redirect: "/dashboard" });
+    return res.json({ success: true, redirect: "/" });
   } catch (err) {
     console.error("Login POST error ❌", err);
     return res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
@@ -720,7 +720,7 @@ const postRegister = async (req, res) => {
 
     setUserCookies(res, { name, email, password });
 
-    return res.json({ success: true, redirect: "/dashboard" });
+    return res.json({ success: true, redirect: "/" });
   } catch (err) {
     console.error("Register POST error ❌", err);
     return res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
@@ -1010,7 +1010,7 @@ const getRobotsTxt = (req, res) => {
   return res.send(`User-agent: *
 Allow: /
 
-Disallow: /dashboard
+Disallow: /
 Disallow: /login
 Disallow: /register
 Disallow: /api
@@ -1115,7 +1115,7 @@ router.get("/api/public/search", searchPublicEntriesController);
 
 // Auth routes
 router.post("/", createPost);
-router.get("/dashboard", getDashboard);
+router.get("/", getDashboard);
 router.route("/login").get(getLogin).post(postLogin);
 router.route("/register").get(getRegister).post(postRegister);
 router.get("/logout", logoutUser);

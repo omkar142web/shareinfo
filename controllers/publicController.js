@@ -101,7 +101,6 @@ export const getRobotsTxt = (req, res) => {
   return res.send(`User-agent: *
 Allow: /
 
-Disallow: /dashboard
 Disallow: /login
 Disallow: /register
 Disallow: /api

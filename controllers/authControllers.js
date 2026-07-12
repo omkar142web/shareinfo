@@ -16,6 +16,8 @@ import {
   getPagedUsers,
 } from "../services/auth.service.js";
 
+import { getLandingPage } from "./publicController.js";
+
 import Path from "path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
@@ -57,31 +59,19 @@ function clearUserCookies(res) {
 }
 
 //! HOME
-export const getHome = async (req, res) => {
-  if (req.cookies.email && req.cookies.password) {
-    return res.redirect("/dashboard");
+export const getHome = async (req, res, next) => {
+  const isLoggedIn = req.cookies.email && req.cookies.password;
+
+  if (!isLoggedIn) {
+    return getLandingPage(req, res, next);
   }
 
-  return res.redirect("/");
-};
-
-export const getDashboard = async (req, res, next) => {
   try {
-    if (!req.cookies.email || !req.cookies.password) {
-      return res.redirect("/login");
-    }
-
-    // ✅ service layer used
     const user = await findUserByEmail(req.cookies.email);
 
-    if (!user) {
+    if (!user || user.password !== req.cookies.password) {
       clearUserCookies(res);
-      return res.redirect("/login");
-    }
-
-    if (user.password !== req.cookies.password) {
-      clearUserCookies(res);
-      return res.redirect("/login");
+      return getLandingPage(req, res, next);
     }
 
     const visibility = ["public", "private"].includes(req.query.visibility)
@@ -132,7 +122,7 @@ export const getDashboard = async (req, res, next) => {
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {
-    console.error("Dashboard error ❌", err);
+    console.error("Home error ❌", err);
     return next(err);
   }
 };
@@ -401,7 +391,7 @@ export const getLogin = async (req, res, next) => {
       return res.render("login");
     }
 
-    return res.redirect("/dashboard");
+    return res.redirect("/");
   } catch (err) {
     console.error("Login GET error ❌", err);
     return next(err);
@@ -441,7 +431,7 @@ export const postLogin = async (req, res) => {
 
     setUserCookies(res, user);
 
-    return res.json({ success: true, redirect: "/dashboard" });
+    return res.json({ success: true, redirect: "/" });
   } catch (err) {
     console.error("Login POST error ❌", err);
     return res.status(500).json({
@@ -488,7 +478,7 @@ export const postRegister = async (req, res) => {
     console.log(req.body);
     setUserCookies(res, { name, email, password });
 
-    return res.json({ success: true, redirect: "/dashboard" });
+    return res.json({ success: true, redirect: "/" });
   } catch (err) {
     console.error("Register POST error ❌", err);
     return res.status(500).json({

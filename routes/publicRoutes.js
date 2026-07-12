@@ -11,7 +11,7 @@ import {
 
 const router = express.Router();
 
-router.get("/", getLandingPage);
+router.get("/explore", getLandingPage);
 router.get("/robots.txt", getRobotsTxt);
 router.get("/sitemap.xml", getSitemapXml);
 router.get("/entry/:id", getEntryPage);

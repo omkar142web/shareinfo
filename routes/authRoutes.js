@@ -3,7 +3,6 @@ import { ObjectId } from "mongodb";
 
 import {
   getHome,
-  getDashboard,
   getLogin,
   postLogin,
   getRegister,
@@ -42,8 +41,6 @@ const passInvalidIdToNotFound = (req, res, next) => {
 };
 
 router.route("/").get(getHome).post(createPost);
-
-router.get("/dashboard", getDashboard);
 
 router.route("/login").get(getLogin).post(postLogin);
 
