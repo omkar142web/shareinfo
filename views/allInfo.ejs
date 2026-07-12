@@ -1976,7 +1976,7 @@
               <% } %>
             </div>
             <div class="card-index-badge" aria-hidden="true">#<%= String(entryTotal - index).padStart(2, '0') %></div>
-            <button class="card-copy-icon" type="button" aria-label="Copy note content" onclick="event.stopPropagation(); copyCardContent(this)">
+            <button class="card-copy-icon" type="button" aria-label="Copy note content">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
@@ -2000,7 +2000,7 @@
           <footer class="card-footer">
             <% if (typeof isMaster == "undefined" || !isMaster) { %>
             <% if (person.isPublic === true) { %>
-            <button class="action-btn action-copy" onclick="event.stopPropagation(); copyPublicLink('<%= person._id %>')" title="Copy public link">
+            <button class="action-btn action-copy" title="Copy public link">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
@@ -2008,7 +2008,7 @@
               Share
             </button>
             <% } %>
-            <button class="action-btn action-edit" onclick="event.stopPropagation(); window.location.href='update/<%= person._id %>'" title="Edit entry">
+            <button class="action-btn action-edit" title="Edit entry">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -2016,7 +2016,7 @@
               Edit
             </button>
             <% } %>
-            <button class="action-btn action-delete" onclick="event.stopPropagation(); DeleteFun('<%= person._id %>', this)" title="Delete entry">
+            <button class="action-btn action-delete" title="Delete entry">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="3 6 5 6 21 6" />
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
@@ -2135,6 +2135,57 @@
       const activeVisibility = '<%= activeVisibility || "all" %>';
       let searchKeyword = <%- JSON.stringify(typeof activeKeyword !== "undefined" ? activeKeyword : "") %>;
       let currentSort = '<%= typeof activeSort !== "undefined" ? activeSort : "updated" %>';
+
+      const wall = document.getElementById('masonryWall');
+      if (wall) {
+        wall.addEventListener('click', (event) => {
+          const card = event.target.closest('.info-card');
+          if (!card) return;
+
+          if (event.target.closest('.card-copy-icon')) {
+            event.stopPropagation();
+            copyCardContent(event.target.closest('.card-copy-icon'));
+            return;
+          }
+
+          if (event.target.closest('.view-more-btn')) {
+            event.stopPropagation();
+            openModal(card.dataset.name || '', card.dataset.info || '', card.dataset.email || '', card.dataset.password || '');
+            return;
+          }
+
+          if (event.target.closest('.action-copy')) {
+            event.stopPropagation();
+            copyPublicLink(card.dataset.id || card.id);
+            return;
+          }
+
+          if (event.target.closest('.action-edit')) {
+            event.stopPropagation();
+            window.location.href = `update/${encodeURIComponent(card.dataset.id || card.id)}`;
+            return;
+          }
+
+          if (event.target.closest('.action-delete')) {
+            event.stopPropagation();
+            DeleteFun(card.dataset.id || card.id, event.target.closest('.action-delete'));
+            return;
+          }
+
+          if (card.classList.contains('card-long') && (event.target === card || event.target.closest('.card-body'))) {
+            openModal(card.dataset.name || '', card.dataset.info || '', card.dataset.email || '', card.dataset.password || '');
+          }
+        });
+
+        wall.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          const card = event.target.closest('.info-card');
+          if (!card || !card.classList.contains('card-long')) return;
+          if (event.target.closest('button') || event.target.closest('a')) return;
+          event.preventDefault();
+          openModal(card.dataset.name || '', card.dataset.info || '', card.dataset.email || '', card.dataset.password || '');
+        });
+      }
 
       /* ── Search + Sort Functions ── */
 
@@ -2539,7 +2590,6 @@
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
           link.textContent = url;
-          link.addEventListener('click', (event) => event.stopPropagation());
           container.append(link);
           container.append(document.createTextNode(trailing));
           lastIndex = match.index + fullMatch.length;
@@ -2627,19 +2677,10 @@
           card.setAttribute('role', 'button');
           card.tabIndex = 0;
           card.setAttribute('aria-label', `View full content for ${name}`);
-          card.onclick = () => openModal(name, info, email, password);
-          card.onkeydown = (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              openModal(name, info, email, password);
-            }
-          };
         } else {
           card.removeAttribute('role');
           card.removeAttribute('tabindex');
           card.removeAttribute('aria-label');
-          card.onclick = null;
-          card.onkeydown = null;
         }
 
         card.classList.remove('card-pending');
@@ -2795,10 +2836,6 @@
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
         `);
-        copyIconButton.addEventListener('click', (event) => {
-          event.stopPropagation();
-          copyCardContent(copyIconButton);
-        });
         header.append(copyIconButton);
         card.append(header);
 
@@ -2820,10 +2857,6 @@
           </svg>
         `);
         viewMoreButton.append(document.createTextNode(' View full note'));
-        viewMoreButton.addEventListener('click', (event) => {
-          event.stopPropagation();
-          openModal(name, info, email, password);
-        });
         body.append(viewMoreButton);
 
         card.append(body);
@@ -2844,10 +2877,6 @@
               </svg>
             `);
             copyButton.append(document.createTextNode(' Share'));
-            copyButton.addEventListener('click', (event) => {
-              event.stopPropagation();
-              copyPublicLink(id);
-            });
             footer.append(copyButton);
           }
 
@@ -2862,10 +2891,6 @@
             </svg>
           `);
           editButton.append(document.createTextNode(' Edit'));
-          editButton.addEventListener('click', (event) => {
-            event.stopPropagation();
-            window.location.href = `/update/${encodeURIComponent(id)}`;
-          });
           footer.append(editButton);
         }
 
@@ -2883,10 +2908,6 @@
           </svg>
         `);
         deleteButton.append(document.createTextNode(' Delete'));
-        deleteButton.addEventListener('click', (event) => {
-          event.stopPropagation();
-          DeleteFun(id, deleteButton);
-        });
         footer.append(deleteButton);
         card.append(footer);
 

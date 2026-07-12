@@ -1406,6 +1406,28 @@
     let observer;
 
     const wall = document.getElementById('masonryWall');
+
+    wall.addEventListener('click', (event) => {
+      const card = event.target.closest('.info-card');
+      if (!card) return;
+
+      if (event.target.closest('.card-action-copy')) {
+        event.preventDefault();
+        if (card.id) copyLink(card.id);
+        return;
+      }
+
+      const viewBtn = event.target.closest('.card-action');
+      if (viewBtn && viewBtn.textContent.trim() === 'Quick View') {
+        event.preventDefault();
+        openModal({
+          _id: card.id,
+          name: card.dataset.name || '',
+          info: card.dataset.info || ''
+        });
+        return;
+      }
+    });
     const emptyPublic = document.getElementById('emptyPublic');
     const endOfFeed = document.getElementById('endOfFeed');
     const loadSpinner = document.getElementById('loadSpinner');
@@ -1440,7 +1462,6 @@
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         link.textContent = candidate;
-        link.addEventListener('click', (event) => event.stopPropagation());
         container.append(link);
 
         lastIndex = match.index + fullMatch.length;
@@ -1535,6 +1556,8 @@
       const card = document.createElement('article');
       card.className = 'info-card';
       card.id = item._id;
+      card.dataset.name = item.name || '';
+      card.dataset.info = item.info || '';
 
       const strip = document.createElement('div');
       strip.className = 'card-strip';
@@ -1564,7 +1587,6 @@
       view.className = 'card-action';
       view.type = 'button';
       view.textContent = 'Quick View';
-      view.addEventListener('click', () => openModal(item));
       footer.append(view);
 
       const read = document.createElement('a');
@@ -1584,7 +1606,6 @@
         </svg>
         Share
       `;
-      copy.addEventListener('click', () => copyLink(item._id));
       footer.append(copy);
 
       card.append(footer);
