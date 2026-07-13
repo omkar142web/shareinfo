@@ -1414,7 +1414,7 @@
 
       if (event.target.closest('.card-action-copy')) {
         event.preventDefault();
-        if (card.id) copyLink(card.id);
+        shareText(card.dataset.info || '', card.id);
         return;
       }
 
@@ -1477,6 +1477,47 @@
       toast.textContent = message;
       toast.classList.add('is-active');
       setTimeout(() => toast.classList.remove('is-active'), 1800);
+    }
+
+    async function shareText(text, id) {
+      const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(link);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = link;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
+        }
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+        showToast('Failed to copy link');
+        return;
+      }
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ text });
+          showToast('Shared & link copied');
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error('Share failed:', err);
+            // showToast('Share failed. Link copied to clipboard.');
+            showToast('Link copied to clipboard.');
+          } else {
+            showToast('Link copied to clipboard');
+          }
+        }
+      } else {
+        showToast('Link copied to clipboard');
+      }
     }
 
     async function copyLink(id) {
@@ -1599,7 +1640,7 @@
       const copy = document.createElement('button');
       copy.className = 'card-action card-action-copy';
       copy.type = 'button';
-      copy.title = 'Copy public link';
+      copy.title = 'Share note content';
       copy.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />

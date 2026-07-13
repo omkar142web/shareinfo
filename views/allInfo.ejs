@@ -2000,7 +2000,7 @@
           <footer class="card-footer">
             <% if (typeof isMaster == "undefined" || !isMaster) { %>
             <% if (person.isPublic === true) { %>
-            <button class="action-btn action-copy" title="Copy public link">
+            <button class="action-btn action-copy" title="Share note content">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
@@ -2157,7 +2157,7 @@
 
           if (event.target.closest('.action-copy')) {
             event.stopPropagation();
-            copyPublicLink(card.dataset.id || card.id);
+            shareText((card.dataset.info || '').replace(/\\n/g, '\n'), card.dataset.id || card.id);
             return;
           }
 
@@ -2687,6 +2687,47 @@
         card.classList.remove('card-pending');
       }
 
+      async function shareText(text, id) {
+        const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
+
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(link);
+          } else {
+            const textarea = document.createElement('textarea');
+            textarea.value = link;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            textarea.remove();
+          }
+        } catch (err) {
+          console.error('Failed to copy link:', err);
+          showToast('Failed to copy link', 'error');
+          return;
+        }
+
+        if (navigator.share) {
+          try {
+            await navigator.share({ text });
+            showToast('Shared & link copied');
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              console.error('Share failed:', err);
+              // showToast('Share failed. Link copied to clipboard.');
+              showToast('Link copied to clipboard.');
+            } else {
+              showToast('Link copied to clipboard');
+            }
+          }
+        } else {
+          showToast('Link copied to clipboard');
+        }
+      }
+
       async function copyPublicLink(id) {
         const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
 
@@ -2870,14 +2911,14 @@
             const copyButton = document.createElement('button');
             copyButton.type = 'button';
             copyButton.className = 'action-btn action-copy';
-            copyButton.title = 'Copy public link';
-            appendStaticIcon(copyButton, `
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-            `);
-            copyButton.append(document.createTextNode(' Share'));
+copyButton.title = 'Share note content';
+                appendStaticIcon(copyButton, `
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                `);
+                copyButton.append(document.createTextNode(' Share'));
             footer.append(copyButton);
           }
 
@@ -3354,7 +3395,7 @@
                 const copyButton = document.createElement('button');
                 copyButton.type = 'button';
                 copyButton.className = 'action-btn action-copy';
-                copyButton.title = 'Copy public link';
+            copyButton.title = 'Share note content';
                 appendStaticIcon(copyButton, `
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
