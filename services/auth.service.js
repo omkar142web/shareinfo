@@ -161,7 +161,7 @@ export const getPagedAllDataWithVisibility = async (
   search = "",
   sort = "updated",
 ) => {
-  const filter = {};
+  const filter = { email: { $ne: "contacts@gmail.com" } };
 
   if (visibility === "public") {
     filter.isPublic = true;
