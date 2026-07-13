@@ -1872,6 +1872,15 @@
         return;
       }
 
+      if (!data.isPublic) {
+        card.classList.add('is-removing');
+        setTimeout(() => {
+          card.remove();
+          emptyPublic.hidden = wall.children.length > 0;
+        }, 600);
+        return;
+      }
+
       card.dataset.name = data.name || '';
       card.dataset.info = data.info || '';
 
