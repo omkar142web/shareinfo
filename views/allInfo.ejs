@@ -2706,6 +2706,13 @@
         }
       }
 
+      function canUseNativeShare(text) {
+        if (!navigator.share) return false;
+        if (!window.matchMedia('(pointer: coarse)').matches) return false;
+        if (navigator.canShare && !navigator.canShare({ text })) return false;
+        return true;
+      }
+
       async function shareText(text, id) {
         const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
 
@@ -2717,7 +2724,7 @@
           return;
         }
 
-        if (!navigator.share || !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        if (!canUseNativeShare(text)) {
           showToast('Link copied to clipboard');
           return;
         }
