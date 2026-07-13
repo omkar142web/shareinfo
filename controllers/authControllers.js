@@ -707,6 +707,7 @@ export const updatePost = async (req, res, next) => {
         name,
         info,
         isPublic: req.body.isPublic === true,
+        email: user.email,
         updatedAt: new Date().toISOString(),
         actionId: req.body.actionId || null,
       });

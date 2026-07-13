@@ -3323,7 +3323,22 @@
       socket.on('entry:updated', (data) => {
         if (data.actionId && data.actionId === lastActionId) return;
         const card = document.getElementById(data._id);
-        if (!card) return;
+        if (!card) {
+          if (currentSort === 'updated') {
+            const wall = document.getElementById('masonryWall');
+            if (!wall) return;
+            const existingCount = wall.querySelectorAll('.info-card').length;
+            const newCard = buildCard(data, existingCount + 1, 0);
+            wall.prepend(newCard);
+            refreshCardOverflowState(newCard);
+            applyLongCardState(newCard, cardTextOverflows(newCard.querySelector('.card-text')));
+            totalEntryCount++;
+            updateAllCardBadges();
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) emptyState.style.display = 'none';
+          }
+          return;
+        }
         card.dataset.name = data.name || '';
         card.dataset.info = data.info || '';
         card.dataset.isPublic = data.isPublic ? 'true' : 'false';

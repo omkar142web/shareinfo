@@ -1862,7 +1862,15 @@
     socket.on('entry:updated', (data) => {
       if (data.actionId && data.actionId === lastActionId) return;
       const card = document.getElementById(data._id);
-      if (!card) return;
+      if (!card) {
+        if (data.isPublic && currentSort === 'updated') {
+          const newCard = buildCard(data);
+          newCard.classList.add('card-pending');
+          wall.prepend(newCard);
+          emptyPublic.hidden = wall.children.length > 0;
+        }
+        return;
+      }
 
       card.dataset.name = data.name || '';
       card.dataset.info = data.info || '';
