@@ -2687,70 +2687,48 @@
         card.classList.remove('card-pending');
       }
 
+      async function copyToClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(text);
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        try {
+          document.execCommand('copy');
+        } finally {
+          textarea.remove();
+        }
+      }
+
       async function shareText(text, id) {
         const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
 
         try {
-          if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(link);
-          } else {
-            const textarea = document.createElement('textarea');
-            textarea.value = link;
-            textarea.setAttribute('readonly', '');
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            textarea.remove();
-          }
+          await copyToClipboard(link);
         } catch (err) {
           console.error('Failed to copy link:', err);
           showToast('Failed to copy link', 'error');
           return;
         }
 
-        if (navigator.share) {
-          try {
-            // await navigator.share({ text });
-            await navigator.share({ text: `${text}\n\n━━━━━━━━━━━━━━━━━━━\n🌐 Link\n${link}` });
-            showToast('Shared & link copied');
-          } catch (err) {
-            if (err.name !== 'AbortError') {
-              console.error('Share failed:', err);
-              // showToast('Share failed. Link copied to clipboard.');
-              showToast('Link copied to clipboard.');
-            } else {
-              showToast('Link copied to clipboard');
-            }
-          }
-        } else {
+        if (!navigator.share || !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
           showToast('Link copied to clipboard');
+          return;
         }
-      }
-
-      async function copyPublicLink(id) {
-        const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
 
         try {
-          if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(link);
-          } else {
-            const textarea = document.createElement('textarea');
-            textarea.value = link;
-            textarea.setAttribute('readonly', '');
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            textarea.remove();
-          }
-
-          showToast('Public link copied');
+          await navigator.share({ text: `${text}\n\n━━━━━━━━━━━━━━━━━━━\n\n🌐 Link:\n${link}` });
+          showToast('Shared');
         } catch (err) {
-          console.error('Failed to copy public link:', err);
-          showToast('Failed to copy link', 'error');
+          if (err.name === 'AbortError') return;
+          console.error('Share failed:', err);
+          showToast('Share failed. Link copied to clipboard.');
         }
       }
 
