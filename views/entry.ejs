@@ -20,6 +20,10 @@
       --cyan-faint: rgba(56, 189, 248, 0.1);
       --cyan-border: rgba(56, 189, 248, 0.28);
       --cyan-glow: rgba(56, 189, 248, 0.22);
+      --success: #34d399;
+      --success-faint: rgba(52, 211, 153, 0.1);
+      --danger: #f87171;
+      --danger-faint: rgba(248, 113, 113, 0.1);
       --border: rgba(255, 255, 255, 0.12);
       --border-md: rgba(255, 255, 255, 0.13);
       --border-hi: rgba(255, 255, 255, 0.2);
@@ -28,6 +32,7 @@
       --font-body: "DM Sans", system-ui, sans-serif;
       --font-mono: "JetBrains Mono", monospace;
       --radius: 18px;
+      --z-toast: 60;
     }
 
     * {
@@ -205,23 +210,71 @@
       text-underline-offset: 3px;
     }
 
-    .toast {
+    .toast-container {
       position: fixed;
-      right: 20px;
-      bottom: 20px;
-      border: 1px solid var(--cyan-border);
-      background: rgba(17, 30, 53, 0.96);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 12px 14px;
-      transform: translateY(20px);
+      bottom: 32px;
+      right: 32px;
+      z-index: var(--z-toast);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border-md);
+      border-radius: 16px;
+      padding: 14px 20px;
+      min-width: 300px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      transform: translateX(120%);
       opacity: 0;
-      transition: transform 0.2s, opacity 0.2s;
+      transition:
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.25s ease;
+      backdrop-filter: blur(16px);
     }
 
     .toast.is-active {
-      transform: translateY(0);
+      transform: translateX(0);
       opacity: 1;
+    }
+
+    .toast-success {
+      border-left: 4px solid var(--success);
+    }
+
+    .toast-error {
+      border-left: 4px solid var(--danger);
+    }
+
+    .toast-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toast-success .toast-icon {
+      background: var(--success-faint);
+      color: var(--success);
+    }
+
+    .toast-error .toast-icon {
+      background: var(--danger-faint);
+      color: var(--danger);
+    }
+
+    .toast-msg {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
     }
 
     #backToTop {
@@ -316,6 +369,16 @@
     }
 
     @media (max-width: 560px) {
+      .toast {
+        min-width: auto;
+        width: calc(100vw - 32px);
+      }
+
+      .toast-container {
+        right: 16px;
+        bottom: 16px;
+        left: 16px;
+      }
 
       .article-header,
       .article-body {
@@ -360,7 +423,7 @@
     </article>
   </main>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
   <button id="backToTop" aria-label="Back to top">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="m18 15-6-6-6 6" />
@@ -370,7 +433,7 @@
   <script>
     const entry = <%- JSON.stringify(entry) %>;
     const content = document.getElementById('content');
-    const toast = document.getElementById('toast');
+    const toastContainer = document.getElementById('toastContainer');
     const backToTop = document.getElementById('backToTop');
 
     function appendLinkedContent(container, text = '') {
@@ -399,10 +462,36 @@
       container.append(document.createTextNode(rawText.slice(lastIndex)));
     }
 
-    function showToast(message) {
-      toast.textContent = message;
-      toast.classList.add('is-active');
-      setTimeout(() => toast.classList.remove('is-active'), 1800);
+    function dismissToast(toast) {
+      if (!toast || toast.dataset.dismissing === 'true') return;
+      toast.dataset.dismissing = 'true';
+      toast.classList.remove('is-active');
+      setTimeout(() => toast.remove(), 400);
+    }
+
+    function showToast(message, type = 'success') {
+      const visibleToasts = [...toastContainer.querySelectorAll('.toast')];
+      while (visibleToasts.length >= 3) {
+        dismissToast(visibleToasts.shift());
+      }
+
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+
+      const icon = type === 'success' ?
+        '<div class="toast-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>' :
+        '<div class="toast-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></div>';
+
+      toast.innerHTML = `${icon}<span class="toast-msg">${message}</span>`;
+      toastContainer.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.add('is-active');
+      });
+
+      setTimeout(() => {
+        dismissToast(toast);
+      }, 3500);
     }
 
     async function copyCurrentLink() {
@@ -423,7 +512,7 @@
         showToast('Public link copied');
       } catch (err) {
         console.error(err);
-        showToast('Failed to copy link');
+        showToast('Failed to copy link', 'error');
       }
     }
 
@@ -446,7 +535,7 @@
         showToast('Content copied');
       } catch (err) {
         console.error(err);
-        showToast('Failed to copy content');
+        showToast('Failed to copy content', 'error');
       }
     }
 
