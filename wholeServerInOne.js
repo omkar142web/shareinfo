@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import cookieParser from "cookie-parser";
 import { MongoClient, ObjectId } from "mongodb";
+import http from "http";
+import { Server } from "socket.io";
 import OpenAI from "openai";
 import Path from "path";
 import { fileURLToPath } from "url";
@@ -385,30 +387,19 @@ function clearUserCookies(res) {
   });
 }
 
-const getHome = async (req, res) => {
-  if (req.cookies.email && req.cookies.password) {
-    return res.redirect("/");
+const getHome = async (req, res, next) => {
+  const isLoggedIn = req.cookies.email && req.cookies.password;
+
+  if (!isLoggedIn) {
+    return getLandingPage(req, res, next);
   }
 
-  return res.redirect("/");
-};
-
-const getDashboard = async (req, res, next) => {
   try {
-    if (!req.cookies.email || !req.cookies.password) {
-      return res.redirect("/login");
-    }
-
     const user = await findUserByEmail(req.cookies.email);
 
-    if (!user) {
+    if (!user || user.password !== req.cookies.password) {
       clearUserCookies(res);
-      return res.redirect("/login");
-    }
-
-    if (user.password !== req.cookies.password) {
-      clearUserCookies(res);
-      return res.redirect("/login");
+      return getLandingPage(req, res, next);
     }
 
     const visibility = ["public", "private"].includes(req.query.visibility)
@@ -443,7 +434,7 @@ const getDashboard = async (req, res, next) => {
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {
-    console.error("Dashboard error ❌", err);
+    console.error("Home error", err);
     return next(err);
   }
 };
@@ -783,6 +774,21 @@ const createPost = async (req, res, next) => {
       email: user.email,
     });
 
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("entry:created", {
+        _id: addedData.insertedId,
+        name,
+        info,
+        isPublic: req.body.isPublic === true,
+        ownerName: user.name,
+        email: user.email,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        actionId: req.body.actionId || null,
+      });
+    }
+
     return res.status(201).json({ message: "Post created successfully", addedData });
   } catch (err) {
     console.error("Error creating post:", err);
@@ -884,6 +890,18 @@ const updatePost = async (req, res, next) => {
       },
     );
 
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("entry:updated", {
+        _id: id,
+        name,
+        info,
+        isPublic: req.body.isPublic === true,
+        updatedAt: new Date().toISOString(),
+        actionId: req.body.actionId || null,
+      });
+    }
+
     res.status(200).json({ message: "Updated successfully", updatedData });
   } catch (err) {
     console.error(err);
@@ -899,6 +917,14 @@ const deletePost = async (req, res, next) => {
 
     const deleteData = await collection.deleteOne({ _id: new ObjectId(id) });
 
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("entry:deleted", {
+        _id: id,
+        actionId: req.query.actionId || null,
+      });
+    }
+
     return res.status(200).json({ deleteData });
   } catch (err) {
     console.error(err);
@@ -912,7 +938,17 @@ const deleteMasterUser = async (req, res, next) => {
 
     const collection = getCollection("users");
 
+    const userToDelete = await collection.findOne({ _id: new ObjectId(id) });
     const deletedUser = await collection.deleteOne({ _id: new ObjectId(id) });
+
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("user:deleted", {
+        _id: id,
+        email: userToDelete?.email || null,
+        actionId: req.query.actionId || null,
+      });
+    }
 
     res.status(200).json({ message: "User deleted", deletedUser });
   } catch (err) {
@@ -1010,7 +1046,6 @@ const getRobotsTxt = (req, res) => {
   return res.send(`User-agent: *
 Allow: /
 
-Disallow: /
 Disallow: /login
 Disallow: /register
 Disallow: /api
@@ -1106,7 +1141,7 @@ const passInvalidIdToNotFound = (req, res, next) => {
 const router = express.Router();
 
 // Public routes
-router.get("/", getLandingPage);
+router.get("/explore", getLandingPage);
 router.get("/robots.txt", getRobotsTxt);
 router.get("/sitemap.xml", getSitemapXml);
 router.get("/entry/:id", getEntryPage);
@@ -1114,8 +1149,7 @@ router.get("/api/public", getPublicEntries);
 router.get("/api/public/search", searchPublicEntriesController);
 
 // Auth routes
-router.post("/", createPost);
-router.get("/", getDashboard);
+router.route("/").get(getHome).post(createPost);
 router.route("/login").get(getLogin).post(postLogin);
 router.route("/register").get(getRegister).post(postRegister);
 router.get("/logout", logoutUser);
@@ -1136,6 +1170,18 @@ app.use("/", router);
 app.use(notFoundHandler(viewsPath));
 app.use(errorHandler(viewsPath));
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.set("io", io);
+
+io.on("connection", (socket) => {
+  console.log(`Socket connected: ${socket.id}`);
+  socket.on("disconnect", () => {
+    console.log(`Socket disconnected: ${socket.id}`);
+  });
+});
+
+server.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
