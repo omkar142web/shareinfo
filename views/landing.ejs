@@ -1509,7 +1509,7 @@
         return;
       }
 
-      if (!navigator.share) {
+      if (!navigator.share || !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         showToast('Link copied to clipboard');
         return;
       }
