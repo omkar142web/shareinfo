@@ -680,6 +680,69 @@
       overflow: hidden;
     }
 
+    .card-copy-icon {
+      position: absolute;
+      top: 2px;
+      right: 3px;
+      width: 32px;
+      height: 32px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      color: var(--cyan);
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      padding: 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(-2px) scale(0.92);
+      z-index: 3;
+      backdrop-filter: blur(8px);
+      transition:
+        opacity 0.18s,
+        transform 0.18s,
+        background 0.15s,
+        color 0.15s,
+        border-color 0.15s,
+        box-shadow 0.15s;
+    }
+
+    @media (hover: hover) {
+
+      .info-card:hover .card-copy-icon,
+      .card-copy-icon:hover,
+      .card-copy-icon:focus-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .card-copy-icon:hover {
+        color: #bae6fd;
+        text-shadow: 0 4px 16px rgba(56, 189, 248, 0.22);
+      }
+    }
+
+    @media (hover: none) {
+      .card-copy-icon {
+        opacity: 0.75;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .card-copy-icon:focus-visible {
+      outline: 2px solid var(--cyan-border);
+      outline-offset: 2px;
+    }
+
+    .card-copy-icon.is-copied {
+      color: var(--success);
+      opacity: 1;
+      transform: translateY(0) scale(1.08);
+    }
+
     .card-footer {
       display: flex;
       gap: 8px;
@@ -1471,6 +1534,12 @@
       const card = event.target.closest('.info-card');
       if (!card) return;
 
+      if (event.target.closest('.card-copy-icon')) {
+        event.preventDefault();
+        copyCardContent(event.target.closest('.card-copy-icon'));
+        return;
+      }
+
       if (event.target.closest('.card-action-copy')) {
         event.preventDefault();
         shareText(card.dataset.info || '', card.id);
@@ -1616,6 +1685,27 @@
       }
     }
 
+    function resetCardCopyButton(button) {
+      if (!button) return;
+      button.classList.remove('is-copied');
+    }
+
+    async function copyCardContent(button) {
+      const card = button?.closest('.info-card');
+      const raw = card?.dataset.info || '';
+      if (!raw) return;
+
+      try {
+        await copyToClipboard(raw);
+        button.classList.add('is-copied');
+        setTimeout(() => resetCardCopyButton(button), 1400);
+        showToast('Note copied');
+      } catch (err) {
+        console.error('Failed to copy note:', err);
+        showToast('Failed to copy note', 'error');
+      }
+    }
+
     function copyModalContent() {
       const text = currentItemContent || '';
       if (navigator.clipboard && window.isSecureContext) {
@@ -1679,6 +1769,18 @@
       const owner = item.ownerName || item.email;
       strip.textContent = owner ? `Note by ${owner}` : 'Public Note';
       card.append(strip);
+
+      const copyIconButton = document.createElement('button');
+      copyIconButton.className = 'card-copy-icon';
+      copyIconButton.type = 'button';
+      copyIconButton.setAttribute('aria-label', 'Copy note content');
+      copyIconButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      `;
+      card.append(copyIconButton);
 
       const body = document.createElement('div');
       body.className = 'card-body';
