@@ -1504,7 +1504,9 @@
 
       if (navigator.share) {
         try {
-          await navigator.share({ text });
+          // await navigator.share({ text });
+          // await navigator.share({text: `🔗: ${link}\n\n📄: ${text}`});
+          await navigator.share({text: `${text}\n\n━━━━━━━━━━━━━━━━━━━\n🌐 Link\n${link}`});
           showToast('Shared & link copied');
         } catch (err) {
           if (err.name !== 'AbortError') {
