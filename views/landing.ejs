@@ -1524,6 +1524,9 @@
     let nextCursor = <%- JSON.stringify(initialCursor || null) %>;
     let hasMore = <%- JSON.stringify(hasMore === true) %>;
     let isFetching = false;
+    let isAutoLoading = false;
+    let hashScrollInterval = null;
+    let activeHashLoadId = null;
     let searchKeyword = '';
     let currentSort = 'updated';
     let observer;
@@ -1954,6 +1957,69 @@
       closeSortMenu();
     });
 
+    function startHashPolling(hash) {
+      if (hashScrollInterval) return;
+
+      let attempts = 0;
+      const maxAttempts = 50;
+      hashScrollInterval = setInterval(() => {
+        attempts += 1;
+        if (scrollElementToCenter(hash) || attempts >= maxAttempts) {
+          clearInterval(hashScrollInterval);
+          hashScrollInterval = null;
+        }
+      }, 200);
+    }
+
+    async function autoLoadUntilHashFound(id) {
+      activeHashLoadId = id;
+      isAutoLoading = true;
+
+      try {
+        while (!document.getElementById(id)) {
+          if (activeHashLoadId !== id || !hasMore || !nextCursor) break;
+
+          if (isFetching) {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            continue;
+          }
+
+          await loadMore();
+        }
+
+        if (activeHashLoadId !== id) return;
+
+        activeHashLoadId = null;
+        if (hashScrollInterval) {
+          clearInterval(hashScrollInterval);
+          hashScrollInterval = null;
+        }
+        scrollElementToCenter(`#${id}`);
+      } finally {
+        if (activeHashLoadId === id) {
+          activeHashLoadId = null;
+        }
+        isAutoLoading = false;
+      }
+    }
+
+    function scrollToHashedCard() {
+      if (!window.location.hash) return;
+      if (window.location.hash === '#public-notes') {
+        scrollElementToStart('#public-notes');
+        return;
+      }
+      const id = window.location.hash.replace(/^#/, '');
+      if (!id) return;
+
+      if (scrollElementToCenter(window.location.hash)) return;
+
+      if (activeHashLoadId === id) return;
+
+      startHashPolling(window.location.hash);
+      autoLoadUntilHashFound(id);
+    }
+
     function scrollElementToCenter(hash) {
       const id = String(hash || '').replace(/^#/, '');
       if (!id) return false;
@@ -2000,23 +2066,18 @@
     });
 
     window.addEventListener('load', () => {
-      if (window.location.hash == '#public-notes') {
-        setTimeout(() => {
-          scrollElementToStart('#public-notes');
-        }, 50);
-      } else if (window.location.hash) {
-        setTimeout(() => {
-          scrollElementToCenter(window.location.hash);
-        }, 50);
+      if (window.location.hash) {
+        setTimeout(scrollToHashedCard, 50);
       }
     });
 
     window.addEventListener('hashchange', () => {
-      if (window.location.hash == '#public-notes') {
-        scrollElementToStart('#public-notes');
-      } else if (window.location.hash) {
-        scrollElementToCenter(window.location.hash);
+      activeHashLoadId = null;
+      if (hashScrollInterval) {
+        clearInterval(hashScrollInterval);
+        hashScrollInterval = null;
       }
+      scrollToHashedCard();
     });
 
     if (backToTop) {
