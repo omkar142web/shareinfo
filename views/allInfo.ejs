@@ -1946,10 +1946,10 @@
 
         <% data.forEach((person, index) => {
         const cardType = 'plain';
-        const safeInfo = (person.info || '').replace(/'/g, "\\'").replace(/\n/g, '\\n');
-        const safeName = (person.name || '').replace(/'/g, "\\'");
-        const safeEmail = (person.email || '').replace(/'/g, "\\'");
-        const safePassword = (person.password || '').replace(/'/g, "\\'");
+      const safeInfo = (person.info || '').replace(/\n/g, '\\n');
+      const safeName = person.name || '';
+      const safeEmail = person.email || '';
+      const safePassword = person.password || '';
       %>
 
         <!-- Card: <%= cardType %> -->
