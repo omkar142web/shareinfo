@@ -127,7 +127,9 @@ export const getPagedUserDataWithVisibility = async (
 ) => {
   const filter = { email };
 
-  if (visibility === "public") {
+  if (visibility === "favorite") {
+    filter.isFavorite = true;
+  } else if (visibility === "public") {
     filter.isPublic = true;
   } else if (visibility === "private") {
     filter.isPublic = { $ne: true };
@@ -163,7 +165,9 @@ export const getPagedAllDataWithVisibility = async (
 ) => {
   const filter = { email: { $ne: "contacts@gmail.com" } };
 
-  if (visibility === "public") {
+  if (visibility === "favorite") {
+    filter.isFavorite = true;
+  } else if (visibility === "public") {
     filter.isPublic = true;
   } else if (visibility === "private") {
     filter.isPublic = { $ne: true };

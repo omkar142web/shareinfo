@@ -75,7 +75,7 @@ export const getHome = async (req, res, next) => {
       return getLandingPage(req, res, next);
     }
 
-    const visibility = ["public", "private"].includes(req.query.visibility)
+    const visibility = ["public", "private", "favorite"].includes(req.query.visibility)
       ? req.query.visibility
       : "all";
 
@@ -163,7 +163,7 @@ export const getEntriesPage = async (req, res) => {
       ? Math.min(Math.max(requestedLimit, 1), MAX_PAGE_SIZE)
       : DEFAULT_PAGE_SIZE;
 
-    const visibility = ["public", "private"].includes(req.query.visibility)
+    const visibility = ["public", "private", "favorite"].includes(req.query.visibility)
       ? req.query.visibility
       : "all";
 
@@ -543,6 +543,7 @@ export const createPost = async (req, res, next) => {
       name,
       info,
       isPublic: req.body.isPublic === true,
+      isFavorite: false,
       ownerName: user.name,
       createdAt: now,
       updatedAt: now,
@@ -556,6 +557,7 @@ export const createPost = async (req, res, next) => {
         name,
         info,
         isPublic: req.body.isPublic === true,
+        isFavorite: false,
         ownerName: user.name,
         email: user.email,
         createdAt: now.toISOString(),
@@ -721,6 +723,75 @@ export const updatePost = async (req, res, next) => {
     });
   } catch (err) {
     console.error(err);
+    return next(err);
+  }
+};
+
+export const toggleFavorite = async (req, res, next) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const collection = getCollection("anyInformation");
+    const id = new ObjectId(req.params.id);
+    const entry = await collection.findOne({ _id: id });
+
+    if (!entry) {
+      return res.status(404).json({
+        success: false,
+        message: "Entry not found",
+      });
+    }
+
+    const isAdmin = user.email === "admin@gmail.com" && user.password === "admin";
+    const isOwner = entry.email === user.email;
+
+    if (!isAdmin && !isOwner) {
+      return res.status(404).json({
+        success: false,
+        message: "Entry not found",
+      });
+    }
+
+    const isFavorite = entry.isFavorite !== true;
+
+    await collection.updateOne(
+      { _id: id },
+      {
+        $set: {
+          isFavorite,
+        },
+      },
+    );
+
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("entry:favorite-updated", {
+        _id: req.params.id,
+        isFavorite,
+      });
+    }
+
+    return res.json({
+      success: true,
+      isFavorite,
+    });
+  } catch (err) {
+    console.error("Favorite toggle error:", err);
     return next(err);
   }
 };

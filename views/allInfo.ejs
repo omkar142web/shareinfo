@@ -683,7 +683,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .info-card:focus-within .card-copy-icon {
+    .info-card:focus-within .card-quick-action {
       opacity: 1;
       transform: translateY(0) scale(1);
     }
@@ -798,20 +798,23 @@
       }
     }
 
-    .card-copy-icon {
+    .card-quick-actions {
       position: absolute;
-      /* top: 10px; */
       top: 2px;
-      /* right: 10px; */
       right: 3px;
+      display: inline-flex;
+      align-items: center;
+      /* gap: 7px; */
+      z-index: 3;
+    }
+
+    .card-quick-action {
       width: 32px;
       height: 32px;
       font-family: var(--font-body);
       font-weight: 600;
-      color: var(--cyan);
-      /* background: rgba(17, 24, 39, 0.65); */
+      color: rgba(255, 255, 255, 0.65);
       background: transparent;
-      /* border: 1px solid var(--border); */
       border: none;
       border-radius: 8px;
       padding: 0;
@@ -821,7 +824,6 @@
       justify-content: center;
       opacity: 0;
       transform: translateY(-2px) scale(0.92);
-      z-index: 3;
       backdrop-filter: blur(8px);
       transition:
         opacity 0.18s,
@@ -832,42 +834,82 @@
         box-shadow 0.15s;
     }
 
+    .card-quick-action svg {
+      transition: fill 0.2s ease, transform 0.2s ease;
+    }
+
     @media (hover: hover) {
 
-      .info-card:hover .card-copy-icon,
-      .card-copy-icon:hover,
-      .card-copy-icon:focus-visible {
+      .info-card:hover .card-quick-action,
+      .card-quick-action:hover,
+      .card-quick-action:focus-visible {
         opacity: 1;
         transform: translateY(0) scale(1);
       }
 
-      .card-copy-icon:hover {
-        /* background: rgba(56, 189, 248, 0.16); */
-        color: #bae6fd;
-        /* border-color: rgba(56, 189, 248, 0.45); */
-        /* box-shadow: 0 4px 16px rgba(56, 189, 248, 0.22); */
-        text-shadow: 0 4px 16px rgba(56, 189, 248, 0.22);
+      .card-quick-action:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: #ffffff;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.24);
       }
     }
 
     @media (hover: none) {
-      .card-copy-icon {
+      .card-quick-actions {
+        /* gap: 8px; */
+      }
+
+      .card-quick-action {
+        width: 40px;
+        height: 40px;
         opacity: 0.75;
         transform: translateY(0) scale(1);
       }
     }
 
-    .card-copy-icon:focus-visible {
+    .card-quick-action:focus-visible {
       outline: 2px solid var(--cyan-border);
       outline-offset: 2px;
     }
 
+    .card-quick-action:active {
+      transform: translateY(0) scale(0.95);
+    }
+
     .card-copy-icon.is-copied {
-      /* background: var(--success-faint); */
       color: var(--success);
-      /* border-color: var(--success-border); */
       opacity: 1;
       transform: translateY(0) scale(1.08);
+    }
+
+    .card-favorite-icon.is-favorite {
+      /* background: rgba(255, 213, 74, 0.1);
+      border: 1px solid rgba(255, 213, 74, 0.22);
+      box-shadow: 0 0 14px rgba(255, 213, 74, 0.18); */
+      color: #ffd54a;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .card-favorite-icon.is-favorite.is-pulsing {
+      animation: favoritePulse 0.24s ease;
+    }
+
+    @keyframes favoritePulse {
+      0% {
+        transform: translateY(0) scale(0.95);
+        background-color: 0 0 8px rgba(255, 213, 74, 0.12);
+      }
+
+      60% {
+        transform: translateY(0) scale(1.06);
+        background-color: 0 0 22px rgba(255, 213, 74, 0.3);
+      }
+
+      100% {
+        transform: translateY(0) scale(1);
+        background-color: 0 0 14px rgba(255, 213, 74, 0.18);
+      }
     }
 
     .inline-link {
@@ -1823,6 +1865,7 @@
         <button class="filter-btn <%= (activeVisibility || 'all') === 'all' ? 'active' : '' %>" data-filter="all" type="button">All</button>
         <button class="filter-btn <%= activeVisibility === 'public' ? 'active' : '' %>" data-filter="public" type="button">Public</button>
         <button class="filter-btn <%= activeVisibility === 'private' ? 'active' : '' %>" data-filter="private" type="button">Private</button>
+        <button class="filter-btn <%= activeVisibility === 'favorite' ? 'active' : '' %>" data-filter="favorite" type="button">Favorite</button>
       </div>
       <% } %>
 
@@ -1905,10 +1948,11 @@
       const safeName = person.name || '';
       const safeEmail = person.email || '';
       const safePassword = person.password || '';
+      const isFavorite = person.isFavorite === true;
       %>
 
         <!-- Card: <%= cardType %> -->
-        <article id="<%= person._id %>" class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" data-id="<%= person._id %>" data-is-public="<%= person.isPublic === true ? 'true' : 'false' %>" style="--stagger: <%= index %>">
+        <article id="<%= person._id %>" class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" data-id="<%= person._id %>" data-is-public="<%= person.isPublic === true ? 'true' : 'false' %>" data-is-favorite="<%= isFavorite ? 'true' : 'false' %>" style="--stagger: <%= index %>">
 
           <!-- Card type indicator -->
           <div class="card-type-strip" aria-hidden="true">
@@ -1931,12 +1975,21 @@
               <% } %>
             </div>
             <div class="card-index-badge" aria-hidden="true">#<%= String(entryTotal - index).padStart(2, '0') %></div>
-            <button class="card-copy-icon" type="button" aria-label="Copy note content">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-              </svg>
-            </button>
+            <% if (typeof isMaster == "undefined" || !isMaster) { %>
+            <div class="card-quick-actions">
+              <button class="card-quick-action card-copy-icon" type="button" aria-label="Copy note content" title="Copy note content">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+              <button class="card-quick-action card-favorite-icon <%= isFavorite ? 'is-favorite' : '' %>" type="button" aria-label="<%= isFavorite ? 'Remove from Favorites' : 'Add to Favorites' %>" title="<%= isFavorite ? 'Remove from Favorites' : 'Add to Favorites' %>" aria-pressed="<%= isFavorite ? 'true' : 'false' %>">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="<%= isFavorite ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M11.5 2.9l2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-2.9-5.6 2.9 1.1-6.3-4.6-4.5 6.3-.9 2.8-5.7z" />
+                </svg>
+              </button>
+            </div>
+            <% } %>
           </header>
 
           <!-- Card body -->
@@ -2111,6 +2164,12 @@
           if (event.target.closest('.card-copy-icon')) {
             event.stopPropagation();
             copyCardContent(event.target.closest('.card-copy-icon'));
+            return;
+          }
+
+          if (event.target.closest('.card-favorite-icon')) {
+            event.stopPropagation();
+            toggleFavorite(event.target.closest('.card-favorite-icon'));
             return;
           }
 
@@ -2588,6 +2647,13 @@
         });
       }
 
+      function shouldShowInCurrentFilter(item) {
+        if (activeVisibility === 'favorite') return item.isFavorite === true;
+        if (activeVisibility === 'public') return item.isPublic === true;
+        if (activeVisibility === 'private') return item.isPublic !== true;
+        return true;
+      }
+
       function applyLongCardState(card, isLong) {
         if (!card) return;
 
@@ -2709,6 +2775,80 @@
         button.classList.remove('is-copied');
       }
 
+      function favoriteIconMarkup(isFavorite) {
+        return `
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="${isFavorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11.5 2.9l2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-2.9-5.6 2.9 1.1-6.3-4.6-4.5 6.3-.9 2.8-5.7z"></path>
+          </svg>
+        `;
+      }
+
+      function setFavoriteButtonState(button, isFavorite, animate = false) {
+        if (!button) return;
+        button.classList.toggle('is-favorite', isFavorite);
+        button.dataset.favorite = isFavorite ? 'true' : 'false';
+        button.setAttribute('aria-pressed', String(isFavorite));
+        button.setAttribute('aria-label', isFavorite ? 'Remove from Favorites' : 'Add to Favorites');
+        button.title = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
+        button.innerHTML = favoriteIconMarkup(isFavorite);
+
+        if (animate && isFavorite) {
+          button.classList.remove('is-pulsing');
+          void button.offsetWidth;
+          button.classList.add('is-pulsing');
+          setTimeout(() => button.classList.remove('is-pulsing'), 260);
+        }
+      }
+
+      function applyFavoriteState(card, isFavorite, animate = false, allowFilterRemoval = true) {
+        if (!card) return;
+        card.dataset.isFavorite = isFavorite ? 'true' : 'false';
+        setFavoriteButtonState(card.querySelector('.card-favorite-icon'), isFavorite, animate);
+
+        if (allowFilterRemoval && activeVisibility === 'favorite' && !isFavorite) {
+          card.classList.add('is-removing');
+          setTimeout(() => {
+            card.remove();
+            totalEntryCount = Math.max(0, totalEntryCount - 1);
+            updateAllCardBadges();
+          }, 220);
+        }
+      }
+
+      async function toggleFavorite(button) {
+        const card = button?.closest('.info-card');
+        const id = card?.dataset.id || card?.id;
+        if (!card || !id || button.dataset.loading === 'true') return;
+
+        const previous = card.dataset.isFavorite === 'true';
+        const next = !previous;
+        button.dataset.loading = 'true';
+        applyFavoriteState(card, next, next, false);
+
+        try {
+          const response = await fetch(`/api/entries/${encodeURIComponent(id)}/favorite`, {
+            method: 'PATCH',
+            headers: { Accept: 'application/json' },
+          });
+
+          if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+          }
+
+          if (!response.ok) throw new Error('Favorite request failed');
+          const result = await response.json();
+          applyFavoriteState(card, result.isFavorite === true);
+          showToast(result.isFavorite ? 'Added to favorites' : 'Removed from favorites');
+        } catch (err) {
+          console.error('Failed to update favorite:', err);
+          applyFavoriteState(card, previous);
+          showToast('Failed to update favorite', 'error');
+        } finally {
+          button.dataset.loading = 'false';
+        }
+      }
+
       async function copyCardContent(button) {
         const card = button?.closest('.info-card');
         const raw = card?.dataset.info || '';
@@ -2750,6 +2890,7 @@
         const password = String(item.password ?? '');
         const id = String(item._id ?? '');
         const isPublic = item.isPublic === true;
+        const isFavorite = item.isFavorite === true;
         const card = document.createElement('article');
         card.className = 'info-card card-plain card-pending';
         card.dataset.index = String(displayIndex - 1);
@@ -2760,6 +2901,7 @@
         card.dataset.id = id;
         card.id = id;
         card.dataset.isPublic = isPublic ? 'true' : 'false';
+        card.dataset.isFavorite = isFavorite ? 'true' : 'false';
         card.style.animationDelay = `${batchIndex * 60}ms`;
 
         const typeStrip = document.createElement('div');
@@ -2807,17 +2949,31 @@
         badge.textContent = formatCardIndexBadge(displayIndex);
         header.append(badge);
 
-        const copyIconButton = document.createElement('button');
-        copyIconButton.type = 'button';
-        copyIconButton.className = 'card-copy-icon';
-        copyIconButton.setAttribute('aria-label', 'Copy note content');
-        appendStaticIcon(copyIconButton, `
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-        `);
-        header.append(copyIconButton);
+          if (type !== 'master') {
+          const quickActions = document.createElement('div');
+          quickActions.className = 'card-quick-actions';
+
+          const copyIconButton = document.createElement('button');
+          copyIconButton.type = 'button';
+          copyIconButton.className = 'card-quick-action card-copy-icon';
+          copyIconButton.setAttribute('aria-label', 'Copy note content');
+          copyIconButton.title = 'Copy note content';
+          appendStaticIcon(copyIconButton, `
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          `);
+          quickActions.append(copyIconButton);
+
+          const favoriteIconButton = document.createElement('button');
+          favoriteIconButton.type = 'button';
+          favoriteIconButton.className = `card-quick-action card-favorite-icon${isFavorite ? ' is-favorite' : ''}`;
+          setFavoriteButtonState(favoriteIconButton, isFavorite);
+          quickActions.append(favoriteIconButton);
+
+          header.append(quickActions);
+        }
         card.append(header);
 
         const body = document.createElement('div');
@@ -3287,6 +3443,7 @@ copyButton.title = 'Share Public Link';
       socket.on('entry:created', (data) => {
         if (data.actionId && data.actionId === lastActionId) return;
         if (document.getElementById(data._id)) return;
+        if (!shouldShowInCurrentFilter(data)) return;
         const wall = document.getElementById('masonryWall');
         if (!wall) return;
         const existingCount = wall.querySelectorAll('.info-card').length;
@@ -3307,6 +3464,7 @@ copyButton.title = 'Share Public Link';
           if (currentSort === 'updated') {
             const wall = document.getElementById('masonryWall');
             if (!wall) return;
+            if (!shouldShowInCurrentFilter(data)) return;
             const existingCount = wall.querySelectorAll('.info-card').length;
             const newCard = buildCard(data, existingCount + 1, 0);
             wall.prepend(newCard);
@@ -3321,9 +3479,14 @@ copyButton.title = 'Share Public Link';
         }
         const wasPublic = card.dataset.isPublic === 'true';
         const nowPublic = data.isPublic === true;
+        const nowFavorite = typeof data.isFavorite === 'boolean'
+          ? data.isFavorite
+          : card.dataset.isFavorite === 'true';
         card.dataset.name = data.name || '';
         card.dataset.info = data.info || '';
         card.dataset.isPublic = nowPublic ? 'true' : 'false';
+        card.dataset.isFavorite = nowFavorite ? 'true' : 'false';
+        setFavoriteButtonState(card.querySelector('.card-favorite-icon'), nowFavorite);
         if (wasPublic !== nowPublic) {
           const footer = card.querySelector('.card-footer');
           if (footer) {
@@ -3390,6 +3553,12 @@ copyButton.title = 'Share Public Link';
             updateAllCardBadges();
           }
         }
+      });
+
+      socket.on('entry:favorite-updated', (data) => {
+        const card = document.getElementById(data._id);
+        if (!card) return;
+        applyFavoriteState(card, data.isFavorite === true);
       });
 
       socket.on('entry:deleted', (data) => {
