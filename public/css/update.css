@@ -556,7 +556,11 @@ textarea::-webkit-scrollbar-thumb {
 .ai-format-btn {
   position: absolute;
   right: 7px;
+<<<<<<< HEAD
   bottom: 15px;
+=======
+  bottom: 7px;
+>>>>>>> e99d98eadf9833559c8fac9e5921d1d60a73120d
   height: 30px;
   min-width: 52px;
   padding: 0 9px;
