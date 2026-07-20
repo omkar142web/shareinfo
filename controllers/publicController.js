@@ -6,6 +6,7 @@ import {
   searchPublicEntries,
 } from "../services/public.service.js";
 import { createHttpError } from "../middleware/errorHandlers.js";
+import { renderMarkdown } from "../services/markdown.service.js";
 
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
@@ -65,6 +66,7 @@ export const getLandingPage = async (req, res, next) => {
       isLoggedIn,
       siteUrl: SITE_URL,
       canonicalUrl: `${SITE_URL}/`,
+      renderMarkdown,
     });
   } catch (err) {
     console.error("Landing page error:", err);
@@ -88,6 +90,7 @@ export const getEntryPage = async (req, res, next) => {
       entry: normalizePublicEntry(entry),
       siteUrl: SITE_URL,
       canonicalUrl: `${SITE_URL}/entry/${encodeURIComponent(id)}`,
+      renderMarkdown,
     });
   } catch (err) {
     console.error("Public entry page error:", err);

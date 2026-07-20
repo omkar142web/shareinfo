@@ -11,6 +11,8 @@
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css" />
+  <link rel="stylesheet" href="/css/markdown-content.css" />
   <style>
     :root {
       --bg: #0d1628;
@@ -669,7 +671,6 @@
       color: var(--text-2);
       font-size: 13.5px;
       line-height: 1.65;
-      white-space: pre-wrap;
       word-break: break-word;
     }
 
@@ -925,11 +926,10 @@
       overscroll-behavior: contain;
     }
 
-    .modal-body p {
+    .modal-body .md-content {
       font-size: 14.5px;
       line-height: 1.75;
       color: var(--text-2);
-      white-space: pre-wrap;
       word-break: break-word;
     }
 
@@ -1493,7 +1493,7 @@
       </header>
       <div class="modal-divider" aria-hidden="true"></div>
       <div class="modal-body">
-        <p id="modalContent"></p>
+        <div id="modalContent" class="md-content"></div>
       </div>
       <footer class="modal-footer">
         <span class="modal-char-count" id="modalCount"></span>
@@ -1519,6 +1519,10 @@
   </button>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.3/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.6/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/common.min.js"></script>
+  <script src="/js/markdown-renderer.js"></script>
   <script>
     const initialItems = <%- JSON.stringify(data || []) %>;
     let nextCursor = <%- JSON.stringify(initialCursor || null) %>;
@@ -1736,8 +1740,7 @@
       currentItemId = item._id;
       currentItemContent = item.info || '';
       modalTitle.textContent = item.name || '';
-      modalContent.textContent = '';
-      appendLinkedContent(modalContent, item.info || '');
+      renderMarkdownInto(modalContent, item.info || '');
       modalCount.textContent = `${String(item.info || '').length} characters`;
       modalCopy.classList.remove('is-copied');
       modalCopy.querySelector('span').textContent = 'Copy';
@@ -1794,9 +1797,9 @@
       title.textContent = item.name || 'Untitled';
       body.append(title);
 
-      const text = document.createElement('p');
-      text.className = 'card-text card-text-snippet';
-      appendLinkedContent(text, item.info || '');
+      const text = document.createElement('div');
+      text.className = 'card-text card-text-snippet md-content';
+      renderMarkdownInto(text, item.info || '');
       body.append(text);
       card.append(body);
 
@@ -2167,7 +2170,7 @@
       const textEl = card.querySelector('.card-text');
       if (textEl) {
         textEl.textContent = '';
-        appendLinkedContent(textEl, data.info || '');
+        renderMarkdownInto(textEl, data.info || '');
       }
 
       if (currentSort === 'updated') {

@@ -16,9 +16,11 @@
     "dotenv": "^17.4.2",
     "ejs": "^5.0.2",
     "express": "^5.2.1",
+    "marked": "^18.0.6",
     "mongodb": "^7.2.0",
     "nodemon": "^3.1.14",
     "openai": "^6.45.0",
+    "sanitize-html": "^2.17.6",
     "socket.io": "^4.8.3"
   }
 }

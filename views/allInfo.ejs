@@ -7,6 +7,8 @@
   <title>Share Info — Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css" />
+  <link rel="stylesheet" href="/css/markdown-content.css" />
   <!-- <link rel="stylesheet" href="css/home.css" /> -->
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap");
@@ -759,7 +761,6 @@
       line-height: 1.65;
       color: var(--text-2);
       word-break: break-word;
-      white-space: pre-wrap;
     }
 
     /* Snippet for long cards */
@@ -1266,11 +1267,10 @@
       overscroll-behavior: contain;
     }
 
-    .modal-body p {
+    .modal-body .md-content {
       font-size: 14.5px;
       line-height: 1.75;
       color: var(--text-2);
-      white-space: pre-wrap;
       word-break: break-word;
     }
 
@@ -1908,38 +1908,7 @@
         );
       };
 
-      const parseContent = (text = '') => {
-        const rawText = String(text);
-
-        if (/<[^>]+>/.test(rawText) || /^\s*(?:import|export)\b/m.test(rawText)) {
-          return escapeHTML(rawText);
-        }
-
-        const urlPattern = /(^|[\s(])((?:https?:\/\/)?(?:www\.)?[a-z0-9][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)+(?:\/[^\s<>"']*)?)/gi;
-        let parsed = '';
-        let lastIndex = 0;
-        let match;
-
-        while ((match = urlPattern.exec(rawText)) !== null) {
-          const [fullMatch, prefix, candidate] = match;
-          const { url, trailing } = trimUrlPunctuation(candidate);
-          const urlStart = match.index + prefix.length;
-
-          parsed += escapeHTML(rawText.slice(lastIndex, urlStart));
-
-          if (!url || shouldIgnoreUrl(rawText, url)) {
-            parsed += escapeHTML(candidate);
-            lastIndex = urlStart + candidate.length;
-            continue;
-          }
-
-          const href = /^https?:\/\//i.test(url) ? url : `https://${url}`;
-          parsed += `<a class="inline-link" href="${escapeHTML(href)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${escapeHTML(url)}</a>${escapeHTML(trailing)}`;
-          lastIndex = match.index + fullMatch.length;
-        }
-
-        return parsed + escapeHTML(rawText.slice(lastIndex));
-      };
+      const parseContent = typeof renderMarkdown === 'function' ? renderMarkdown : escapeHTML;
 
       const entryTotal = typeof totalCount !== 'undefined' ? totalCount : data.length;
     %>
@@ -1986,7 +1955,7 @@
 
           <!-- Card body -->
           <div class="card-body">
-            <p class="card-text card-text-snippet"><%- parseContent(person.info) %></p>
+            <div class="card-text card-text-snippet md-content"><%- parseContent(person.info) %></div>
             <button class="view-more-btn" type="button" hidden>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8" />
@@ -2071,7 +2040,7 @@
         <div class="modal-divider" aria-hidden="true"></div>
 
         <div class="modal-body" id="modalBody">
-          <p id="modalContent"></p>
+          <div id="modalContent" class="md-content"></div>
         </div>
 
         <div class="modal-footer">
@@ -2121,6 +2090,10 @@
     </button>
 
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.3/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.6/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/common.min.js"></script>
+    <script src="/js/markdown-renderer.js"></script>
     <script>
       const initialPagination = {
         nextCursor: <%- JSON.stringify(typeof initialCursor !== "undefined" ? initialCursor : null) %>,
@@ -2138,6 +2111,7 @@
       let currentSort = '<%= typeof activeSort !== "undefined" ? activeSort : "updated" %>';
 
       const wall = document.getElementById('masonryWall');
+      document.querySelectorAll('.md-content').forEach(enhanceMarkdownContent);
       if (wall) {
         wall.addEventListener('click', (event) => {
           const card = event.target.closest('.info-card');
@@ -2857,9 +2831,9 @@
 
         const body = document.createElement('div');
         body.className = 'card-body';
-        const content = document.createElement('p');
-        content.className = 'card-text card-text-snippet';
-        appendLinkedContent(content, info);
+        const content = document.createElement('div');
+        content.className = 'card-text card-text-snippet md-content';
+        renderMarkdownInto(content, info);
         body.append(content);
 
         const viewMoreButton = document.createElement('button');
@@ -3116,7 +3090,7 @@ copyButton.title = 'Share Public Link';
         mEmail.textContent = email || '';
         mAvatar.textContent = name ? name.charAt(0).toUpperCase() : '?';
         mContent.textContent = '';
-        appendLinkedContent(mContent, (info || '').replace(/\\n/g, '\n'));
+        renderMarkdownInto(mContent, (info || '').replace(/\\n/g, '\n'));
         mCount.textContent = `${(info || '').length} characters`;
         resetCopyButton();
 
@@ -3394,7 +3368,7 @@ copyButton.title = 'Share Public Link';
         const textEl = card.querySelector('.card-text');
         if (textEl) {
           textEl.textContent = '';
-          appendLinkedContent(textEl, (data.info || '').replace(/\\n/g, '\n'));
+          renderMarkdownInto(textEl, (data.info || '').replace(/\\n/g, '\n'));
         }
         const typeStrip = card.querySelector('.card-type-strip');
         if (typeStrip) {

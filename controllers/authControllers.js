@@ -17,6 +17,7 @@ import {
 } from "../services/auth.service.js";
 
 import { getLandingPage } from "./publicController.js";
+import { renderMarkdown } from "../services/markdown.service.js";
 
 import Path from "path";
 import { fileURLToPath } from "url";
@@ -119,6 +120,7 @@ export const getHome = async (req, res, next) => {
       activeVisibility: visibility,
       activeKeyword: keyword,
       activeSort: sort,
+      renderMarkdown,
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {

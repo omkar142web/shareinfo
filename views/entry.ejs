@@ -7,6 +7,8 @@
   <title><%= entry.name %> - ShareInfo</title>
   <meta name="description" content="<%= String(entry.info || '').slice(0, 150) %>" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css" />
+  <link rel="stylesheet" href="/css/markdown-content.css" />
   <style>
     :root {
       --bg: #0d1628;
@@ -198,7 +200,6 @@
       font-size: 15.5px;
       line-height: 1.75;
       letter-spacing: 0.01em;
-      white-space: pre-wrap;
       word-break: break-word;
     }
 
@@ -418,7 +419,7 @@
         </p>
       </header>
       <div class="article-body">
-        <p class="content" id="content"></p>
+        <div class="content md-content" id="content"><%- typeof renderMarkdown === 'function' ? renderMarkdown(entry.info || '') : '' %></div>
       </div>
     </article>
   </main>
@@ -430,6 +431,10 @@
     </svg>
   </button>
 
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.3/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.6/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/common.min.js"></script>
+  <script src="/js/markdown-renderer.js"></script>
   <script>
     const entry = <%- JSON.stringify(entry) %>;
     const content = document.getElementById('content');
@@ -539,7 +544,7 @@
       }
     }
 
-    appendLinkedContent(content, entry.info || '');
+    enhanceMarkdownContent(content);
     document.getElementById('copyLink').addEventListener('click', copyCurrentLink);
     document.getElementById('copyLinkIcon').addEventListener('click', copyContent);
 
