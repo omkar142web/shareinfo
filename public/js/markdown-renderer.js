@@ -256,12 +256,12 @@
     window.marked.setOptions({
       breaks: true,
       gfm: true,
-      html: false,
     });
 
     var html = window.marked.parse(prepareMarkdownSource(text));
     return window.DOMPurify.sanitize(html, {
-      ADD_ATTR: ['target', 'rel', 'checked'],
+      ADD_TAGS: ['svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'ellipse', 'g', 'defs', 'clipPath', 'use'],
+      ADD_ATTR: ['target', 'rel', 'checked', 'viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'd', 'cx', 'cy', 'r', 'x', 'y', 'width', 'height', 'rx', 'ry', 'points', 'x1', 'y1', 'x2', 'y2', 'xmlns', 'aria-hidden', 'aria-label', 'role'],
     });
   }
 
