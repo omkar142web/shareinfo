@@ -1,6 +1,9 @@
 (function () {
   var TRAILING_PUNCTUATION = /[.,!?;:)\]]+$/;
   var SKIP_LINKIFY_TAGS = new Set(['A', 'CODE', 'PRE', 'SCRIPT', 'STYLE', 'TEXTAREA']);
+  var HTML_DOCUMENT_PATTERN = /^\s*(?:<!doctype\s+html\b|<html\b)/i;
+  var HTML_STRUCTURE_PATTERN = /<(?:head|body|script|style|main|section|article|button|form|input|textarea|select|div|span|p|h[1-6]|ul|ol|li|table|nav|footer|header)\b[\s\S]*?>/i;
+  var FENCED_CODE_PATTERN = /^\s*(```|~~~)/;
 
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, function (char) {
@@ -31,6 +34,32 @@
 
   function isProbablyFilePath(value) {
     return /^(?:\.{1,2}\/|\/(?!\/)|[a-z]:\\|\\\\)/i.test(value) || /\\/.test(value);
+  }
+
+  function isMostlyHtml(rawText) {
+    var tagMatches = String(rawText ?? '').match(/<\/?[a-z][\w:-]*(?:\s[^<>]*)?>/gi) || [];
+    if (tagMatches.length < 3) return false;
+
+    var tagLength = tagMatches.reduce(function (total, tag) {
+      return total + tag.length;
+    }, 0);
+
+    return tagLength / Math.max(String(rawText).trim().length, 1) > 0.18;
+  }
+
+  function shouldRenderAsHtmlCode(rawText) {
+    var text = String(rawText ?? '');
+    if (!text.trim() || FENCED_CODE_PATTERN.test(text)) return false;
+
+    return HTML_DOCUMENT_PATTERN.test(text) ||
+      (HTML_STRUCTURE_PATTERN.test(text) && isMostlyHtml(text));
+  }
+
+  function prepareMarkdownSource(text) {
+    var rawText = String(text ?? '');
+    if (!shouldRenderAsHtmlCode(rawText)) return rawText;
+
+    return escapeHtml(rawText);
   }
 
   function getLinkifier() {
@@ -227,9 +256,10 @@
     window.marked.setOptions({
       breaks: true,
       gfm: true,
+      html: false,
     });
 
-    var html = window.marked.parse(String(text ?? ''));
+    var html = window.marked.parse(prepareMarkdownSource(text));
     return window.DOMPurify.sanitize(html, {
       ADD_ATTR: ['target', 'rel', 'checked'],
     });
