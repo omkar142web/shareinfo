@@ -44,7 +44,7 @@ export function renderMarkdown(text = "") {
   return sanitizeHtml(html, {
     allowedTags,
     allowedAttributes,
-    allowedSchemes: ["http", "https", "mailto"],
+    allowedSchemes: ["http", "https", "ftp", "mailto", "tel"],
     transformTags: {
       a: sanitizeHtml.simpleTransform("a", {
         target: "_blank",
