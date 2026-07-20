@@ -124,6 +124,18 @@
         </label>
         <div class="input-wrap textarea-wrap">
           <textarea id="info" name="info" rows="3" placeholder="Paste links, notes, codes or any useful info.. Enter to send. Shift+Enter for newline. Ctrl/Cmd+Enter to send" required autocomplete="on"><%= person?.info || '' %></textarea>
+          <button type="button" class="ai-format-btn" id="aiFormatBtn" aria-label="Format content with AI" title="Format content with AI">
+            <span class="ai-format-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="21" y1="10" x2="3" y2="10" />
+                <line x1="21" y1="6" x2="3" y2="6" />
+                <line x1="21" y1="14" x2="3" y2="14" />
+                <line x1="21" y1="18" x2="3" y2="18" />
+              </svg>
+            </span>
+            <span class="ai-format-text">Format</span>
+          </button>
+          <span class="ai-format-status" id="aiFormatStatus" role="status" aria-live="polite"></span>
           <span class="char-counter" id="charCounter">0 chars</span>
         </div>
         <div class="vis-row" id="visibilityRow">
@@ -332,6 +344,64 @@
       } finally {
         aiTitleBtn.disabled = false;
         aiTitleBtn.innerHTML = originalLabel;
+      }
+    });
+
+    const aiFormatBtn = document.getElementById("aiFormatBtn");
+    const aiFormatStatus = document.getElementById("aiFormatStatus");
+
+    function showAiFormatStatus(message, type = "") {
+      aiFormatStatus.textContent = message;
+      aiFormatStatus.className = `ai-format-status ${type}`.trim();
+    }
+
+    aiFormatBtn.addEventListener("click", async () => {
+      const content = textarea.value.trim();
+
+      if (!content) {
+        showAiFormatStatus("Add content first before formatting.", "error");
+        textarea.focus();
+        textarea.classList.add("input-error");
+        textarea.addEventListener("input", () => textarea.classList.remove("input-error"), { once: true });
+        return;
+      }
+
+      const originalLabel = aiFormatBtn.innerHTML;
+
+      try {
+        aiFormatBtn.disabled = true;
+        showAiFormatStatus("Formatting...", "loading");
+        aiFormatBtn.innerHTML = `
+          <span class="spin-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.3"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+            </svg>
+          </span>
+          <span class="ai-format-text">Format</span>
+        `;
+
+        const response = await fetch("/api/format-content", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        });
+
+        const data = await response.json();
+        if (!response.ok || !data.formatted) {
+          throw new Error(data.message || "Unable to format content");
+        }
+
+        textarea.value = data.formatted;
+        textarea.dispatchEvent(new Event("input"));
+        textarea.focus();
+        showAiFormatStatus("Formatted.", "success");
+      } catch (err) {
+        showAiFormatStatus(err.message || "Unable to format content right now.", "error");
+      } finally {
+        aiFormatBtn.disabled = false;
+        aiFormatBtn.innerHTML = originalLabel;
       }
     });
 
