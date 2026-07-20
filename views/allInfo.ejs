@@ -2112,7 +2112,11 @@
       let currentSort = '<%= typeof activeSort !== "undefined" ? activeSort : "updated" %>';
 
       const wall = document.getElementById('masonryWall');
-      document.querySelectorAll('.md-content').forEach(enhanceMarkdownContent);
+      document.querySelectorAll('.info-card .card-text.md-content').forEach(function (el) {
+        var info = (el.closest('.info-card') || {}).dataset || {};
+        renderMarkdownInto(el, (info.info || '').replace(/\\n/g, '\n'));
+      });
+      requestAnimationFrame(function () { refreshCardOverflowState(); });
       if (wall) {
         wall.addEventListener('click', (event) => {
           const card = event.target.closest('.info-card');
