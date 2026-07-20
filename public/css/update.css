@@ -509,10 +509,11 @@ textarea.input-error {
   display: flex;
   flex-direction: column;
   gap: 0;
+  position: relative;
 }
 
 textarea {
-  padding: 13px 16px;
+  padding: 13px 16px 40px;
   min-height: 110px;
   resize: vertical;
   line-height: 1.6;
@@ -548,6 +549,77 @@ textarea::-webkit-scrollbar-thumb {
 
 .char-counter.visible {
   opacity: 1;
+}
+
+/* ── AI Format button (textarea) ───────────────── */
+
+.ai-format-btn {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  height: 30px;
+  min-width: 52px;
+  padding: 0 9px;
+  border: 1px solid var(--cyan-border);
+  border-radius: var(--radius-xs);
+  background: var(--cyan-faint);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    transform 0.14s,
+    opacity 0.15s;
+}
+
+.ai-format-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+}
+
+.ai-format-icon {
+  display: inline-flex;
+}
+
+.ai-format-status {
+  position: absolute;
+  left: 9px;
+  bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  line-height: 1.25;
+}
+
+.ai-format-status.error {
+  color: var(--danger);
+}
+
+.ai-format-status.success {
+  color: var(--success);
+}
+
+.ai-format-status.loading {
+  color: var(--cyan);
+}
+
+@media (hover: hover) {
+  .ai-format-btn:hover {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: rgba(56, 189, 248, 0.45);
+    color: #7dd3fc;
+    transform: translateY(-1px);
+  }
 }
 
 /* ── Form actions ─────────────────────────────────── */

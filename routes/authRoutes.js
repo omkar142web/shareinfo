@@ -17,6 +17,7 @@ import {
   deleteMasterUser,
   getEntriesPage,
   generateTitle,
+  formatContent,
 } from "../controllers/authControllers.js";
 
 const router = express.Router();
@@ -51,6 +52,7 @@ router.get("/logout", logoutUser);
 router.get("/add", getAddPage);
 router.get("/api/entries", getEntriesPage);
 router.post("/api/generate-title", generateTitle);
+router.post("/api/format-content", formatContent);
 
 router.delete("/user/:id", requireObjectId, deleteMasterUser);
 

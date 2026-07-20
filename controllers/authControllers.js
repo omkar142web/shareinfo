@@ -378,6 +378,166 @@ Fallback:
   }
 };
 
+export const formatContent = async (req, res) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({ success: false, message: "Please login first." });
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({ success: false, message: "Please login again." });
+    }
+
+    const content = String(req.body.content || "").trim();
+    if (!content) {
+      return res.status(400).json({ success: false, message: "Add content first before formatting." });
+    }
+
+    if (!process.env.GEMINI_API_KEY && !groq) {
+      return res.status(500).json({ success: false, message: "No AI API key configured." });
+    }
+
+    const SYSTEM_PROMPT = `You are a formatting assistant.
+
+Your ONLY task is to convert the user's plain text into clean GitHub-Flavored Markdown.
+
+Rules:
+
+1. Preserve ALL information.
+2. Do NOT summarize.
+3. Do NOT remove any text.
+4. Do NOT add new information.
+5. Keep the original wording as much as possible.
+6. Only improve formatting and minor grammar if absolutely necessary.
+7. Never explain what you changed.
+8. Return ONLY the formatted Markdown.
+9. Never wrap the response in triple backticks.
+10. Never say "Here is the formatted version".
+
+Formatting Rules:
+
+- Main sections become:
+
+# Section Name
+
+- Separate sections using:
+
+---
+
+- Lists become unordered lists:
+
+- Item
+
+- Preserve emojis like ✅ ⏫ 📈.
+
+- Preserve inline code using backticks:
+
+\`example\`
+
+- Detect URLs and keep them unchanged.
+
+- If a line contains a URL followed by a description, keep it as:
+
+- https://example.com -- Description
+
+- Keep completed items exactly as:
+
+- Feature (✅)
+
+- Do not convert completed items into checkboxes.
+
+- Preserve notes inside parentheses.
+
+- Keep spacing clean.
+
+- Remove unnecessary blank lines.
+
+- Never convert everything into paragraphs.
+
+- Prefer bullet lists whenever possible.
+
+- If text already appears formatted correctly, keep it unchanged.`;
+
+    let formatted = null;
+
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 20000);
+
+        const geminiRes = await fetch(
+          `${GEMINI_BASE_URL}/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+              contents: [{ parts: [{ text: content }] }],
+            }),
+            signal: controller.signal,
+          }
+        );
+
+        clearTimeout(timeout);
+
+        if (geminiRes.ok) {
+          const data = await geminiRes.json();
+          if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            formatted = String(data.candidates[0].content.parts[0].text).trim();
+          }
+        } else {
+          const errBody = await geminiRes.json().catch(() => ({}));
+          console.error("Gemini API error:", errBody.error || errBody);
+        }
+      } catch (geminiErr) {
+        console.error("Gemini failed, falling back to Groq:", geminiErr.message);
+      }
+    }
+
+    if (!formatted && groq) {
+      let model = "openai/gpt-oss-20b";
+      let response;
+      try {
+        response = await groq.chat.completions.create({
+          model,
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content },
+          ],
+        });
+      } catch (primaryErr) {
+        if (primaryErr.status !== 404) throw primaryErr;
+        model = "llama-3.3-70b-versatile";
+        try {
+          response = await groq.chat.completions.create({
+            model,
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              { role: "user", content },
+            ],
+          });
+        } catch (fallbackErr) {
+          console.error("Fallback model also failed:", fallbackErr);
+          throw primaryErr;
+        }
+      }
+
+      formatted = String(response.choices[0]?.message?.content || "").trim();
+    }
+
+    if (!formatted) {
+      return res.status(500).json({ success: false, message: "Unable to format content right now." });
+    }
+
+    return res.json({ success: true, formatted });
+  } catch (err) {
+    console.error("AI format content error:", err);
+    return res.status(500).json({ success: false, message: "Unable to format content right now." });
+  }
+};
+
 //! LOGIN GET
 export const getLogin = async (req, res, next) => {
   try {
