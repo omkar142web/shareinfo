@@ -5,6 +5,8 @@ import { MongoClient, ObjectId } from "mongodb";
 import http from "http";
 import { Server } from "socket.io";
 import OpenAI from "openai";
+import { marked } from "marked";
+import sanitizeHtml from "sanitize-html";
 import Path from "path";
 import { fileURLToPath } from "url";
 
@@ -83,6 +85,82 @@ function getCollection(collectionName = "anyInformation") {
 }
 
 await connectDB();
+
+// ==========================================
+// MARKDOWN SERVICE
+// ==========================================
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+  mangle: false,
+  headerIds: false,
+});
+
+const HTML_DOCUMENT_PATTERN = /^\s*(?:<!doctype\s+html\b|<html\b)/i;
+const HTML_STRUCTURE_PATTERN = /<(?:head|body|script|style|main|section|article|button|form|input|textarea|select|div|span|p|h[1-6]|ul|ol|li|table|nav|footer|header)\b[\s\S]*?>/i;
+const FENCED_CODE_PATTERN = /^\s*(```|~~~)/;
+
+const mdAllowedTags = sanitizeHtml.defaults.allowedTags.concat([
+  "h1", "h2", "h3", "h4", "h5", "h6",
+  "img", "del", "input",
+  "table", "thead", "tbody", "tr", "th", "td",
+  "pre", "code",
+]);
+
+const mdAllowedAttributes = {
+  ...sanitizeHtml.defaults.allowedAttributes,
+  a: ["href", "name", "target", "rel", "class"],
+  code: ["class"],
+  input: ["type", "checked", "disabled"],
+  img: ["src", "alt", "title", "width", "height", "loading"],
+  th: ["align"],
+  td: ["align"],
+};
+
+function isMostlyHtml(rawText) {
+  const tagMatches = rawText.match(/<\/?[a-z][\w:-]*(?:\s[^<>]*)?>/gi) || [];
+  if (tagMatches.length < 3) return false;
+  const tagLength = tagMatches.reduce((total, tag) => total + tag.length, 0);
+  return tagLength / Math.max(rawText.trim().length, 1) > 0.18;
+}
+
+function shouldRenderAsHtmlCode(rawText) {
+  const text = String(rawText ?? "");
+  if (!text.trim() || FENCED_CODE_PATTERN.test(text)) return false;
+  return (
+    HTML_DOCUMENT_PATTERN.test(text) ||
+    (HTML_STRUCTURE_PATTERN.test(text) && isMostlyHtml(text))
+  );
+}
+
+function prepareMarkdownSource(text = "") {
+  const rawText = String(text ?? "");
+  if (!shouldRenderAsHtmlCode(rawText)) return rawText;
+  const fence = rawText.includes("```") ? "~~~" : "```";
+  return `${fence}html\n${rawText}\n${fence}`;
+}
+
+function renderMarkdown(text = "") {
+  const html = marked.parse(prepareMarkdownSource(text));
+  return sanitizeHtml(html, {
+    allowedTags: mdAllowedTags,
+    allowedAttributes: mdAllowedAttributes,
+    allowedSchemes: ["http", "https", "ftp", "mailto", "tel"],
+    transformTags: {
+      a: sanitizeHtml.simpleTransform("a", {
+        target: "_blank",
+        rel: "noopener noreferrer",
+        class: "inline-link",
+      }),
+      input: sanitizeHtml.simpleTransform("input", {
+        disabled: "disabled",
+      }),
+      img: sanitizeHtml.simpleTransform("img", {
+        loading: "lazy",
+      }),
+    },
+  });
+}
 
 // ==========================================
 // ERROR HANDLER MIDDLEWARE
@@ -280,7 +358,9 @@ const getPagedUserData = async (email, cursor, limit = 20) => {
 const getPagedUserDataWithVisibility = async (email, cursor, limit = 20, visibility = "all", search = "", sort = "updated") => {
   const filter = { email };
 
-  if (visibility === "public") {
+  if (visibility === "favorite") {
+    filter.isFavorite = true;
+  } else if (visibility === "public") {
     filter.isPublic = true;
   } else if (visibility === "private") {
     filter.isPublic = { $ne: true };
@@ -294,9 +374,11 @@ const getPagedAllData = async (cursor, limit = 20) => {
 };
 
 const getPagedAllDataWithVisibility = async (cursor, limit = 20, visibility = "all", search = "", sort = "updated") => {
-  const filter = {};
+  const filter = { email: { $ne: "contacts@gmail.com" } };
 
-  if (visibility === "public") {
+  if (visibility === "favorite") {
+    filter.isFavorite = true;
+  } else if (visibility === "public") {
     filter.isPublic = true;
   } else if (visibility === "private") {
     filter.isPublic = { $ne: true };
@@ -369,6 +451,22 @@ const getPublicEntriesForSitemap = async () => {
 };
 
 // ==========================================
+// SOCKET HELPERS
+// ==========================================
+const getUserRoom = (email = "") => `user:${String(email).toLowerCase()}`;
+
+const emitEntryToPrivateAudience = (io, ownerEmail, event, payload) => {
+  io.to(getUserRoom(ownerEmail)).to("admins").emit(event, payload);
+};
+
+const emitEntryToAudiences = ({ io, ownerEmail, event, payload, isPublic = false }) => {
+  io.to(getUserRoom(ownerEmail)).to("admins").emit(event, payload);
+  if (isPublic) {
+    io.to("public").emit(event, payload);
+  }
+};
+
+// ==========================================
 // AUTH CONTROLLERS
 // ==========================================
 const COOKIE_OPTIONS = { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 30 };
@@ -402,7 +500,7 @@ const getHome = async (req, res, next) => {
       return getLandingPage(req, res, next);
     }
 
-    const visibility = ["public", "private"].includes(req.query.visibility)
+    const visibility = ["public", "private", "favorite"].includes(req.query.visibility)
       ? req.query.visibility
       : "all";
 
@@ -431,6 +529,9 @@ const getHome = async (req, res, next) => {
       activeVisibility: visibility,
       activeKeyword: keyword,
       activeSort: sort,
+      renderMarkdown,
+      currentUserEmail: user.email,
+      isAdmin: user.email === "admin@gmail.com" && user.password === "admin",
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {
@@ -464,7 +565,7 @@ const getEntriesPage = async (req, res) => {
       ? Math.min(Math.max(requestedLimit, 1), MAX_PAGE_SIZE)
       : DEFAULT_PAGE_SIZE;
 
-    const visibility = ["public", "private"].includes(req.query.visibility)
+    const visibility = ["public", "private", "favorite"].includes(req.query.visibility)
       ? req.query.visibility
       : "all";
 
@@ -701,7 +802,10 @@ const postRegister = async (req, res) => {
       return res.status(400).json({ success: false, message: "All fields are required." });
     }
 
+    console.log(name, email);
+
     const existingUser = await findUserByEmail(email);
+    console.log(existingUser);
 
     if (existingUser) {
       return res.status(409).json({ success: false, message: "An account with this email already exists. Try logging in.", field: "email" });
@@ -709,6 +813,7 @@ const postRegister = async (req, res) => {
 
     await createUser(req.body);
 
+    console.log(req.body);
     setUserCookies(res, { name, email, password });
 
     return res.json({ success: true, redirect: "/" });
@@ -768,6 +873,7 @@ const createPost = async (req, res, next) => {
       name,
       info,
       isPublic: req.body.isPublic === true,
+      isFavorite: false,
       ownerName: user.name,
       createdAt: now,
       updatedAt: now,
@@ -776,16 +882,23 @@ const createPost = async (req, res, next) => {
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("entry:created", {
+      emitEntryToAudiences({
+        io,
+        ownerEmail: user.email,
+        event: "entry:created",
+        isPublic: req.body.isPublic === true,
+        payload: {
         _id: addedData.insertedId,
         name,
         info,
         isPublic: req.body.isPublic === true,
+        isFavorite: false,
         ownerName: user.name,
         email: user.email,
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
         actionId: req.body.actionId || null,
+        },
       });
     }
 
@@ -877,6 +990,22 @@ const updatePost = async (req, res, next) => {
     const collection = getCollection("anyInformation");
 
     const { name, info } = req.body;
+    const existingEntry = await collection.findOne({ _id: new ObjectId(id) });
+
+    if (!existingEntry) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const isAdmin = user.email === "admin@gmail.com" && user.password === "admin";
+    const isOwner = existingEntry.email === user.email;
+
+    if (!isAdmin && !isOwner) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const wasPublic = existingEntry.isPublic === true;
+    const nowPublic = req.body.isPublic === true;
+    const now = new Date();
 
     const updatedData = await collection.updateOne(
       { _id: new ObjectId(id) },
@@ -884,23 +1013,36 @@ const updatePost = async (req, res, next) => {
         $set: {
           name,
           info,
-          isPublic: req.body.isPublic === true,
-          updatedAt: new Date(),
+          isPublic: nowPublic,
+          updatedAt: now,
         },
       },
     );
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("entry:updated", {
+      const payload = {
         _id: id,
         name,
         info,
-        isPublic: req.body.isPublic === true,
-        email: user.email,
-        updatedAt: new Date().toISOString(),
+        isPublic: nowPublic,
+        isFavorite: existingEntry.isFavorite === true,
+        email: existingEntry.email,
+        ownerName: existingEntry.ownerName,
+        updatedAt: now.toISOString(),
         actionId: req.body.actionId || null,
-      });
+      };
+
+      emitEntryToPrivateAudience(io, existingEntry.email, "entry:updated", payload);
+
+      if (nowPublic) {
+        io.to("public").emit("entry:updated", payload);
+      } else if (wasPublic) {
+        io.to("public").emit("entry:deleted", {
+          _id: id,
+          actionId: req.body.actionId || null,
+        });
+      }
     }
 
     res.status(200).json({ message: "Updated successfully", updatedData });
@@ -910,19 +1052,117 @@ const updatePost = async (req, res, next) => {
   }
 };
 
+const toggleFavorite = async (req, res, next) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const collection = getCollection("anyInformation");
+    const id = new ObjectId(req.params.id);
+    const entry = await collection.findOne({ _id: id });
+
+    if (!entry) {
+      return res.status(404).json({
+        success: false,
+        message: "Entry not found",
+      });
+    }
+
+    const isAdmin = user.email === "admin@gmail.com" && user.password === "admin";
+    const isOwner = entry.email === user.email;
+
+    if (!isAdmin && !isOwner) {
+      return res.status(404).json({
+        success: false,
+        message: "Entry not found",
+      });
+    }
+
+    const isFavorite = entry.isFavorite !== true;
+
+    await collection.updateOne(
+      { _id: id },
+      {
+        $set: {
+          isFavorite,
+        },
+      },
+    );
+
+    const io = req.app.get("io");
+    if (io) {
+      emitEntryToPrivateAudience(io, entry.email, "entry:favorite-updated", {
+        _id: req.params.id,
+        isFavorite,
+      });
+    }
+
+    return res.json({
+      success: true,
+      isFavorite,
+    });
+  } catch (err) {
+    console.error("Favorite toggle error:", err);
+    return next(err);
+  }
+};
+
 const deletePost = async (req, res, next) => {
   try {
     const id = req.params.id;
 
+    if (!req.cookies.email || !req.cookies.password) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return next(createHttpError(404, "Post not found"));
+    }
+
     const collection = getCollection("anyInformation");
+    const entry = await collection.findOne({ _id: new ObjectId(id) });
+
+    if (!entry) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const isAdmin = user.email === "admin@gmail.com" && user.password === "admin";
+    const isOwner = entry.email === user.email;
+
+    if (!isAdmin && !isOwner) {
+      return next(createHttpError(404, "Post not found"));
+    }
 
     const deleteData = await collection.deleteOne({ _id: new ObjectId(id) });
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("entry:deleted", {
+      emitEntryToAudiences({
+        io,
+        ownerEmail: entry.email,
+        event: "entry:deleted",
+        isPublic: entry.isPublic === true,
+        payload: {
         _id: id,
         actionId: req.query.actionId || null,
+        },
       });
     }
 
@@ -944,7 +1184,7 @@ const deleteMasterUser = async (req, res, next) => {
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("user:deleted", {
+      io.to("masters").to("admins").emit("user:deleted", {
         _id: id,
         email: userToDelete?.email || null,
         actionId: req.query.actionId || null,
@@ -1011,6 +1251,7 @@ const getLandingPage = async (req, res, next) => {
       isLoggedIn,
       siteUrl: SITE_URL,
       canonicalUrl: `${SITE_URL}/`,
+      renderMarkdown,
     });
   } catch (err) {
     console.error("Landing page error:", err);
@@ -1034,6 +1275,7 @@ const getEntryPage = async (req, res, next) => {
       entry: normalizePublicEntry(entry),
       siteUrl: SITE_URL,
       canonicalUrl: `${SITE_URL}/entry/${encodeURIComponent(id)}`,
+      renderMarkdown,
     });
   } catch (err) {
     console.error("Public entry page error:", err);
@@ -1157,6 +1399,7 @@ router.get("/logout", logoutUser);
 router.get("/add", getAddPage);
 router.get("/api/entries", getEntriesPage);
 router.post("/api/generate-title", generateTitle);
+router.patch("/api/entries/:id/favorite", requireObjectId, toggleFavorite);
 router.delete("/user/:id", requireObjectId, deleteMasterUser);
 router.get("/update/:id", passInvalidIdToNotFound, getUpdatePage);
 router
@@ -1175,6 +1418,68 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 app.set("io", io);
+
+const parseCookieHeader = (header = "") => {
+  return String(header)
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .reduce((cookies, part) => {
+      const separator = part.indexOf("=");
+      if (separator === -1) return cookies;
+
+      const key = part.slice(0, separator);
+      const value = part.slice(separator + 1);
+
+      try {
+        cookies[key] = decodeURIComponent(value);
+      } catch {
+        cookies[key] = value;
+      }
+
+      return cookies;
+    }, {});
+};
+
+io.use(async (socket, next) => {
+  try {
+    const cookies = parseCookieHeader(socket.handshake.headers.cookie || "");
+    const page = socket.handshake.auth?.page || "public";
+
+    socket.data.page = page;
+
+    socket.join("public");
+
+    if (!cookies.email || !cookies.password) {
+      return next();
+    }
+
+    const user = await findUserByEmail(cookies.email);
+    if (!user || user.password !== cookies.password) {
+      return next();
+    }
+
+    socket.data.user = {
+      email: user.email,
+      isAdmin: user.email === "admin@gmail.com" && user.password === "admin",
+      isMaster: user.email === "master@gmail.com" && user.password === "master",
+    };
+
+    socket.join(getUserRoom(user.email));
+
+    if (socket.data.user.isAdmin) {
+      socket.join("admins");
+    }
+
+    if (socket.data.user.isMaster) {
+      socket.join("masters");
+    }
+
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
 
 io.on("connection", (socket) => {
   console.log(`Socket connected: ${socket.id}`);
