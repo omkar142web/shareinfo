@@ -2220,7 +2220,6 @@
       if (document.getElementById(data._id)) return;
 
       const card = buildCard(data);
-      card.classList.add('card-pending');
       wall.prepend(card);
       emptyPublic.hidden = wall.children.length > 0;
       showToast('New public note appeared');
@@ -2232,7 +2231,6 @@
       if (!card) {
         if (data.isPublic && currentSort === 'updated') {
           const newCard = buildCard(data);
-          newCard.classList.add('card-pending');
           wall.prepend(newCard);
           emptyPublic.hidden = wall.children.length > 0;
         }
