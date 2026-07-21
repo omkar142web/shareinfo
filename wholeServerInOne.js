@@ -1038,10 +1038,23 @@ const updatePost = async (req, res, next) => {
       if (nowPublic) {
         io.to("public").emit("entry:updated", payload);
       } else if (wasPublic) {
-        io.to("public").emit("entry:deleted", {
-          _id: id,
-          actionId: req.body.actionId || null,
-        });
+        // Emit entry:deleted only to public-room sockets that are NOT the
+        // owner's own devices.  The owner already received entry:updated via
+        // their private user room, so sending them entry:deleted would cause
+        // the card to vanish on their other devices.
+        const ownerRoom = getUserRoom(existingEntry.email);
+        const publicSockets = io.sockets.adapter.rooms.get("public");
+        if (publicSockets) {
+          for (const socketId of publicSockets) {
+            const s = io.sockets.sockets.get(socketId);
+            if (s && !s.rooms.has(ownerRoom)) {
+              s.emit("entry:deleted", {
+                _id: id,
+                actionId: req.body.actionId || null,
+              });
+            }
+          }
+        }
       }
     }
 

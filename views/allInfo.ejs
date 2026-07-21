@@ -3575,6 +3575,8 @@ copyButton.title = 'Share Public Link';
         if (data.actionId && data.actionId === lastActionId) return;
         const card = document.getElementById(data._id);
         if (!card) return;
+        // Don't remove own cards — owner already received entry:updated
+        if (currentUserEmail && card.dataset.email === currentUserEmail) return;
         card.classList.add('is-removing');
         setTimeout(() => {
           card.remove();
