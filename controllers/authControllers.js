@@ -37,6 +37,26 @@ const MAX_PAGE_SIZE = 50;
 const GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 
+const getUserRoom = (email = "") => `user:${String(email).toLowerCase()}`;
+
+const emitEntryToPrivateAudience = (io, ownerEmail, event, payload) => {
+  io.to(getUserRoom(ownerEmail)).to("admins").emit(event, payload);
+};
+
+const emitEntryToAudiences = ({
+  io,
+  ownerEmail,
+  event,
+  payload,
+  isPublic = false,
+}) => {
+  io.to(getUserRoom(ownerEmail)).to("admins").emit(event, payload);
+
+  if (isPublic) {
+    io.to("public").emit(event, payload);
+  }
+};
+
 const groq = process.env.GROQ_API_KEY
   ? new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: "https://api.groq.com/openai/v1" })
   : null;
@@ -121,6 +141,8 @@ export const getHome = async (req, res, next) => {
       activeKeyword: keyword,
       activeSort: sort,
       renderMarkdown,
+      currentUserEmail: user.email,
+      isAdmin: user.email === "admin@gmail.com" && user.password === "admin",
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {
@@ -552,7 +574,12 @@ export const createPost = async (req, res, next) => {
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("entry:created", {
+      emitEntryToAudiences({
+        io,
+        ownerEmail: user.email,
+        event: "entry:created",
+        isPublic: req.body.isPublic === true,
+        payload: {
         _id: addedData.insertedId,
         name,
         info,
@@ -563,6 +590,7 @@ export const createPost = async (req, res, next) => {
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
         actionId: req.body.actionId || null,
+        },
       });
     }
 
@@ -688,33 +716,62 @@ export const updatePost = async (req, res, next) => {
     const collection = getCollection("anyInformation");
 
     const { name, info } = req.body;
+    const existingEntry = await collection.findOne({ _id: new ObjectId(id) });
+
+    if (!existingEntry) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const isAdmin =
+      user.email === "admin@gmail.com" && user.password === "admin";
+    const isOwner = existingEntry.email === user.email;
+
+    if (!isAdmin && !isOwner) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const wasPublic = existingEntry.isPublic === true;
+    const nowPublic = req.body.isPublic === true;
+    const now = new Date();
 
     const updatedData = await collection.updateOne(
       {
         _id: new ObjectId(id),
-        // email: user.email, // ownership protection (but not needed, cant update using admin or master account)
       },
       {
         $set: {
           name,
           info,
-          isPublic: req.body.isPublic === true,
-          updatedAt: new Date(),
+          isPublic: nowPublic,
+          updatedAt: now,
         },
       },
     );
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("entry:updated", {
+      const payload = {
         _id: id,
         name,
         info,
-        isPublic: req.body.isPublic === true,
-        email: user.email,
-        updatedAt: new Date().toISOString(),
+        isPublic: nowPublic,
+        isFavorite: existingEntry.isFavorite === true,
+        email: existingEntry.email,
+        ownerName: existingEntry.ownerName,
+        updatedAt: now.toISOString(),
         actionId: req.body.actionId || null,
-      });
+      };
+
+      emitEntryToPrivateAudience(io, existingEntry.email, "entry:updated", payload);
+
+      if (nowPublic) {
+        io.to("public").emit("entry:updated", payload);
+      } else if (wasPublic) {
+        io.to("public").emit("entry:deleted", {
+          _id: id,
+          actionId: req.body.actionId || null,
+        });
+      }
     }
 
     res.status(200).json({
@@ -780,7 +837,7 @@ export const toggleFavorite = async (req, res, next) => {
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("entry:favorite-updated", {
+      emitEntryToPrivateAudience(io, entry.email, "entry:favorite-updated", {
         _id: req.params.id,
         isFavorite,
       });
@@ -800,7 +857,31 @@ export const deletePost = async (req, res, next) => {
   try {
     const id = req.params.id;
 
+    if (!req.cookies.email || !req.cookies.password) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const user = await findUserByEmail(req.cookies.email);
+
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return next(createHttpError(404, "Post not found"));
+    }
+
     const collection = getCollection("anyInformation");
+    const entry = await collection.findOne({ _id: new ObjectId(id) });
+
+    if (!entry) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    const isAdmin =
+      user.email === "admin@gmail.com" && user.password === "admin";
+    const isOwner = entry.email === user.email;
+
+    if (!isAdmin && !isOwner) {
+      return next(createHttpError(404, "Post not found"));
+    }
 
     const deleteData = await collection.deleteOne({
       _id: new ObjectId(id),
@@ -808,9 +889,15 @@ export const deletePost = async (req, res, next) => {
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("entry:deleted", {
+      emitEntryToAudiences({
+        io,
+        ownerEmail: entry.email,
+        event: "entry:deleted",
+        isPublic: entry.isPublic === true,
+        payload: {
         _id: id,
         actionId: req.query.actionId || null,
+        },
       });
     }
 
@@ -835,7 +922,7 @@ export const deleteMasterUser = async (req, res, next) => {
 
     const io = req.app.get("io");
     if (io) {
-      io.emit("user:deleted", {
+      io.to("masters").to("admins").emit("user:deleted", {
         _id: id,
         email: userToDelete?.email || null,
         actionId: req.query.actionId || null,

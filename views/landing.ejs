@@ -2125,7 +2125,7 @@
       observer.observe(sentinel);
     }
 
-    const socket = io();
+    const socket = io({ auth: { page: 'public' } });
     let lastActionId = null;
 
     socket.on('entry:created', (data) => {

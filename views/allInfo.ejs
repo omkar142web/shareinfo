@@ -2148,6 +2148,8 @@
       let exhausted = !initialPagination.hasMore;
       let observer;
       const activeVisibility = '<%= activeVisibility || "all" %>';
+      const currentUserEmail = <%- JSON.stringify(typeof currentUserEmail !== "undefined" ? currentUserEmail : "") %>;
+      const isAdminUser = <%= typeof isAdmin !== "undefined" ? Boolean(isAdmin) : false %>;
       let searchKeyword = <%- JSON.stringify(typeof activeKeyword !== "undefined" ? activeKeyword : "") %>;
       let currentSort = '<%= typeof activeSort !== "undefined" ? activeSort : "updated" %>';
 
@@ -2649,9 +2651,16 @@
       }
 
       function shouldShowInCurrentFilter(item) {
-        if (activeVisibility === 'favorite') return item.isFavorite === true;
+        if (type === 'master' || isAdminUser) {
+          if (activeVisibility === 'favorite') return item.isFavorite === true;
+          if (activeVisibility === 'public') return item.isPublic === true;
+          if (activeVisibility === 'private') return item.isPublic !== true;
+          return true;
+        }
+        const isOwn = item.email === currentUserEmail;
+        if (activeVisibility === 'private') return isOwn && item.isPublic !== true;
+        if (activeVisibility === 'favorite') return isOwn && item.isFavorite === true;
         if (activeVisibility === 'public') return item.isPublic === true;
-        if (activeVisibility === 'private') return item.isPublic !== true;
         return true;
       }
 
@@ -3438,7 +3447,7 @@ copyButton.title = 'Share Public Link';
         scrollToHashedCard();
       });
 
-      const socket = io();
+      const socket = io({ auth: { page: 'dashboard' } });
       let lastActionId = null;
 
       socket.on('entry:created', (data) => {
