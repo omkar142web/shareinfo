@@ -688,7 +688,7 @@
 
     .info-card.card-pending .card-text {
       position: relative;
-      min-height: 92px;
+      min-height: 140px;   /* was 92px — room for 6 bars */
       color: transparent;
       overflow: hidden;
     }
@@ -706,10 +706,12 @@
         linear-gradient(#2a3f63, #2a3f63),
         linear-gradient(#2a3f63, #2a3f63),
         linear-gradient(#2a3f63, #2a3f63),
+        linear-gradient(#2a3f63, #2a3f63),
+        linear-gradient(#2a3f63, #2a3f63),
         linear-gradient(#2a3f63, #2a3f63);
       background-repeat: no-repeat;
-      background-size: 80% 12px, 100% 12px, 60% 12px, 90% 12px;
-      background-position: 0 0, 0 24px, 0 48px, 0 72px;
+      background-size: 80% 12px, 100% 12px, 60% 12px, 90% 12px, 75% 12px, 45% 12px;
+      background-position: 0 0, 0 24px, 0 48px, 0 72px, 0 96px, 0 120px;
       border-radius: 4px;
       animation: skeleton-pulse 1.8s ease-in-out infinite;
     }
@@ -727,29 +729,33 @@
         rgba(255, 255, 255, 0.05) 57%,
         transparent 65%
       );
-      background-size: 250% 100%;
-      animation: skeleton-shimmer 1.25s linear infinite;
+      background-repeat: no-repeat;
+      background-size: 600px 100%;
+      background-attachment: fixed;
+      animation: skeleton-shimmer 1.8s linear infinite;
 
       -webkit-mask-image:
+        linear-gradient(#000, #000), linear-gradient(#000, #000),
         linear-gradient(#000, #000), linear-gradient(#000, #000),
         linear-gradient(#000, #000), linear-gradient(#000, #000);
       mask-image:
         linear-gradient(#000, #000), linear-gradient(#000, #000),
+        linear-gradient(#000, #000), linear-gradient(#000, #000),
         linear-gradient(#000, #000), linear-gradient(#000, #000);
       -webkit-mask-repeat: no-repeat;
       mask-repeat: no-repeat;
-      -webkit-mask-size: 80% 12px, 100% 12px, 60% 12px, 90% 12px;
-      mask-size: 80% 12px, 100% 12px, 60% 12px, 90% 12px;
-      -webkit-mask-position: 0 0, 0 24px, 0 48px, 0 72px;
-      mask-position: 0 0, 0 24px, 0 48px, 0 72px;
+      -webkit-mask-size: 80% 12px, 100% 12px, 60% 12px, 90% 12px, 75% 12px, 45% 12px;
+      mask-size: 80% 12px, 100% 12px, 60% 12px, 90% 12px, 75% 12px, 45% 12px;
+      -webkit-mask-position: 0 0, 0 24px, 0 48px, 0 72px, 0 96px, 0 120px;
+      mask-position: 0 0, 0 24px, 0 48px, 0 72px, 0 96px, 0 120px;
     }
 
     @keyframes skeleton-shimmer {
-      from {
-        background-position: 200% 0;
+      0% {
+        background-position: -600px 0;
       }
-      to {
-        background-position: -200% 0;
+      100% {
+        background-position: 100vw 0;
       }
     }
 
