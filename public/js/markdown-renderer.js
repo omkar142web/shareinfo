@@ -211,40 +211,6 @@
       if (window.hljs) {
         window.hljs.highlightElement(code);
       }
-
-      var pre = code.parentElement;
-      if (!pre || pre.querySelector('.md-copy-code')) return;
-
-      var button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'md-copy-code';
-      button.textContent = 'Copy';
-      button.addEventListener('click', function (event) {
-        event.stopPropagation();
-        var text = code.textContent || '';
-        var done = function () {
-          button.textContent = 'Copied';
-          setTimeout(function () {
-            button.textContent = 'Copy';
-          }, 1200);
-        };
-
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(text).then(done).catch(function () {});
-          return;
-        }
-
-        var textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.left = '-9999px';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        textarea.remove();
-        done();
-      });
-      pre.appendChild(button);
     });
   }
 
@@ -253,9 +219,18 @@
       return '<p>' + escapeHtml(text).replace(/\n/g, '<br>') + '</p>';
     }
 
+    var renderer = new window.marked.Renderer();
+    renderer.code = function (token) {
+      var text = token.text || '';
+      var lang = token.lang || '';
+      var langAttr = lang ? ' language-' + escapeHtml(lang) : '';
+      return '<div class="md-code-block' + langAttr + '">' + escapeHtml(text) + '</div>';
+    };
+
     window.marked.setOptions({
       breaks: true,
       gfm: true,
+      renderer: renderer,
     });
 
     var html = window.marked.parse(prepareMarkdownSource(text));

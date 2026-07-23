@@ -41,6 +41,7 @@
 .md-content ol,
 .md-content blockquote,
 .md-content pre,
+.md-content .md-code-block,
 .md-content .md-table-wrap {
   margin: 0 0 1em;
 }
@@ -82,12 +83,7 @@
 }
 
 .md-content pre {
-  background: #0f172a;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 8px;
-  overflow: auto;
-  padding: 1em;
-  position: relative;
+  margin: 0 0 1em;
 }
 
 .md-content pre code {
@@ -100,17 +96,11 @@
   white-space: pre;
 }
 
-.md-copy-code {
-  background: rgba(56, 189, 248, 0.14);
-  border: 1px solid rgba(56, 189, 248, 0.36);
-  border-radius: 6px;
-  color: #bae6fd;
-  cursor: pointer;
-  font: 700 11px/1 "DM Sans", system-ui, sans-serif;
-  padding: 6px 8px;
-  position: absolute;
-  right: 8px;
-  top: 8px;
+.md-content .md-code-block {
+  margin: 0 0 1em;
+  font-size: 0.9em;
+  white-space: pre;
+  color: inherit;
 }
 
 .md-table-wrap {
@@ -151,7 +141,7 @@
   font-size: 1em;
 }
 
-.card-text.md-content pre,
+.card-text.md-content .md-code-block,
 .card-text.md-content .md-table-wrap {
   max-height: 180px;
 }
