@@ -73,6 +73,8 @@
         fuzzyLink: true,
       });
 
+      window.shareInfoLinkifier.tlds('site', true);
+
       window.shareInfoLinkifier.add('tel:', {
         validate: function (text, pos) {
           var tail = text.slice(pos);
