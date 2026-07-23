@@ -105,11 +105,21 @@
 
 .md-table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.md-table-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.md-table-wrap {
+  scrollbar-width: none;
 }
 
 .md-content table {
   border-collapse: collapse;
-  min-width: 100%;
+  min-width: max-content;
+  width: 100%;
 }
 
 .md-content th,
