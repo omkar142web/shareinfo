@@ -686,6 +686,7 @@
 
     .info-card:focus-within .card-quick-action {
       opacity: 1;
+      pointer-events: auto;
       transform: translateY(0) scale(1);
     }
 
@@ -912,6 +913,7 @@
       align-items: center;
       justify-content: center;
       opacity: 0;
+      pointer-events: none;
       transform: translateY(-2px) scale(0.92);
       backdrop-filter: blur(8px);
       transition:
@@ -927,31 +929,33 @@
       transition: fill 0.2s ease, transform 0.2s ease;
     }
 
-    @media (hover: hover) {
+    .info-card:hover .card-quick-action,
+    .card-quick-action:focus-visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
 
-      .info-card:hover .card-quick-action,
-      .card-quick-action:hover,
-      .card-quick-action:focus-visible {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+    .card-quick-action:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.24);
+    }
 
+    @media (pointer: coarse) {
       .card-quick-action:hover {
-        background: rgba(255, 255, 255, 0.06);
-        color: #ffffff;
-        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.24);
+        background: transparent;
+        color: rgba(255, 255, 255, 0.65);
+        box-shadow: none;
       }
     }
 
-    @media (hover: none) {
-      .card-quick-actions {
-        /* gap: 8px; */
-      }
-
+    @media (max-width: 680px) {
       .card-quick-action {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         opacity: 0.75;
+        pointer-events: auto;
         transform: translateY(0) scale(1);
       }
     }
@@ -962,12 +966,16 @@
     }
 
     .card-quick-action:active {
+      background: rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.24);
       transform: translateY(0) scale(0.95);
     }
 
     .card-copy-icon.is-copied {
       color: var(--success);
       opacity: 1;
+      pointer-events: auto;
       transform: translateY(0) scale(1.08);
     }
 
@@ -977,6 +985,7 @@
       box-shadow: 0 0 14px rgba(255, 213, 74, 0.18); */
       color: #ffd54a;
       opacity: 1;
+      pointer-events: auto;
       transform: translateY(0) scale(1);
     }
 
