@@ -1156,15 +1156,36 @@
       transition-duration: 0.06s;
     }
 
-    /* ── Empty state ─────────────────────────────────── */
+    /* ── Empty state (Glassmorphism & Cyan Glow) ──────── */
     .empty-state {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 100px 24px;
+      padding: 70px 24px;
       text-align: center;
-      gap: 20px;
+      gap: 18px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: emptyStateFadeIn 0.4s ease-out forwards;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .empty-state.empty-animate {
+      animation: emptyStateFadeIn 0.4s ease-out forwards;
+    }
+
+    @keyframes emptyStateFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .empty-glyph {
@@ -1180,19 +1201,204 @@
       backdrop-filter: blur(12px);
     }
 
+    .empty-state-illustration {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+
+    .empty-glow-bg {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, rgba(6, 182, 212, 0.04) 55%, transparent 75%);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(12px);
+    }
+
+    .empty-orbit-ring {
+      position: absolute;
+      inset: 12px;
+      border: 1.5px dashed rgba(56, 189, 248, 0.25);
+      border-radius: 50%;
+      animation: orbitRotate 28s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes orbitRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-orbit-ring .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 10px #38bdf8, 0 0 20px rgba(56, 189, 248, 0.8);
+    }
+
+    .empty-orbit-ring .p1 { top: -3px; left: 50%; transform: translateX(-50%); }
+    .empty-orbit-ring .p2 { bottom: 22%; right: -2px; }
+    .empty-orbit-ring .p3 { bottom: 15%; left: 2%; }
+
+    .floating-plus {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(56, 189, 248, 0.65);
+      text-shadow: 0 0 8px rgba(56, 189, 248, 0.45);
+      user-select: none;
+      animation: floatPlus 4s ease-in-out infinite alternate;
+    }
+
+    .floating-plus.plus-1 { top: 12px; left: 16px; animation-delay: 0s; }
+    .floating-plus.plus-2 { bottom: 24px; right: 18px; animation-delay: 1.3s; }
+    .floating-plus.plus-3 { top: 50%; right: -8px; animation-delay: 2.5s; }
+
+    @keyframes floatPlus {
+      0% { transform: translateY(0) scale(0.9); opacity: 0.4; }
+      100% { transform: translateY(-7px) scale(1.15); opacity: 0.95; }
+    }
+
+    .empty-graphic-wrapper {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-doc-card {
+      position: absolute;
+      width: 80px;
+      height: 96px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-hi);
+      border-radius: 12px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.1);
+      padding: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transform: rotate(-6deg) translateY(2px);
+      transition: transform 0.3s ease;
+    }
+
+    .doc-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .doc-badge {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.25);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .doc-lines {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .doc-line {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .doc-line.line-1 { width: 80%; background: rgba(56, 189, 248, 0.45); }
+    .doc-line.line-2 { width: 50%; }
+    .doc-line.line-3 { width: 100%; }
+    .doc-line.line-4 { width: 90%; }
+    .doc-line.line-5 { width: 65%; }
+
+    .doc-body {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 4px;
+    }
+
+    .empty-magnifier {
+      position: absolute;
+      right: -8px;
+      bottom: -6px;
+      z-index: 2;
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.65));
+      animation: floatMagnifier 3.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatMagnifier {
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(-7px) rotate(-4deg); }
+    }
+
     .empty-title {
       font-family: var(--font-display);
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.04em;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      margin-bottom: 2px;
     }
 
     .empty-desc {
-      max-width: 340px;
-      font-size: 14px;
+      max-width: 420px;
+      font-size: 15px;
       color: var(--text-2);
-      line-height: 1.65;
+      line-height: 1.6;
+    }
+
+    .empty-desc .query,
+    .empty-search-highlight {
+      display: inline-block;
+      margin-top: 4px;
+      color: #38bdf8;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+      word-break: break-all;
+    }
+
+    .btn-retry {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: rgba(6, 15, 28, 0.4);
+      color: #38bdf8;
+      font-weight: 600;
+      font-size: 14.5px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.08);
+    }
+
+    .btn-retry:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.65);
+      color: #67e0ff;
+      box-shadow: 0 0 24px rgba(56, 189, 248, 0.22);
+    }
+
+    .empty-action-wrap {
+      margin-top: 8px;
     }
 
     /* ── Modal overlay ───────────────────────────────── */
@@ -1976,9 +2182,12 @@
       <% } %>
 
       <!-- ── Empty state ── -->
-      <% if (typeof data === 'undefined' || data.length === 0) { %>
-      <div class="empty-state">
-        <div class="empty-glyph" aria-hidden="true">
+      <%
+        const currentKeyword = (typeof activeKeyword === 'string') ? activeKeyword.trim() : '';
+        const currentVis = (typeof activeVisibility === 'string') ? activeVisibility.trim() : 'all';
+      %>
+      <div class="empty-state" id="emptyState" style="<%= (typeof data !== 'undefined' && data.length > 0) ? 'display: none;' : '' %>">
+        <div class="empty-glyph" id="emptyGlyph" aria-hidden="true" style="<%= (currentKeyword || currentVis !== 'all') ? 'display: none;' : '' %>">
           <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
@@ -1986,17 +2195,87 @@
             <line x1="9" y1="15" x2="15" y2="15" />
           </svg>
         </div>
-        <h2 class="empty-title">Your wall is empty</h2>
-        <p class="empty-desc">Start building your personal info wall. Add links, notes, and data you want to keep.</p>
-        <button class="btn-primary" onclick="window.location.href='add'">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          Add your first entry
-        </button>
+        <div class="empty-state-illustration" id="emptyIllustration" aria-hidden="true" style="<%= (!currentKeyword && currentVis === 'all') ? 'display: none;' : '' %>">
+          <!-- Radial background glow -->
+          <div class="empty-glow-bg"></div>
+
+          <!-- Orbit ring with cyan particles & floating plus signs -->
+          <div class="empty-orbit-ring">
+            <div class="particle p1"></div>
+            <div class="particle p2"></div>
+            <div class="particle p3"></div>
+            <div class="floating-plus plus-1">+</div>
+            <div class="floating-plus plus-2">+</div>
+            <div class="floating-plus plus-3">+</div>
+          </div>
+
+          <!-- Document + Floating Magnifying Glass Illustration -->
+          <div class="empty-graphic-wrapper">
+            <div class="empty-doc-card">
+              <div class="doc-header">
+                <span class="doc-badge"></span>
+                <div class="doc-lines">
+                  <span class="doc-line line-1"></span>
+                  <span class="doc-line line-2"></span>
+                </div>
+              </div>
+              <div class="doc-body">
+                <span class="doc-line line-3"></span>
+                <span class="doc-line line-4"></span>
+                <span class="doc-line line-5"></span>
+              </div>
+            </div>
+
+            <div class="empty-magnifier">
+              <svg width="60" height="60" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="28" cy="28" r="18" stroke="url(#cyanGlowGrad)" stroke-width="3.5" fill="rgba(13, 22, 40, 0.75)"/>
+                <line x1="41" y1="41" x2="56" y2="56" stroke="url(#cyanGlowGrad)" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M20 20A12 12 0 0 1 34 16" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="cyanGlowGrad" x1="10" y1="10" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#38bdf8"/>
+                    <stop offset="1" stop-color="#06b6d4"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="empty-title">
+          <% if (currentKeyword) { %>
+            No results found
+          <% } else if (currentVis !== 'all') { %>
+            No <%= currentVis.charAt(0).toUpperCase() + currentVis.slice(1) %> entries
+          <% } else { %>
+            Your wall is empty
+          <% } %>
+        </h2>
+        <p class="empty-desc">
+          <% if (currentKeyword) { %>
+            We couldn't find any entries matching<br><span class="query">"<%= currentKeyword %>"</span>
+          <% } else if (currentVis !== 'all') { %>
+            You don't have any <span class="query"><%= currentVis %></span> entries saved yet.
+          <% } else { %>
+            Start building your personal info wall. Add links, notes, and data you want to keep.
+          <% } %>
+        </p>
+        <div class="empty-action-wrap">
+          <% if (currentKeyword) { %>
+            <button class="btn-retry" type="button" id="emptyRetryBtn">
+              <i class="ti ti-search" aria-hidden="true"></i> Try a different search
+            </button>
+          <% } else if (currentVis !== 'all') { %>
+            <button class="btn-retry" type="button" id="emptyRetryBtn">
+              <i class="ti ti-filter-off" aria-hidden="true"></i> Show all entries
+            </button>
+          <% } else { %>
+            <button class="btn-primary" type="button" onclick="window.location.href='/add'">
+              <i class="ti ti-plus" aria-hidden="true"></i> Add your first entry
+            </button>
+          <% } %>
+        </div>
       </div>
-      <% } %>
       <!-- ── Masonry wall ── -->
       <div class="masonry-wall" id="masonryWall">
       <% if (typeof data !== 'undefined' && data.length > 0) { %>
@@ -2258,6 +2537,10 @@
       let searchKeyword = <%- JSON.stringify(typeof activeKeyword !== "undefined" ? activeKeyword : "") %>;
       let currentSort = '<%= typeof activeSort !== "undefined" ? activeSort : "updated" %>';
 
+      function escapeHTML(value = '') {
+        return String(value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+      }
+
       const wall = document.getElementById('masonryWall');
       document.querySelectorAll('.info-card .card-text.md-content').forEach(function (el) {
         var info = (el.closest('.info-card') || {}).dataset || {};
@@ -2364,6 +2647,82 @@
         }
       }
 
+      function updateEmptyState(keyword = searchKeyword, visibility = activeVisibility) {
+        const emptyState = document.getElementById('emptyState');
+        const wall = document.getElementById('masonryWall');
+        if (!emptyState || !wall) return;
+
+        const hasCards = wall.querySelectorAll('.info-card').length > 0;
+        if (hasCards) {
+          emptyState.style.display = 'none';
+          return;
+        }
+
+        const glyph = document.getElementById('emptyGlyph');
+        const illustration = document.getElementById('emptyIllustration');
+        const trimmedKey = (keyword || '').trim();
+        const isSearchEmpty = !!trimmedKey;
+        const isFilterEmpty = visibility && visibility !== 'all';
+
+        if (glyph) glyph.style.display = (!isSearchEmpty && !isFilterEmpty) ? 'flex' : 'none';
+        if (illustration) illustration.style.display = (isSearchEmpty || isFilterEmpty) ? 'flex' : 'none';
+
+        emptyState.style.display = 'flex';
+        emptyState.classList.remove('empty-animate');
+        void emptyState.offsetWidth;
+        emptyState.classList.add('empty-animate');
+
+        const titleEl = emptyState.querySelector('.empty-title');
+        const descEl = emptyState.querySelector('.empty-desc');
+        const actionWrap = emptyState.querySelector('.empty-action-wrap');
+
+        const truncatedKey = trimmedKey.length > 60 ? trimmedKey.slice(0, 60) + '\u2026' : trimmedKey;
+
+        if (trimmedKey) {
+          if (titleEl) titleEl.textContent = 'No results found';
+          if (descEl) {
+            descEl.innerHTML = `We couldn't find any entries matching<br><span class="query">"${escapeHTML(truncatedKey)}"</span>`;
+          }
+          if (actionWrap) {
+            actionWrap.innerHTML = `
+              <button class="btn-retry" type="button" id="emptyRetryBtn">
+                <i class="ti ti-search" aria-hidden="true"></i> Try a different search
+              </button>
+            `;
+          }
+        } else if (visibility && visibility !== 'all') {
+          const visName = visibility.charAt(0).toUpperCase() + visibility.slice(1);
+          if (titleEl) titleEl.textContent = `No ${visName} entries`;
+          if (descEl) {
+            descEl.innerHTML = `You don't have any <span class="query">${escapeHTML(visibility)}</span> entries saved yet.`;
+          }
+          if (actionWrap) {
+            actionWrap.innerHTML = `
+              <button class="btn-retry" type="button" id="emptyRetryBtn">
+                <i class="ti ti-filter-off" aria-hidden="true"></i> Show all entries
+              </button>
+            `;
+            document.getElementById('emptyRetryBtn')?.addEventListener('click', () => {
+              const filterAllBtn = document.querySelector('.filter-btn[data-filter="all"]');
+              if (filterAllBtn) filterAllBtn.click();
+              else {
+                window.location.href = '/';
+              }
+            });
+          }
+        } else {
+          if (titleEl) titleEl.textContent = 'Your wall is empty';
+          if (descEl) descEl.textContent = 'Start building your personal info wall. Add links, notes, and data you want to keep.';
+          if (actionWrap) {
+            actionWrap.innerHTML = `
+              <button class="btn-primary" type="button" onclick="window.location.href='/add'">
+                <i class="ti ti-plus" aria-hidden="true"></i> Add your first entry
+              </button>
+            `;
+          }
+        }
+      }
+
       async function runSearch(keyword) {
         searchKeyword = keyword.trim();
         try {
@@ -2378,7 +2737,6 @@
             totalEntryCount = page.totalCount;
           }
           const wall = document.getElementById('masonryWall');
-          const emptyState = document.querySelector('.empty-state');
           if (wall) {
             wall.textContent = '';
             wall.style.display = '';
@@ -2388,7 +2746,7 @@
               updateAllCardBadges();
             }
           }
-          if (emptyState) emptyState.style.display = 'none';
+          updateEmptyState(searchKeyword, activeVisibility);
           nextCursor = page.nextCursor || null;
           exhausted = !page.hasMore || !nextCursor;
           if (exhausted) finishFeed();
@@ -2414,9 +2772,24 @@
       document.getElementById('clearSearch')?.addEventListener('click', () => {
         clearTimeout(searchTimer);
         const input = document.getElementById('searchInput');
-        if (input) input.value = '';
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
         setClearSearchVisibility('');
         runSearch('');
+      });
+
+      document.addEventListener('click', (event) => {
+        if (event.target.closest('#emptyRetryBtn')) {
+          const input = document.getElementById('searchInput');
+          if (input) {
+            input.value = '';
+            input.focus();
+          }
+          setClearSearchVisibility('');
+          runSearch('');
+        }
       });
 
       document.getElementById('sortToggle')?.addEventListener('click', () => {
@@ -2449,7 +2822,17 @@
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
           const menu = document.getElementById('sortMenu');
-          if (menu && !menu.hidden) closeSortMenu();
+          if (menu && !menu.hidden) {
+            closeSortMenu();
+            return;
+          }
+          const searchInput = document.getElementById('searchInput');
+          if (searchInput && (searchInput.value.trim() !== '' || document.activeElement === searchInput)) {
+            searchInput.value = '';
+            setClearSearchVisibility('');
+            searchInput.blur();
+            runSearch('');
+          }
         }
       });
 
@@ -3687,8 +4070,7 @@ copyButton.title = 'Share Public Link';
           updateAllCardBadges();
           const wall = document.getElementById('masonryWall');
           if (wall && !wall.querySelector('.info-card')) {
-            const emptyState = document.getElementById('emptyState');
-            if (emptyState) emptyState.style.display = '';
+            updateEmptyState(searchKeyword, activeVisibility);
           }
         }, 600);
       });
@@ -3706,6 +4088,9 @@ copyButton.title = 'Share Public Link';
               card.remove();
               totalEntryCount = Math.max(0, totalEntryCount - 1);
               updateAllCardBadges();
+              if (wall && !wall.querySelector('.info-card')) {
+                updateEmptyState(searchKeyword, activeVisibility);
+              }
             }, 600);
           }
         });

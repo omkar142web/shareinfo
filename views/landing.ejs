@@ -892,6 +892,250 @@
       text-underline-offset: 3px;
     }
 
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 70px 24px;
+      text-align: center;
+      gap: 18px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: emptyStateFadeIn 0.4s ease-out forwards;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .empty-state.empty-animate {
+      animation: emptyStateFadeIn 0.4s ease-out forwards;
+    }
+
+    @keyframes emptyStateFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .empty-glyph {
+      width: 96px;
+      height: 96px;
+      border-radius: 28px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-3);
+      backdrop-filter: blur(12px);
+    }
+
+    .empty-state-illustration {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+
+    .empty-glow-bg {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, rgba(6, 182, 212, 0.04) 55%, transparent 75%);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(12px);
+    }
+
+    .empty-orbit-ring {
+      position: absolute;
+      inset: 12px;
+      border: 1.5px dashed rgba(56, 189, 248, 0.25);
+      border-radius: 50%;
+      animation: orbitRotate 28s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes orbitRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-orbit-ring .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 10px #38bdf8, 0 0 20px rgba(56, 189, 248, 0.8);
+    }
+
+    .empty-orbit-ring .p1 { top: -3px; left: 50%; transform: translateX(-50%); }
+    .empty-orbit-ring .p2 { bottom: 22%; right: -2px; }
+    .empty-orbit-ring .p3 { bottom: 15%; left: 2%; }
+
+    .floating-plus {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(56, 189, 248, 0.65);
+      text-shadow: 0 0 8px rgba(56, 189, 248, 0.45);
+      user-select: none;
+      animation: floatPlus 4s ease-in-out infinite alternate;
+    }
+
+    .floating-plus.plus-1 { top: 12px; left: 16px; animation-delay: 0s; }
+    .floating-plus.plus-2 { bottom: 24px; right: 18px; animation-delay: 1.3s; }
+    .floating-plus.plus-3 { top: 50%; right: -8px; animation-delay: 2.5s; }
+
+    @keyframes floatPlus {
+      0% { transform: translateY(0) scale(0.9); opacity: 0.4; }
+      100% { transform: translateY(-7px) scale(1.15); opacity: 0.95; }
+    }
+
+    .empty-graphic-wrapper {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-doc-card {
+      position: absolute;
+      width: 80px;
+      height: 96px;
+      background: var(--surface-1);
+      border: 1px solid var(--border-hi);
+      border-radius: 12px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.1);
+      padding: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transform: rotate(-6deg) translateY(2px);
+      transition: transform 0.3s ease;
+    }
+
+    .doc-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .doc-badge {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.25);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .doc-lines {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .doc-line {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .doc-line.line-1 { width: 80%; background: rgba(56, 189, 248, 0.45); }
+    .doc-line.line-2 { width: 50%; }
+    .doc-line.line-3 { width: 100%; }
+    .doc-line.line-4 { width: 90%; }
+    .doc-line.line-5 { width: 65%; }
+
+    .doc-body {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 4px;
+    }
+
+    .empty-magnifier {
+      position: absolute;
+      right: -8px;
+      bottom: -6px;
+      z-index: 2;
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.65));
+      animation: floatMagnifier 3.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatMagnifier {
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(-7px) rotate(-4deg); }
+    }
+
+    .empty-title {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      margin-bottom: 2px;
+    }
+
+    .empty-desc {
+      max-width: 420px;
+      font-size: 15px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+
+    .empty-desc .query,
+    .empty-search-highlight {
+      display: inline-block;
+      margin-top: 4px;
+      color: #38bdf8;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+      word-break: break-all;
+    }
+
+    .btn-retry {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: rgba(6, 15, 28, 0.4);
+      color: #38bdf8;
+      font-weight: 600;
+      font-size: 14.5px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.08);
+    }
+
+    .btn-retry:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.65);
+      color: #67e0ff;
+      box-shadow: 0 0 24px rgba(56, 189, 248, 0.22);
+    }
+
+    .empty-action-wrap {
+      margin-top: 8px;
+    }
+
     .empty-public,
     .end-of-feed {
       color: var(--text-3);
@@ -1568,7 +1812,65 @@
       </div>
 
       <div class="masonry-wall" id="masonryWall"></div>
-      <p class="empty-public" id="emptyPublic" hidden>No public notes found.</p>
+      <!-- ── Empty state ── -->
+      <div class="empty-state" id="emptyState" hidden>
+        <div class="empty-glyph" id="emptyGlyph" aria-hidden="true" style="display: none;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="12" y1="18" x2="12" y2="12" />
+            <line x1="9" y1="15" x2="15" y2="15" />
+          </svg>
+        </div>
+        <div class="empty-state-illustration" id="emptyIllustration" aria-hidden="true">
+          <div class="empty-glow-bg"></div>
+          <div class="empty-orbit-ring">
+            <div class="particle p1"></div>
+            <div class="particle p2"></div>
+            <div class="particle p3"></div>
+            <div class="floating-plus plus-1">+</div>
+            <div class="floating-plus plus-2">+</div>
+            <div class="floating-plus plus-3">+</div>
+          </div>
+          <div class="empty-graphic-wrapper">
+            <div class="empty-doc-card">
+              <div class="doc-header">
+                <span class="doc-badge"></span>
+                <div class="doc-lines">
+                  <span class="doc-line line-1"></span>
+                  <span class="doc-line line-2"></span>
+                </div>
+              </div>
+              <div class="doc-body">
+                <span class="doc-line line-3"></span>
+                <span class="doc-line line-4"></span>
+                <span class="doc-line line-5"></span>
+              </div>
+            </div>
+            <div class="empty-magnifier">
+              <svg width="60" height="60" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="28" cy="28" r="18" stroke="url(#cyanGlowGradLanding)" stroke-width="3.5" fill="rgba(13, 22, 40, 0.75)"/>
+                <line x1="41" y1="41" x2="56" y2="56" stroke="url(#cyanGlowGradLanding)" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M20 20A12 12 0 0 1 34 16" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="cyanGlowGradLanding" x1="10" y1="10" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#38bdf8"/>
+                    <stop offset="1" stop-color="#06b6d4"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="empty-title">No results found</h2>
+        <p class="empty-desc">We couldn't find any entries matching<br><span class="query"></span></p>
+        <div class="empty-action-wrap">
+          <button class="btn-retry" type="button" id="emptyRetryBtn">
+            <i class="ti ti-search" aria-hidden="true"></i> Try a different search
+          </button>
+        </div>
+      </div>
       <div class="feed-loading" id="loadSpinner" hidden>Loading...</div>
       <div class="end-of-feed" id="endOfFeed" <% if (typeof hasMore !== 'undefined' && hasMore) { %>hidden<% } %>>You've seen everything public.</div>
       <div id="scrollSentinel" style="height: 1px"></div>
@@ -1634,6 +1936,10 @@
     let searchKeyword = '';
     let currentSort = 'updated';
     let observer;
+
+    function escapeHTML(value = '') {
+      return String(value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
 
     const wall = document.getElementById('masonryWall');
 
@@ -1935,12 +2241,63 @@
       return card;
     }
 
+    function updateEmptyState(keyword = searchKeyword) {
+      const emptyState = document.getElementById('emptyState');
+      const wall = document.getElementById('masonryWall');
+      if (!emptyState || !wall) return;
+
+      const hasCards = wall.children.length > 0;
+      if (hasCards) {
+        emptyState.hidden = true;
+        return;
+      }
+
+      const glyph = document.getElementById('emptyGlyph');
+      const illustration = document.getElementById('emptyIllustration');
+      const trimmedKey = (keyword || '').trim();
+      const isSearchEmpty = !!trimmedKey;
+
+      if (glyph) glyph.style.display = isSearchEmpty ? 'none' : 'flex';
+      if (illustration) illustration.style.display = isSearchEmpty ? 'flex' : 'none';
+
+      emptyState.hidden = false;
+      emptyState.classList.remove('empty-animate');
+      void emptyState.offsetWidth;
+      emptyState.classList.add('empty-animate');
+
+      const titleEl = emptyState.querySelector('.empty-title');
+      const descEl = emptyState.querySelector('.empty-desc');
+      const actionWrap = emptyState.querySelector('.empty-action-wrap');
+
+      const truncatedKey = trimmedKey.length > 60 ? trimmedKey.slice(0, 60) + '\u2026' : trimmedKey;
+
+      if (trimmedKey) {
+        if (titleEl) titleEl.textContent = 'No results found';
+        if (descEl) {
+          descEl.innerHTML = `We couldn't find any entries matching<br><span class="query">"${escapeHTML(truncatedKey)}"</span>`;
+        }
+        if (actionWrap) {
+          actionWrap.innerHTML = `
+            <button class="btn-retry" type="button" id="emptyRetryBtn">
+              <i class="ti ti-search" aria-hidden="true"></i> Try a different search
+            </button>
+          `;
+        }
+      } else {
+        if (titleEl) titleEl.textContent = 'No public notes found';
+        if (descEl) descEl.textContent = 'No public notes available to display right now.';
+        if (actionWrap) {
+          actionWrap.innerHTML = '';
+        }
+      }
+    }
+
     function renderCards(items, replace = false) {
       if (replace) wall.textContent = '';
       const fragment = document.createDocumentFragment();
       items.forEach((item) => fragment.append(buildCard(item)));
       wall.append(fragment);
-      emptyPublic.hidden = wall.children.length > 0;
+      updateEmptyState(searchKeyword);
     }
 
     async function loadMore() {
@@ -2032,6 +2389,18 @@
       document.getElementById('searchInput').value = '';
       setClearSearchVisibility('');
       runSearch('');
+    });
+
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('#emptyRetryBtn')) {
+        const input = document.getElementById('searchInput');
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
+        setClearSearchVisibility('');
+        runSearch('');
+      }
     });
 
     sortToggle.addEventListener('click', () => {
@@ -2234,7 +2603,7 @@
 
       const card = buildCard(data);
       wall.prepend(card);
-      emptyPublic.hidden = wall.children.length > 0;
+      updateEmptyState(searchKeyword);
       showToast('New public note appeared');
     });
 
@@ -2245,7 +2614,7 @@
         if (data.isPublic && currentSort === 'updated') {
           const newCard = buildCard(data);
           wall.prepend(newCard);
-          emptyPublic.hidden = wall.children.length > 0;
+          updateEmptyState(searchKeyword);
         }
         return;
       }
@@ -2254,7 +2623,7 @@
         card.classList.add('is-removing');
         setTimeout(() => {
           card.remove();
-          emptyPublic.hidden = wall.children.length > 0;
+          updateEmptyState(searchKeyword);
         }, 600);
         return;
       }
@@ -2283,7 +2652,7 @@
       card.classList.add('is-removing');
       setTimeout(() => {
         card.remove();
-        emptyPublic.hidden = wall.children.length > 0;
+        updateEmptyState(searchKeyword);
       }, 600);
     });
   </script>
