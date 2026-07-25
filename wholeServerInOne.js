@@ -351,6 +351,28 @@ const createUser = async (userData) => {
   return await collection.insertOne(userData);
 };
 
+const getUserData = async (email) => {
+  return await getCollection().find({ email }).sort({ _id: -1 }).toArray();
+};
+
+const getAllUsers = async () => {
+  return await getCollection().find().sort({ _id: -1 }).toArray();
+};
+
+const getAllUsersForMaster = async () => {
+  return await getCollection("users").find().sort({ _id: -1 }).toArray();
+};
+
+const updateUser = async (email, updateData) => {
+  const collection = getCollection("users");
+  return await collection.updateOne({ email }, { $set: updateData });
+};
+
+const deleteUser = async (email) => {
+  const collection = getCollection("users");
+  return await collection.deleteOne({ email });
+};
+
 const getPagedUserData = async (email, cursor, limit = 20) => {
   return getPagedCollection({ cursor, filter: { email }, limit });
 };
