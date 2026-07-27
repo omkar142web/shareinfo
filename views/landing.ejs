@@ -1170,7 +1170,8 @@
 
     .modal-glass {
       width: 100%;
-      max-width: 620px;
+      /* max-width: 620px; */
+      max-width: 710px;
       max-height: 88dvh;
       background: rgba(14, 22, 40, 0.9);
       border: 1px solid var(--border-hi);
@@ -1522,6 +1523,15 @@
       .header-actions .home-btn svg {
         width: 14px;
         height: 14px;
+      }
+    }
+
+    @media (max-width: 630px){
+      .modal-glass {
+        max-height: 100dvh;
+      }
+      .modal-overlay {
+        padding: 0px;
       }
     }
 

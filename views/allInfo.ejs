@@ -1427,7 +1427,8 @@
 
     .modal-glass {
       width: 100%;
-      max-width: 620px;
+      /* max-width: 620px; */
+      max-width: 710px;
       max-height: 88dvh;
       background: rgba(14, 22, 40, 0.9);
       border: 1px solid var(--border-hi);
@@ -1784,7 +1785,8 @@
       }
 
       .modal-glass {
-        max-height: 92dvh;
+        /* max-height: 92dvh; */
+        /* max-height: 100dvh;   now added in media 630px */
         border-radius: 18px;
       }
 
@@ -1798,6 +1800,15 @@
 
       .modal-footer {
         padding: 12px 18px;
+      }
+    }
+
+    @media (max-width: 630px){
+      .modal-glass {
+        max-height: 100dvh;
+      }
+      .modal-overlay {
+        padding: 0px;
       }
     }
 
