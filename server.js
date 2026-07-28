@@ -10,6 +10,7 @@ import { connectDB } from "./config/mongodb.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandlers.js";
 import authRoutes from "./routes/authRoutes.js";
 import publicRoutes from "./routes/publicRoutes.js";
+import folderRoutes from "./routes/folderRoutes.js";
 import { findUserByEmail } from "./services/auth.service.js";
 
 const app = express();
@@ -45,6 +46,7 @@ await connectDB();
 // ! routes..
 app.use("/", publicRoutes);
 app.use("/", authRoutes);
+app.use("/", folderRoutes);
 
 // ! error handling middleware
 app.use(notFoundHandler(viewsPath));

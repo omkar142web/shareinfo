@@ -30,7 +30,7 @@
           <span>Dashboard</span>
         </a>
         <span class="form-mode-badge">
-          <% if (title === 'Add Info') { %>
+          <% if (!person?._id) { %>
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
@@ -52,7 +52,7 @@
       </div>
 
       <p class="form-subtitle">
-        <% if (title === 'Add Info') { %>
+        <% if (!person?._id) { %>
         Fill in the details below — links, notes, codes, anything.
         <% } else { %>
         Modify the fields and save your changes below.
@@ -157,11 +157,103 @@
         </div>
       </div>
 
+      <!-- Folder combobox -->
+      <div class="field-group field-folder">
+        <label>
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          </svg>
+          Folder
+        </label>
+        <div class="input-wrap folder-combobox-wrap">
+          <input type="hidden" id="folderIdInput" name="folderId" value="<%= activeFolderId || '' %>" />
+          <button type="button" class="folder-combobox-trigger" id="folderTrigger" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+            <span class="folder-combobox-label">
+              <% if (activeFolderId && activeFolderName) { %>
+                <span class="folder-combobox-dot" style="background: <%= activeFolderColor || '#94a3b8' %>"></span>
+                <span><%= activeFolderName %></span>
+              <% } else { %>
+                <span>No folder</span>
+              <% } %>
+            </span>
+            <svg class="folder-combobox-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <div class="folder-combobox-dropdown" id="folderDropdown" role="listbox" hidden>
+            <div class="folder-combobox-search-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input type="text" class="folder-combobox-search" id="folderSearch" placeholder="Search folders..." autocomplete="off" />
+            </div>
+
+            <!-- Recent section -->
+            <div class="folder-combobox-section" id="folderRecentSection" hidden>
+              <div class="folder-combobox-section-header">Recently Used</div>
+              <div class="folder-combobox-section-items" id="folderRecentItems"></div>
+            </div>
+
+            <div class="folder-combobox-divider" id="folderRecentDivider" hidden></div>
+
+            <!-- All folders -->
+            <div class="folder-combobox-section">
+              <div class="folder-combobox-section-header" id="folderAllHeader">All Folders</div>
+              <div class="folder-combobox-options" id="folderOptions">
+                <button type="button" class="folder-combobox-option" data-value="" data-name="No folder" role="option">
+                  <span class="folder-combobox-dot" style="background: #64748b"></span>
+                  <span class="folder-combobox-name">No folder</span>
+                  <% if (!activeFolderId) { %>
+                  <svg class="folder-combobox-check" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                  <% } %>
+                </button>
+                <% if (typeof folders !== 'undefined' && folders && folders.length) { %>
+                  <% folders.forEach(function(f) { %>
+                  <button type="button" class="folder-combobox-option" data-value="<%= f._id %>" data-name="<%= f.name %>" data-color="<%= f.color %>" data-count="<%= f.entryCount || 0 %>" role="option">
+                    <span class="folder-combobox-dot" style="background: <%= f.color %>"></span>
+                    <span class="folder-combobox-name"><%= f.name %></span>
+                    <span class="folder-combobox-count"><%= f.entryCount || 0 %></span>
+                    <% if (activeFolderId === f._id.toString()) { %>
+                    <svg class="folder-combobox-check" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                    <% } %>
+                  </button>
+                  <% }); %>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Create suggestion (shown by JS when search has no exact match) -->
+            <div class="folder-combobox-create-suggestion" id="folderCreateSuggestion" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Create "<span id="folderCreateName"></span>"</span>
+            </div>
+
+            <!-- Empty state -->
+            <div class="folder-combobox-empty" id="folderEmpty" hidden>No folders found</div>
+
+            <div class="folder-combobox-divider"></div>
+
+            <!-- Sticky create button -->
+            <button type="button" class="folder-combobox-create-btn" id="folderCreateBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Create Folder</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast -->
+      <div class="folder-toast" id="folderToast" hidden></div>
+
       <!-- Actions -->
       <div class="form-actions">
         <button type="submit" class="btn-submit" id="submitBtn">
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <% if (title === 'Add Info') { %>
+            <% if (!person?._id) { %>
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
             <% } else { %>
@@ -384,176 +476,559 @@
     });
   </script>
 
-  <!-- ── Form submit logic (unchanged) ── -->
-  <% if (title != 'Add Info') { %>
+  <!-- ── Folder combobox ── -->
   <script>
-    let form = document.querySelector("form");
-    let inputs = form.querySelectorAll("input:not([type='checkbox']), textarea");
+    (function () {
+      const LS_KEY = "shareinfo_recent_folders";
+      const MAX_RECENT = 4;
+      const COLORS = ["blue","purple","green","red","orange","pink"];
+      const COLOR_HEX = { blue:"#3b82f6", purple:"#8b5cf6", green:"#22c55e", red:"#ef4444", orange:"#f97316", pink:"#ec4899" };
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const btn = form.querySelector("button[type='submit']");
+      const trigger = document.getElementById("folderTrigger");
+      const dropdown = document.getElementById("folderDropdown");
+      const search = document.getElementById("folderSearch");
+      const optionsWrap = document.getElementById("folderOptions");
+      const emptyMsg = document.getElementById("folderEmpty");
+      const hiddenInput = document.getElementById("folderIdInput");
+      const recentSection = document.getElementById("folderRecentSection");
+      const recentItems = document.getElementById("folderRecentItems");
+      const recentDivider = document.getElementById("folderRecentDivider");
+      const allHeader = document.getElementById("folderAllHeader");
+      const createSuggestion = document.getElementById("folderCreateSuggestion");
+      const createName = document.getElementById("folderCreateName");
+      const createBtn = document.getElementById("folderCreateBtn");
+      const toast = document.getElementById("folderToast");
 
-      for (let input of inputs) {
-        if (!input.value?.trim()) {
-          input.focus();
-          input.classList.add('input-error');
-          input.addEventListener("input", () => input.classList.remove('input-error'), {
-            once: true
-          });
+      const allOptions = Array.from(optionsWrap.querySelectorAll(".folder-combobox-option"));
+      let createTimer = null;
+
+      function isOpen() { return !dropdown.hidden; }
+
+      function getRecent() {
+        try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
+        catch { return []; }
+      }
+
+      function saveRecent(id) {
+        if (!id) return;
+        let list = getRecent().filter(r => r !== id);
+        list.unshift(id);
+        if (list.length > MAX_RECENT) list = list.slice(0, MAX_RECENT);
+        localStorage.setItem(LS_KEY, JSON.stringify(list));
+      }
+
+      function findOptionById(id) {
+        return allOptions.find(o => o.dataset.value === id);
+      }
+
+      function renderRecent() {
+        const ids = getRecent();
+        recentItems.innerHTML = "";
+        if (ids.length === 0) {
+          recentSection.hidden = true;
+          recentDivider.hidden = true;
           return;
+        }
+        let count = 0;
+        ids.forEach(id => {
+          const src = findOptionById(id);
+          if (!src || src.hidden) return;
+          count++;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "folder-combobox-option";
+          btn.setAttribute("role", "option");
+          btn.dataset.value = src.dataset.value;
+          btn.dataset.name = src.dataset.name || "";
+          btn.dataset.color = src.dataset.color || "";
+          btn.dataset.recent = "true";
+          const color = src.dataset.color ? (COLOR_HEX[src.dataset.color] || src.dataset.color) : "#94a3b8";
+          btn.innerHTML = `<span class="folder-combobox-dot" style="background:${color}"></span><span class="folder-combobox-name">${src.dataset.name || "Folder"}</span>`;
+          if (hiddenInput.value === src.dataset.value) {
+            btn.innerHTML += `<svg class="folder-combobox-check" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>`;
+          }
+          btn.addEventListener("click", (e) => { e.preventDefault(); selectOption(src); });
+          btn.addEventListener("keydown", (e) => optionKeydown(e, btn));
+          recentItems.appendChild(btn);
+        });
+        recentSection.hidden = count === 0;
+        recentDivider.hidden = count === 0;
+      }
+
+      function positionDropdown() {
+        if (window.matchMedia("(max-width: 680px)").matches) {
+          dropdown.style.top = "";
+          dropdown.style.left = "";
+          dropdown.style.width = "";
+          dropdown.style.maxHeight = "";
+          return;
+        }
+
+        const r = trigger.getBoundingClientRect();
+        const gap = 4;
+        const ddWidth = r.width;
+        let top = r.bottom + gap;
+        let left = r.left;
+        if (left + ddWidth > window.innerWidth - 8) left = window.innerWidth - ddWidth - 8;
+        if (left < 8) left = 8;
+        const maxH = window.innerHeight - top - 16;
+        dropdown.style.top = top + "px";
+        dropdown.style.left = left + "px";
+        dropdown.style.width = ddWidth + "px";
+        dropdown.style.maxHeight = Math.min(420, maxH) + "px";
+      }
+
+      function open() {
+        if (isOpen()) return;
+
+        if (dropdown.parentElement !== document.body) {
+          document.body.appendChild(dropdown);
+        }
+
+        dropdown.hidden = false;
+        trigger.setAttribute("aria-expanded", "true");
+        search.value = "";
+        filterOptions("");
+        renderRecent();
+        positionDropdown();
+        const selected = dropdown.querySelector(".folder-combobox-option.is-selected");
+        if (selected) selected.scrollIntoView({ block: "nearest" });
+        setTimeout(() => search.focus(), 50);
+      }
+
+      function close() {
+        if (!isOpen()) return;
+        clearTimeout(createTimer);
+        dropdown.hidden = true;
+        trigger.setAttribute("aria-expanded", "false");
+        search.value = "";
+        filterOptions("");
+      }
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.hidden = false;
+        toast.classList.add("is-visible");
+        setTimeout(() => {
+          toast.classList.remove("is-visible");
+          setTimeout(() => { toast.hidden = true; }, 250);
+        }, 1600);
+      }
+
+      function selectOption(opt) {
+        const val = opt.dataset.value || "";
+        hiddenInput.value = val;
+        if (val) saveRecent(val);
+
+        const label = trigger.querySelector(".folder-combobox-label");
+        const name = opt.dataset.name || opt.querySelector(".folder-combobox-name")?.textContent || "No folder";
+        const colorRaw = opt.dataset.color || "";
+        const color = colorRaw ? (COLOR_HEX[colorRaw] || colorRaw) : (val ? "#94a3b8" : "#64748b");
+        if (val) {
+          label.innerHTML = `<span class="folder-combobox-dot" style="background:${color}"></span><span>${name}</span>`;
+        } else {
+          label.innerHTML = `<span>${name}</span>`;
+        }
+
+        allOptions.forEach(o => {
+          o.classList.remove("is-selected");
+          const ck = o.querySelector(".folder-combobox-check");
+          if (ck) ck.remove();
+        });
+        addCheckmark(opt);
+        opt.classList.add("is-selected");
+
+        close();
+        if (val) showToast(`Selected: ${name}`);
+      }
+
+      function addCheckmark(opt) {
+        const existing = opt.querySelector(".folder-combobox-check");
+        if (existing) return;
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.classList.add("folder-combobox-check");
+        svg.setAttribute("width", "11");
+        svg.setAttribute("height", "11");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "2.5");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        svg.innerHTML = '<path d="M20 6 9 17l-5-5" />';
+        opt.appendChild(svg);
+      }
+
+      function getAllVisibleOptions() {
+        return allOptions.filter(o => !o.hidden && o.dataset.value);
+      }
+
+      function getRecentVisibleButtons() {
+        return Array.from(recentItems.querySelectorAll(".folder-combobox-option")).filter(b => !b.hidden);
+      }
+
+      function getAllVisibleItems() {
+        return [...getRecentVisibleButtons(), ...getAllVisibleOptions()];
+      }
+
+      function highlightItem(item) {
+        dropdown.querySelectorAll(".folder-combobox-option").forEach(o => o.classList.remove("is-highlighted"));
+        if (item) {
+          item.classList.add("is-highlighted");
+          item.scrollIntoView({ block: "nearest" });
         }
       }
 
-      try {
-        btn.disabled = true;
-        btn.innerHTML = `
-          <span class="spin-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
-            </svg>
-          </span>
-          Updating…
-        `;
+      function filterOptions(q) {
+        const lower = q.toLowerCase().trim();
+        let visible = 0;
+        let firstMatch = null;
+        let exactMatch = false;
 
-        if (
-          form.name.value.trim() === form.name.defaultValue.trim() &&
-          form.email.value.trim() === form.email.defaultValue.trim() &&
-          form.info.value.trim() === form.info.defaultValue.trim() &&
-          visCheck.checked === <%= person?.isPublic === true ? 'false' : 'true' %>
-        ) {
+        allOptions.forEach(o => {
+          const name = (o.dataset.name || o.querySelector(".folder-combobox-name")?.textContent || "No folder").toLowerCase();
+          const show = !lower || name.includes(lower);
+          o.hidden = !show;
+          if (show) {
+            visible++;
+            if (o.dataset.value && !firstMatch) firstMatch = o;
+            if (o.dataset.value && name === lower) exactMatch = true;
+          }
+        });
+
+        const hasRealFolders = allOptions.some(o => o.dataset.value && !o.hidden);
+        emptyMsg.hidden = visible > 0;
+
+        if (lower) {
+          recentSection.hidden = true;
+          recentDivider.hidden = true;
+          recentItems.innerHTML = "";
+          allHeader.textContent = "All Folders";
+        } else {
+          renderRecent();
+          allHeader.textContent = "All Folders";
+        }
+
+        if (lower && !exactMatch && firstMatch) {
+          createName.textContent = q.trim();
+          createSuggestion.hidden = false;
+          createSuggestion.onclick = (e) => {
+            e.preventDefault();
+            createFolderFromSearch(q.trim());
+          };
+        } else {
+          createSuggestion.hidden = true;
+        }
+
+        highlightFirst();
+      }
+
+      function highlightFirst() {
+        dropdown.querySelectorAll(".folder-combobox-option").forEach(o => o.classList.remove("is-highlighted"));
+        const items = getAllVisibleItems();
+        if (items.length) {
+          items[0].classList.add("is-highlighted");
+        }
+      }
+
+      async function createFolderFromSearch(name) {
+        clearTimeout(createTimer);
+        createBtn.disabled = true;
+        createBtn.querySelector("span").textContent = "Creating...";
+        try {
+          const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+          const res = await fetch("/api/folders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, color }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || "Failed to create folder");
+
+          const f = data.folder;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "folder-combobox-option";
+          btn.setAttribute("role", "option");
+          btn.dataset.value = f._id;
+          btn.dataset.name = f.name;
+          btn.dataset.color = f.color;
+          btn.dataset.count = "0";
+          const colorHex = COLOR_HEX[f.color] || f.color;
+          btn.innerHTML = `<span class="folder-combobox-dot" style="background:${colorHex}"></span><span class="folder-combobox-name">${f.name}</span><span class="folder-combobox-count">0</span>`;
+          btn.addEventListener("click", (e) => { e.preventDefault(); selectOption(btn); });
+          btn.addEventListener("keydown", (e) => optionKeydown(e, btn));
+          optionsWrap.appendChild(btn);
+          allOptions.push(btn);
+
+          selectOption(btn);
+          showToast(`Created: ${f.name}`);
+        } catch (err) {
+          showToast(err.message || "Failed to create folder");
+        } finally {
+          createBtn.disabled = false;
+          createBtn.querySelector("span").textContent = "Create Folder";
+        }
+      }
+
+      trigger.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        isOpen() ? close() : open();
+      });
+
+      allOptions.forEach(opt => {
+        opt.addEventListener("click", (e) => { e.preventDefault(); selectOption(opt); });
+        opt.addEventListener("keydown", (e) => optionKeydown(e, opt));
+      });
+
+      search.addEventListener("input", () => filterOptions(search.value));
+
+      search.addEventListener("keydown", (e) => {
+        const items = getAllVisibleItems();
+        const highlighted = dropdown.querySelector(".folder-combobox-option.is-highlighted");
+        let idx = items.indexOf(highlighted);
+
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          idx = Math.min(idx + 1, items.length - 1);
+          highlightItem(items[idx]);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          idx = Math.max(idx - 1, 0);
+          if (idx < 0) { search.focus(); highlightFirst(); }
+          else highlightItem(items[idx]);
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          if (idx >= 0 && items[idx]) {
+            const val = items[idx].dataset.value;
+            const src = val ? findOptionById(val) || items[idx] : allOptions[0];
+            selectOption(src);
+          } else if (items.length === 1) {
+            const val = items[0].dataset.value;
+            const src = val ? findOptionById(val) || items[0] : allOptions[0];
+            selectOption(src);
+          }
+        } else if (e.key === "Escape") {
+          close();
+          trigger.focus();
+        }
+      });
+
+      function optionKeydown(e, item) {
+        const items = getAllVisibleItems();
+        const idx = items.indexOf(item);
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          if (items[idx + 1]) highlightItem(items[idx + 1]);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          if (idx <= 0) { search.focus(); highlightFirst(); }
+          else highlightItem(items[idx - 1]);
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          const val = item.dataset.value;
+          const src = val ? findOptionById(val) || item : allOptions[0];
+          selectOption(src);
+        } else if (e.key === "Escape") {
+          close();
+          trigger.focus();
+        }
+      }
+
+      createBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const q = search.value.trim();
+        if (q) {
+          createFolderFromSearch(q);
+        } else {
+          search.focus();
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!trigger.contains(e.target) && !dropdown.contains(e.target)) close();
+      });
+
+      window.addEventListener("scroll", () => { if (isOpen()) positionDropdown(); }, { passive: true });
+      window.addEventListener("resize", () => { if (isOpen()) positionDropdown(); });
+
+      dropdown.addEventListener("click", (e) => e.stopPropagation());
+    })();
+  </script>
+
+  <!-- ── Form submit logic (unchanged) ── -->
+  <% if (person && person._id) { %>
+  <script>
+    (function() {
+      const form = document.querySelector("form");
+      const inputs = form.querySelectorAll("input[required]:not([disabled]), textarea[required]:not([disabled])");
+      const visCheck = document.getElementById("visCheck");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = form.querySelector("button[type='submit']");
+
+        for (let input of inputs) {
+          if (!input.value?.trim()) {
+            input.focus();
+            input.classList.add('input-error');
+            input.addEventListener("input", () => input.classList.remove('input-error'), {
+              once: true
+            });
+            return;
+          }
+        }
+
+        try {
           btn.disabled = true;
+          btn.innerHTML = `
+            <span class="spin-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+              </svg>
+            </span>
+            Updating…
+          `;
+
+          if (
+            form.name.value.trim() === form.name.defaultValue.trim() &&
+            form.email.value.trim() === form.email.defaultValue.trim() &&
+            form.info.value.trim() === form.info.defaultValue.trim() &&
+            visCheck.checked === <%= person?.isPublic === true ? 'false' : 'true' %> &&
+            (document.getElementById('folderIdInput')?.value || '') === '<%= activeFolderId || '' %>'
+          ) {
+            btn.disabled = true;
+            btn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6 9 17l-5-5"/>
+              </svg>
+              Nothing to update!
+            `;
+            window.location.replace("/#<%= person._id %>");
+            return;
+          }
+
+          const response = await fetch(`/<%= person._id %>`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              name: form.elements['name'].value.trim(),
+              info: form.elements['info'].value.trim(),
+              isPublic: !visCheck.checked,
+              folderId: document.getElementById('folderIdInput')?.value || null,
+              actionId: crypto.randomUUID(),
+            }),
+          });
+
+          if (!response.ok) throw new Error("Update failed");
+
           btn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 6 9 17l-5-5"/>
             </svg>
-            Nothing to update!
+            Updated!
           `;
-          // window.location.replace("/");
           window.location.replace("/#<%= person._id %>");
-          return;
-        }
 
-        const response = await fetch(`/<%= person._id %>`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            name: form.elements['name'].value.trim(),
-            info: form.elements['info'].value.trim(),
-            isPublic: !visCheck.checked,
-            actionId: crypto.randomUUID(),
-          }),
-        });
-
-        if (!response.ok) throw new Error("Update failed");
-        // await new Promise(r => setTimeout(r, 400));
-
-        btn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 6 9 17l-5-5"/>
-          </svg>
-          Updated!
-        `;
-        // window.location.href = "/";
-        window.location.replace("/#<%= person._id %>");
-        // goBackSafely();
-
-      } catch (err) {
-        console.error(err);
-        btn.disabled = false;
-        btn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 6 9 17l-5-5"/>
-          </svg>
-          <%= buttonText %>
-        `;
-      }
-    });
-  </script>
-  <% } else { %>
-  <script>
-    form = document.querySelector("form");
-    inputs = form.querySelectorAll("input:not([type='checkbox']), textarea");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const btn = form.querySelector("button[type='submit']");
-
-      for (let input of inputs) {
-        if (!input.value?.trim()) {
-          input.focus();
-          input.classList.add('input-error');
-          input.addEventListener("input", () => input.classList.remove('input-error'), {
-            once: true
-          });
-          return;
-        }
-      }
-
-      try {
-        btn.disabled = true;
-        btn.innerHTML = `
-          <span class="spin-wrap">
+        } catch (err) {
+          console.error(err);
+          btn.disabled = false;
+          btn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+              <path d="M20 6 9 17l-5-5"/>
             </svg>
-          </span>
-          Adding…
-        `;
+            <%= buttonText %>
+          `;
+        }
+      });
+    })();
+  </script>
+  <% } else { %>
+  <script>
+    (function() {
+      const form = document.querySelector("form");
+      const inputs = form.querySelectorAll("input[required]:not([disabled]), textarea[required]:not([disabled])");
+      const visCheck = document.getElementById("visCheck");
 
-        const response = await fetch(`/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            name: form.elements['name'].value.trim(),
-            info: form.elements['info'].value.trim(),
-            isPublic: !visCheck.checked,
-            actionId: crypto.randomUUID(),
-          }),
-        });
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = form.querySelector("button[type='submit']");
 
-        if (!response.ok) throw new Error("Failed to add contact");
-        // await new Promise(r => setTimeout(r, 400));
+        for (let input of inputs) {
+          if (!input.value?.trim()) {
+            input.focus();
+            input.classList.add('input-error');
+            input.addEventListener("input", () => input.classList.remove('input-error'), {
+              once: true
+            });
+            return;
+          }
+        }
 
-        btn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 6 9 17l-5-5"/>
-          </svg>
-          Added!
-        `;
-        // window.location.href = "/";
-        window.location.replace("/");
-        // goBackSafely();
+        try {
+          btn.disabled = true;
+          btn.innerHTML = `
+            <span class="spin-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
+              </svg>
+            </span>
+            Adding…
+          `;
 
-      } catch (err) {
-        console.error(err);
-        btn.disabled = false;
-        btn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 6 9 17l-5-5"/>
-          </svg>
-          <%= buttonText %>
-        `;
-      }
-    });
+          const response = await fetch(`/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              name: form.elements['name'].value.trim(),
+              info: form.elements['info'].value.trim(),
+              isPublic: !visCheck.checked,
+              folderId: document.getElementById('folderIdInput')?.value || null,
+              actionId: crypto.randomUUID(),
+            }),
+          });
+
+          if (!response.ok) throw new Error("Failed to add contact");
+
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+            Added!
+          `;
+          window.location.replace("/");
+
+        } catch (err) {
+          console.error(err);
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+            <%= buttonText %>
+          `;
+        }
+      });
+    })();
   </script>
   <% } %>
 

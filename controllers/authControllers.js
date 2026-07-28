@@ -18,6 +18,7 @@ import {
 
 import { getLandingPage } from "./publicController.js";
 import { renderMarkdown } from "../services/markdown.service.js";
+import { listFolders } from "../services/folderService.js";
 
 import Path from "path";
 import { fileURLToPath } from "url";
@@ -104,6 +105,10 @@ export const getHome = async (req, res, next) => {
       ? req.query.sort
       : "updated";
 
+    const folderId = req.query.folderId && ObjectId.isValid(req.query.folderId)
+      ? req.query.folderId
+      : null;
+
     let page;
     let isMaster = false;
 
@@ -114,6 +119,7 @@ export const getHome = async (req, res, next) => {
         visibility,
         keyword,
         sort,
+        folderId,
       );
     } else if (
       user.password === "master" &&
@@ -129,7 +135,45 @@ export const getHome = async (req, res, next) => {
         visibility,
         keyword,
         sort,
+        folderId,
       );
+    }
+
+    // Fetch folders with counts for dropdown (not for master users)
+    let foldersWithCounts = [];
+    let activeFolderName = null;
+    let activeFolderColor = null;
+
+    if (!isMaster) {
+      const folders = await getCollection("folders")
+        .find({ email: user.email })
+        .sort({ name: 1 })
+        .toArray();
+
+      if (folders.length > 0) {
+        const folderIds = folders.map((f) => f._id);
+        const counts = await getCollection("anyInformation")
+          .aggregate([
+            { $match: { folderId: { $in: folderIds } } },
+            { $group: { _id: "$folderId", count: { $sum: 1 } } },
+          ])
+          .toArray();
+        const countMap = new Map(counts.map((c) => [c._id.toString(), c.count]));
+        foldersWithCounts = folders.map((f) => ({
+          ...f,
+          entryCount: countMap.get(f._id.toString()) || 0,
+        }));
+      }
+
+      if (folderId) {
+        const activeFolder = foldersWithCounts.find(
+          (f) => f._id.toString() === folderId
+        );
+        if (activeFolder) {
+          activeFolderName = activeFolder.name;
+          activeFolderColor = activeFolder.color;
+        }
+      }
     }
 
     return res.render("allInfo", {
@@ -143,6 +187,10 @@ export const getHome = async (req, res, next) => {
       renderMarkdown,
       currentUserEmail: user.email,
       isAdmin: user.email === "admin@gmail.com" && user.password === "admin",
+      activeFolderId: folderId,
+      activeFolderName,
+      activeFolderColor,
+      folders: foldersWithCounts,
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {
@@ -194,9 +242,13 @@ export const getEntriesPage = async (req, res) => {
       ? req.query.sort
       : "updated";
 
+    const folderId = req.query.folderId && ObjectId.isValid(req.query.folderId)
+      ? req.query.folderId
+      : null;
+
     let page;
     if (user.password === "admin" && user.email === "admin@gmail.com") {
-      page = await getPagedAllDataWithVisibility(cursor, limit, visibility, keyword, sort);
+      page = await getPagedAllDataWithVisibility(cursor, limit, visibility, keyword, sort, folderId);
     } else if (
       user.password === "master" &&
       user.email === "master@gmail.com"
@@ -210,6 +262,7 @@ export const getEntriesPage = async (req, res) => {
         visibility,
         keyword,
         sort,
+        folderId,
       );
     }
 
@@ -532,10 +585,16 @@ export const getCreatePost = async (req, res, next) => {
       return res.redirect("/login");
     }
 
+    const folders = await listFolders(user.email);
+
     return res.render("updateInformation", {
       person: {},
       title: "Create Post",
       buttonText: "Create Post",
+      folders,
+      activeFolderId: null,
+      activeFolderName: null,
+      activeFolderColor: null,
     });
   } catch (err) {
     console.error("Error fetching user in getCreatePost:", err);
@@ -561,11 +620,28 @@ export const createPost = async (req, res, next) => {
 
     const { name, info } = req.body;
     const now = new Date();
+
+    let entryFolderId = null;
+    let entryFolderName = null;
+    let entryFolderColor = null;
+
+    if (req.body.folderId && ObjectId.isValid(req.body.folderId)) {
+      entryFolderId = new ObjectId(req.body.folderId);
+      const folder = await getCollection("folders").findOne({ _id: entryFolderId });
+      if (folder) {
+        entryFolderName = folder.name;
+        entryFolderColor = folder.color;
+      }
+    }
+
     const addedData = await collection.insertOne({
       name,
       info,
       isPublic: req.body.isPublic === true,
       isFavorite: false,
+      folderId: entryFolderId,
+      folderName: entryFolderName,
+      folderColor: entryFolderColor,
       ownerName: user.name,
       createdAt: now,
       updatedAt: now,
@@ -625,13 +701,32 @@ export const getAddPage = async (req, res, next) => {
       return res.redirect("/login");
     }
 
+    const folders = await listFolders(user.email);
+
+    const queryFolderId = req.query.folderId && ObjectId.isValid(req.query.folderId)
+      ? req.query.folderId
+      : null;
+
+    let activeFolderName = null;
+    let activeFolderColor = null;
+    if (queryFolderId) {
+      const f = folders.find((fo) => fo._id.toString() === queryFolderId);
+      if (f) {
+        activeFolderName = f.name;
+        activeFolderColor = f.color;
+      }
+    }
+
     return res.render("updateInformation", {
       person: {
-        // email: user?.email || "",
         email: user.email,
       },
       title: "Add Info",
       buttonText: "Save Entry",
+      folders,
+      activeFolderId: queryFolderId,
+      activeFolderName,
+      activeFolderColor,
     });
   } catch (err) {
     console.error("Add page error:", err);
@@ -687,10 +782,16 @@ export const getUpdatePage = async (req, res, next) => {
       return next(createHttpError(404, "Post not found"));
     }
 
+    const folders = await listFolders(user.email);
+
     return res.render("updateInformation", {
       person: data,
       title: "Update Info",
       buttonText: "Update Entry",
+      folders,
+      activeFolderId: data.folderId ? data.folderId.toString() : null,
+      activeFolderName: data.folderName || null,
+      activeFolderColor: data.folderColor || null,
     });
   } catch (err) {
     console.error(err);
@@ -722,6 +823,24 @@ export const updatePost = async (req, res, next) => {
       return next(createHttpError(404, "Post not found"));
     }
 
+    let entryFolderId = existingEntry.folderId || null;
+    let entryFolderName = existingEntry.folderName || null;
+    let entryFolderColor = existingEntry.folderColor || null;
+
+    if (req.body.folderId === null || req.body.folderId === '') {
+      entryFolderId = null;
+      entryFolderName = null;
+      entryFolderColor = null;
+    } else if (req.body.folderId && ObjectId.isValid(req.body.folderId)) {
+      entryFolderId = new ObjectId(req.body.folderId);
+      const foldersCol = getCollection('folders');
+      const folderDoc = await foldersCol.findOne({ _id: new ObjectId(req.body.folderId), email: user.email });
+      if (folderDoc) {
+        entryFolderName = folderDoc.name;
+        entryFolderColor = folderDoc.color || 'blue';
+      }
+    }
+
     const isAdmin =
       user.email === "admin@gmail.com" && user.password === "admin";
     const isOwner = existingEntry.email === user.email;
@@ -743,6 +862,9 @@ export const updatePost = async (req, res, next) => {
           name,
           info,
           isPublic: nowPublic,
+          folderId: entryFolderId,
+          folderName: entryFolderName,
+          folderColor: entryFolderColor,
           updatedAt: now,
         },
       },
@@ -758,6 +880,9 @@ export const updatePost = async (req, res, next) => {
         isFavorite: existingEntry.isFavorite === true,
         email: existingEntry.email,
         ownerName: existingEntry.ownerName,
+        folderId: entryFolderId ? entryFolderId.toString() : null,
+        folderName: entryFolderName,
+        folderColor: entryFolderColor,
         updatedAt: now.toISOString(),
         actionId: req.body.actionId || null,
       };

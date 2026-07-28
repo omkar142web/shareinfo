@@ -58,6 +58,10 @@
   --radius-xs: 7px;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 /* ── Reset ────────────────────────────────────────── */
 *,
 *::before,
@@ -772,6 +776,349 @@ textarea::-webkit-scrollbar-thumb {
 
   h1 {
     font-size: 1.3rem;
+  }
+}
+
+/* ── Folder combobox (update form) ───────────────────── */
+.field-folder .folder-combobox-wrap {
+  position: relative;
+}
+
+.folder-combobox-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  text-align: left;
+}
+
+.folder-combobox-trigger:hover {
+  border-color: var(--border-hi);
+}
+
+.folder-combobox-trigger:focus {
+  border-color: var(--cyan-dim);
+  box-shadow: 0 0 0 3px var(--cyan-faint);
+  outline: none;
+}
+
+.folder-combobox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folder-combobox-chevron {
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform 0.2s;
+}
+
+.folder-combobox-trigger[aria-expanded="true"] .folder-combobox-chevron {
+  transform: rotate(180deg);
+}
+
+/* Dropdown */
+.folder-combobox-dropdown {
+  position: fixed;
+  background: #16223a;
+  border: 1px solid var(--border-hi);
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  max-height: 420px;
+  min-width: 200px;
+  opacity: 0;
+  transform: translateY(-4px);
+  animation: combobox-in 0.15s ease forwards;
+  pointer-events: auto;
+}
+
+@keyframes combobox-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Search — sticky top */
+.folder-combobox-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3);
+  background: #16223a;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.folder-combobox-search {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  padding: 0;
+  height: auto;
+  outline: none;
+}
+
+.folder-combobox-search:focus {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.folder-combobox-search::placeholder {
+  color: var(--text-3);
+}
+
+input.folder-combobox-search {
+  border-radius: 0px;
+}
+
+/* Section */
+.folder-combobox-section {
+  padding: 0;
+  flex-shrink: 0;
+}
+
+/* The all-folders section is the scrollable flex child */
+.folder-combobox-section:has(.folder-combobox-options) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.folder-combobox-section-header {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 8px 12px 4px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* Divider */
+.folder-combobox-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 8px;
+  flex-shrink: 0;
+}
+
+/* Options list — the scrollable region */
+.folder-combobox-options {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 4px;
+}
+
+.folder-combobox-options::-webkit-scrollbar { width: 4px; }
+.folder-combobox-options::-webkit-scrollbar-track { background: transparent; }
+.folder-combobox-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 100px; }
+
+/* Option item */
+.folder-combobox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.folder-combobox-option:hover,
+.folder-combobox-option.is-highlighted {
+  background: var(--surface-hover);
+  outline: none;
+}
+
+.folder-combobox-option.is-selected {
+  background: var(--cyan-faint);
+  color: var(--cyan);
+}
+
+/* Count badge */
+.folder-combobox-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  background: rgba(255,255,255,0.05);
+  border-radius: 100px;
+  padding: 1px 7px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.folder-combobox-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Empty state */
+.folder-combobox-empty {
+  padding: 16px 10px;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+
+/* Dot */
+.folder-combobox-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: inset 0 -2px 3px rgba(0,0,0,0.25);
+}
+
+/* Checkmark */
+.folder-combobox-check {
+  flex-shrink: 0;
+  color: var(--cyan);
+}
+
+/* Create suggestion — part of scroll area */
+.folder-combobox-create-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  color: var(--cyan);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s;
+  flex-shrink: 0;
+}
+
+.folder-combobox-create-suggestion:hover {
+  background: var(--cyan-faint);
+}
+
+/* Sticky create button — always at bottom */
+.folder-combobox-create-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 12px;
+  background: #16223a;
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.folder-combobox-create-btn:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+}
+
+.folder-combobox-create-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* Toast */
+.folder-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface-1);
+  border: 1px solid var(--border-hi);
+  border-radius: 10px;
+  padding: 8px 16px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  z-index: 500;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+
+.folder-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Mobile: bottom sheet */
+@media (max-width: 680px) {
+  .folder-combobox-dropdown {
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -20px 60px rgba(0,0,0,0.7);
+    transform: translateY(100%);
+    animation: sheet-in 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+    max-height: 70vh;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  @keyframes sheet-in {
+    from { opacity: 0; }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .folder-combobox-options {
+    max-height: 40vh;
   }
 }
 

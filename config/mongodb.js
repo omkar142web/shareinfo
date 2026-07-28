@@ -12,11 +12,14 @@ let actuallDB;
 async function createIndexes() {
   const infoCollection = actuallDB.collection("anyInformation");
   const usersCollection = actuallDB.collection("users");
+  const foldersCollection = actuallDB.collection("folders");
 
   await Promise.all([
     infoCollection.createIndex({ email: 1, _id: -1 }),
     infoCollection.createIndex({ isPublic: 1, _id: -1 }),
+    infoCollection.createIndex({ email: 1, folderId: 1, _id: -1 }),
     usersCollection.createIndex({ email: 1 }, { unique: true }),
+    foldersCollection.createIndex({ email: 1, name: 1 }, { unique: true }),
   ]);
 
   console.log("Database indexes are ready");

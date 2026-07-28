@@ -124,6 +124,7 @@ export const getPagedUserDataWithVisibility = async (
   visibility = "all",
   search = "",
   sort = "updated",
+  folderId = null,
 ) => {
   const filter = { email };
 
@@ -133,6 +134,10 @@ export const getPagedUserDataWithVisibility = async (
     filter.isPublic = true;
   } else if (visibility === "private") {
     filter.isPublic = { $ne: true };
+  }
+
+  if (folderId && ObjectId.isValid(folderId)) {
+    filter.folderId = new ObjectId(folderId);
   }
 
   return getPagedCollection({
@@ -162,6 +167,7 @@ export const getPagedAllDataWithVisibility = async (
   visibility = "all",
   search = "",
   sort = "updated",
+  folderId = null,
 ) => {
   const filter = { email: { $ne: "contacts@gmail.com" } };
 
@@ -171,6 +177,10 @@ export const getPagedAllDataWithVisibility = async (
     filter.isPublic = true;
   } else if (visibility === "private") {
     filter.isPublic = { $ne: true };
+  }
+
+  if (folderId && ObjectId.isValid(folderId)) {
+    filter.folderId = new ObjectId(folderId);
   }
 
   return getPagedCollection({ cursor, filter, limit, search, sort });
