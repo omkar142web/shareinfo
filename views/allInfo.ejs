@@ -2224,7 +2224,7 @@
       white-space: nowrap;
       margin-bottom: 10px;
       position: relative;
-      top: -3px;
+      top: -2px;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
@@ -3798,7 +3798,7 @@
         const input = document.getElementById('searchInput');
         if (input) {
           input.value = '';
-          input.focus();
+          input.focus({ preventScroll: true });
         }
         setClearSearchVisibility('');
         runSearch('');
@@ -3809,7 +3809,7 @@
           const input = document.getElementById('searchInput');
           if (input) {
             input.value = '';
-            input.focus();
+            input.focus({ preventScroll: true });
           }
           setClearSearchVisibility('');
           runSearch('');
@@ -3964,7 +3964,7 @@
 
         state.openFrame = requestAnimationFrame(() => {
           element.classList.add(activeClass);
-          focusTarget?.focus();
+          focusTarget?.focus({ preventScroll: true });
           state.openFrame = null;
         });
       }
@@ -4003,7 +4003,7 @@
           closedCallback?.();
 
           if (shouldRestoreFocus && state.returnFocus?.isConnected) {
-            state.returnFocus.focus();
+            state.returnFocus.focus({ preventScroll: true });
           }
 
           state.returnFocus = null;
@@ -5352,17 +5352,8 @@ copyButton.title = 'Share Public Link';
           clearBtn.hidden = true;
           counter.hidden = true;
           createSuggestion.hidden = true;
-          renderRecentFolders();
-          filterOptions();
-          list.scrollTop = savedScrollTop;
-          recentList.scrollTop = 0;
-          highlighted = getVisibleItems().findIndex(o => o.classList.contains('is-active'));
-          if (highlighted < 0) highlighted = 0;
-          highlightOption();
 
-          history.pushState({ [MODAL_HISTORY_STATE_KEY]: modalHistoryCount }, '');
-          modalHistoryCount++;
-
+          // Position before any scrollIntoView so the dropdown is fixed-position
           if (window.innerWidth <= 680) {
             clearPositionStyles();
             let overlay = document.querySelector('.folder-sheet-overlay');
@@ -5375,8 +5366,20 @@ copyButton.title = 'Share Public Link';
             dropdown.classList.add('is-open');
           } else {
             positionFolderDropdown();
-            search.focus();
+            search.focus({ preventScroll: true });
           }
+
+          renderRecentFolders();
+          filterOptions();
+          list.scrollTop = savedScrollTop;
+          recentList.scrollTop = 0;
+          highlighted = getVisibleItems().findIndex(o => o.classList.contains('is-active'));
+          if (highlighted < 0) highlighted = 0;
+          highlightOption();
+
+          history.pushState({ [MODAL_HISTORY_STATE_KEY]: modalHistoryCount }, '');
+          modalHistoryCount++;
+
           requestAnimationFrame(updateScrollFade);
         }
 
@@ -5517,7 +5520,7 @@ copyButton.title = 'Share Public Link';
           filterOptions();
           highlighted = 0;
           highlightOption();
-          search.focus();
+          search.focus({ preventScroll: true });
         });
 
         // ── Inline Create Folder ──
@@ -5744,7 +5747,7 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
         const input = document.getElementById('folderNameInput');
         showOverlay(modal, 'is-open');
         input.value = '';
-        input.focus();
+        input.focus({ preventScroll: true });
         selectedFolderColor = 'blue';
         document.querySelectorAll('#folderColorPicker .color-swatch').forEach(s => {
           s.classList.toggle('is-selected', s.dataset.color === 'blue');
@@ -5798,7 +5801,7 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
         input.value = currentName;
         modal.dataset.folderId = folderId;
         showOverlay(modal, 'is-open');
-        input.focus();
+        input.focus({ preventScroll: true });
         input.select();
       }
 
