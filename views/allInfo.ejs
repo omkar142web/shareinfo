@@ -2992,11 +2992,6 @@
             <span id="folderCounterText">0 folders found</span>
           </div>
 
-          <!-- Recently Used section -->
-          <div class="folder-dropdown-section-header" id="folderRecentHeader" hidden>Recently Used</div>
-          <div class="folder-dropdown-list" id="folderRecentList" hidden></div>
-          <div class="folder-dropdown-divider" id="folderRecentDivider" hidden></div>
-
           <!-- Create suggestion (shown by JS when search has no exact match) -->
           <div class="folder-dropdown-create-suggestion" id="folderCreateSuggestion" hidden>
             <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -3016,7 +3011,7 @@
             <% if (typeof folders !== 'undefined' && folders.length > 0) { %>
               <% folders.forEach(function(folder) { %>
               <div class="folder-dropdown-row">
-                <button class="folder-dropdown-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-folder="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" role="menuitemradio" aria-checked="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>">
+                <button class="folder-dropdown-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-folder="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-created="<%= folder.createdAt %>" role="menuitemradio" aria-checked="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>">
                   <span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>
                   <span class="folder-dot" style="background: var(--folder-<%= folder.color %>)"></span>
                   <span class="folder-dropdown-name"><%= folder.name || 'Untitled' %></span>
@@ -5203,9 +5198,6 @@ copyButton.title = 'Share Public Link';
         const empty = document.getElementById('folderEmpty');
         const allHeader = document.getElementById('folderAllHeader');
         const createBtn = document.getElementById('folderDropdownCreate');
-        const recentHeader = document.getElementById('folderRecentHeader');
-        const recentList = document.getElementById('folderRecentList');
-        const recentDivider = document.getElementById('folderRecentDivider');
         const createSuggestion = document.getElementById('folderCreateSuggestion');
         const createSuggestionName = document.getElementById('folderCreateSuggestionName');
         function getAllItems() { return Array.from(list.querySelectorAll('.folder-dropdown-item[data-folder]:not([data-folder=""])')); }
@@ -5223,7 +5215,8 @@ copyButton.title = 'Share Public Link';
               name: opt.dataset.name || 'Untitled',
               color: opt.dataset.color || 'blue',
               count: opt.querySelector('.folder-dropdown-count')?.textContent || '0',
-              isActive: opt.classList.contains('is-active')
+              isActive: opt.classList.contains('is-active'),
+              createdAt: opt.dataset.created || null
             });
           });
         }
@@ -5250,52 +5243,7 @@ copyButton.title = 'Share Public Link';
           return folderData.find(f => f.id === id) || null;
         }
 
-        function renderRecentFolders() {
-          const ids = getRecentFolderIds();
-          recentList.innerHTML = '';
-          if (ids.length === 0) {
-            recentHeader.hidden = true;
-            recentList.hidden = true;
-            recentDivider.hidden = true;
-            return;
-          }
-          let count = 0;
-          ids.forEach(id => {
-            const src = findItemById(id);
-            if (!src) return;
-            count++;
-            const row = document.createElement('div');
-            row.className = 'folder-dropdown-row';
-            const btnItem = document.createElement('button');
-            btnItem.className = 'folder-dropdown-item';
-            btnItem.dataset.folder = src.id;
-            btnItem.dataset.name = src.name;
-            btnItem.dataset.color = src.color;
-            btnItem.setAttribute('role', 'menuitemradio');
-            btnItem.setAttribute('aria-checked', src.isActive ? 'true' : 'false');
-            if (src.isActive) btnItem.classList.add('is-active');
-            const colorVar = src.color ? `var(--folder-${src.color})` : '#94a3b8';
-            btnItem.innerHTML = `<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dot" style="background:${colorVar}"></span><span class="folder-dropdown-name" title="${src.name}">${src.name || 'Folder'}</span>`;
-            btnItem.addEventListener('click', (e) => { e.preventDefault(); selectItem(btnItem); });
-            row.appendChild(btnItem);
 
-            const menuBtn = document.createElement('button');
-            menuBtn.className = 'folder-dropdown-menu-btn';
-            menuBtn.dataset.folderId = src.id;
-            menuBtn.dataset.folderName = src.name;
-            menuBtn.dataset.folderColor = src.color;
-            menuBtn.setAttribute('aria-label', src.name + ' options');
-            menuBtn.setAttribute('title', 'Folder options');
-            menuBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
-            wireMenuButton(menuBtn);
-            row.appendChild(menuBtn);
-
-            recentList.appendChild(row);
-          });
-          recentHeader.hidden = count === 0;
-          recentList.hidden = count === 0;
-          recentDivider.hidden = count === 0;
-        }
 
         // ── Position dropdown (fixed on desktop, clear inline on mobile) ──
         function positionFolderDropdown() {
@@ -5369,10 +5317,8 @@ copyButton.title = 'Share Public Link';
             search.focus({ preventScroll: true });
           }
 
-          renderRecentFolders();
           filterOptions();
           list.scrollTop = savedScrollTop;
-          recentList.scrollTop = 0;
           highlighted = getVisibleItems().findIndex(o => o.classList.contains('is-active'));
           if (highlighted < 0) highlighted = 0;
           highlightOption();
@@ -5421,6 +5367,16 @@ copyButton.title = 'Share Public Link';
           const matched = searching
             ? folderData.filter(f => f.name.toLowerCase().includes(q))
             : folderData;
+
+          const recentIds = getRecentFolderIds();
+          matched.sort((a, b) => {
+            const aIdx = recentIds.indexOf(a.id);
+            const bIdx = recentIds.indexOf(b.id);
+            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+            if (aIdx !== -1) return -1;
+            if (bIdx !== -1) return 1;
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          });
 
           // Rebuild list: only matching items are rendered
           list.innerHTML = '';
@@ -5483,10 +5439,6 @@ copyButton.title = 'Share Public Link';
           if (searching) {
             counter.hidden = false;
             counterText.textContent = matched.length + ' folder' + (matched.length !== 1 ? 's' : '') + ' found';
-            recentHeader.hidden = true;
-            recentList.hidden = true;
-            recentDivider.hidden = true;
-            recentList.innerHTML = '';
 
             const exactMatch = matched.some(f => f.name.toLowerCase() === q);
             if (q && !exactMatch && matched.length > 0) {
@@ -5497,7 +5449,6 @@ copyButton.title = 'Share Public Link';
             }
           } else {
             counter.hidden = true;
-            renderRecentFolders();
             createSuggestion.hidden = true;
           }
         }
@@ -5546,7 +5497,7 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
             if (!res.ok) { showToast(data.message || 'Failed to create folder', 'error'); return; }
 
             const f = data.folder;
-            folderData.push({ id: f._id, name: f.name, color: f.color, count: '0', isActive: false });
+            folderData.push({ id: f._id, name: f.name, color: f.color, count: '0', isActive: false, createdAt: f.createdAt || new Date().toISOString() });
             const row = document.createElement('div');
             row.className = 'folder-dropdown-row';
             const itemBtn = document.createElement('button');
@@ -5554,6 +5505,7 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
             itemBtn.dataset.folder = f._id;
             itemBtn.dataset.name = f.name;
             itemBtn.dataset.color = f.color;
+            itemBtn.dataset.created = f.createdAt || new Date().toISOString();
             itemBtn.setAttribute('role', 'menuitemradio');
             itemBtn.setAttribute('aria-checked', 'false');
             const colorVar = COLOR_HEX[f.color] || f.color;
@@ -5593,9 +5545,7 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
 
         // ── Highlighting & Selection ──
         function getVisibleItems() {
-          const recentItems = Array.from(recentList.querySelectorAll('.folder-dropdown-item'));
-          const mainItems = Array.from(list.querySelectorAll('.folder-dropdown-item'));
-          return [...recentItems, ...mainItems];
+          return Array.from(list.querySelectorAll('.folder-dropdown-item'));
         }
 
         function highlightOption() {

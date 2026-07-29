@@ -188,14 +188,6 @@
               <input type="text" class="folder-combobox-search" id="folderSearch" placeholder="Search folders..." autocomplete="off" />
             </div>
 
-            <!-- Recent section -->
-            <div class="folder-combobox-section" id="folderRecentSection" hidden>
-              <div class="folder-combobox-section-header">Recently Used</div>
-              <div class="folder-combobox-section-items" id="folderRecentItems"></div>
-            </div>
-
-            <div class="folder-combobox-divider" id="folderRecentDivider" hidden></div>
-
             <!-- All folders -->
             <div class="folder-combobox-section">
               <div class="folder-combobox-section-header" id="folderAllHeader">All Folders</div>
@@ -209,7 +201,7 @@
                 </button>
                 <% if (typeof folders !== 'undefined' && folders && folders.length) { %>
                   <% folders.forEach(function(f) { %>
-                  <button type="button" class="folder-combobox-option" data-value="<%= f._id %>" data-name="<%= f.name %>" data-color="<%= f.color %>" data-count="<%= f.entryCount || 0 %>" role="option">
+                  <button type="button" class="folder-combobox-option" data-value="<%= f._id %>" data-name="<%= f.name %>" data-color="<%= f.color %>" data-count="<%= f.entryCount || 0 %>" data-created="<%= f.createdAt %>" role="option">
                     <span class="folder-combobox-dot" style="background: <%= f.color %>"></span>
                     <span class="folder-combobox-name"><%= f.name %></span>
                     <span class="folder-combobox-count"><%= f.entryCount || 0 %></span>
@@ -490,9 +482,6 @@
       const optionsWrap = document.getElementById("folderOptions");
       const emptyMsg = document.getElementById("folderEmpty");
       const hiddenInput = document.getElementById("folderIdInput");
-      const recentSection = document.getElementById("folderRecentSection");
-      const recentItems = document.getElementById("folderRecentItems");
-      const recentDivider = document.getElementById("folderRecentDivider");
       const allHeader = document.getElementById("folderAllHeader");
       const createSuggestion = document.getElementById("folderCreateSuggestion");
       const createName = document.getElementById("folderCreateName");
@@ -521,39 +510,7 @@
         return allOptions.find(o => o.dataset.value === id);
       }
 
-      function renderRecent() {
-        const ids = getRecent();
-        recentItems.innerHTML = "";
-        if (ids.length === 0) {
-          recentSection.hidden = true;
-          recentDivider.hidden = true;
-          return;
-        }
-        let count = 0;
-        ids.forEach(id => {
-          const src = findOptionById(id);
-          if (!src || src.hidden) return;
-          count++;
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "folder-combobox-option";
-          btn.setAttribute("role", "option");
-          btn.dataset.value = src.dataset.value;
-          btn.dataset.name = src.dataset.name || "";
-          btn.dataset.color = src.dataset.color || "";
-          btn.dataset.recent = "true";
-          const color = src.dataset.color ? (COLOR_HEX[src.dataset.color] || src.dataset.color) : "#94a3b8";
-          btn.innerHTML = `<span class="folder-combobox-dot" style="background:${color}"></span><span class="folder-combobox-name">${src.dataset.name || "Folder"}</span>`;
-          if (hiddenInput.value === src.dataset.value) {
-            btn.innerHTML += `<svg class="folder-combobox-check" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>`;
-          }
-          btn.addEventListener("click", (e) => { e.preventDefault(); selectOption(src); });
-          btn.addEventListener("keydown", (e) => optionKeydown(e, btn));
-          recentItems.appendChild(btn);
-        });
-        recentSection.hidden = count === 0;
-        recentDivider.hidden = count === 0;
-      }
+
 
       function positionDropdown() {
         if (window.matchMedia("(max-width: 680px)").matches) {
@@ -589,7 +546,6 @@
         trigger.setAttribute("aria-expanded", "true");
         search.value = "";
         filterOptions("");
-        renderRecent();
         positionDropdown();
         const selected = dropdown.querySelector(".folder-combobox-option.is-selected");
         if (selected) selected.scrollIntoView({ block: "nearest" });
@@ -663,12 +619,8 @@
         return allOptions.filter(o => !o.hidden && o.dataset.value);
       }
 
-      function getRecentVisibleButtons() {
-        return Array.from(recentItems.querySelectorAll(".folder-combobox-option")).filter(b => !b.hidden);
-      }
-
       function getAllVisibleItems() {
-        return [...getRecentVisibleButtons(), ...getAllVisibleOptions()];
+        return allOptions.filter(o => !o.hidden);
       }
 
       function highlightItem(item) {
@@ -696,18 +648,23 @@
           }
         });
 
-        const hasRealFolders = allOptions.some(o => o.dataset.value && !o.hidden);
-        emptyMsg.hidden = visible > 0;
+        const recentIds = getRecent();
+        const visibleOptions = allOptions.filter(o => !o.hidden);
+        visibleOptions.sort((a, b) => {
+          if (!a.dataset.value && b.dataset.value) return -1;
+          if (a.dataset.value && !b.dataset.value) return 1;
+          if (!a.dataset.value && !b.dataset.value) return 0;
+          const aIdx = recentIds.indexOf(a.dataset.value);
+          const bIdx = recentIds.indexOf(b.dataset.value);
+          if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+          if (aIdx !== -1) return -1;
+          if (bIdx !== -1) return 1;
+          return new Date(b.dataset.created) - new Date(a.dataset.created);
+        });
+        visibleOptions.forEach(o => optionsWrap.appendChild(o));
 
-        if (lower) {
-          recentSection.hidden = true;
-          recentDivider.hidden = true;
-          recentItems.innerHTML = "";
-          allHeader.textContent = "All Folders";
-        } else {
-          renderRecent();
-          allHeader.textContent = "All Folders";
-        }
+        emptyMsg.hidden = visible > 0;
+        allHeader.textContent = "All Folders";
 
         if (lower && !exactMatch && firstMatch) {
           createName.textContent = q.trim();
@@ -754,6 +711,7 @@
           btn.dataset.name = f.name;
           btn.dataset.color = f.color;
           btn.dataset.count = "0";
+          btn.dataset.created = f.createdAt || new Date().toISOString();
           const colorHex = COLOR_HEX[f.color] || f.color;
           btn.innerHTML = `<span class="folder-combobox-dot" style="background:${colorHex}"></span><span class="folder-combobox-name">${f.name}</span><span class="folder-combobox-count">0</span>`;
           btn.addEventListener("click", (e) => { e.preventDefault(); selectOption(btn); });

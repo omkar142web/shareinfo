@@ -26,6 +26,7 @@ export const listFolders = async (email) => {
     name: f.name,
     color: f.color,
     entryCount: countMap.get(f._id.toString()) || 0,
+    createdAt: f.createdAt,
   }));
 };
 
