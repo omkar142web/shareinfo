@@ -2131,7 +2131,8 @@
 
 
     /* ── Loading Spinner ── */
-    .spinner {
+    .spinner,
+    .spin-wrap {
       animation: rotate 1s linear infinite;
     }
 
@@ -2171,6 +2172,23 @@
     @keyframes rotate {
       100% {
         transform: rotate(360deg);
+      }
+    }
+    
+    /* Respect user's motion preferences */
+    @media (prefers-reduced-motion: reduce) {
+      .folder-dropdown,
+      .folder-dropdown-item,
+      .folder-dropdown-row,
+      .folder-dropdown-create svg,
+      .folder-dropdown-item.folder-item-selected,
+      .folder-dot {
+        animation: none !important;
+        transition-duration: 0.05s !important;
+      }
+      .folder-dropdown-item:hover,
+      .folder-dropdown-item.is-highlighted {
+        transform: none !important;
       }
     }
 
@@ -2303,6 +2321,23 @@
       0% { opacity: 0; transform: scale(0.97) translateY(-6px); filter: blur(4px); }
       100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
     }
+    
+    @keyframes folderDropdownOut {
+      0% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+      100% { opacity: 0; transform: scale(0.98) translateY(-4px); filter: blur(2px); }
+    }
+    
+    @keyframes checkPulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.4); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes folderItemSelect {
+      0% { background: rgba(56, 189, 248, 0.1); transform: translateX(2px); }
+      50% { background: rgba(56, 189, 248, 0.25); transform: translateX(4px) scale(1.02); }
+      100% { background: rgba(56, 189, 248, 0.1); transform: translateX(2px); }
+    }
     .folder-dropdown::before {
       content: "";
       position: absolute;
@@ -2372,14 +2407,19 @@
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
       position: relative;
+      transition: border-color 0.2s ease;
     }
     .folder-dropdown-search-wrap svg {
       color: var(--text-3);
       flex-shrink: 0;
-      transition: color 0.2s ease;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+    .folder-dropdown-search-wrap:focus-within {
+      border-color: var(--cyan-border);
     }
     .folder-dropdown-search-wrap:focus-within svg {
       color: var(--cyan);
+      transform: scale(1.1);
     }
     .folder-dropdown-search {
       flex: 1;
@@ -2474,6 +2514,23 @@
       0% { opacity: 0; transform: translateY(4px); }
       100% { opacity: 1; transform: translateY(0); }
     }
+    
+    @keyframes folderRowCreate {
+      0% { 
+        opacity: 0; 
+        transform: translateY(-8px) scale(0.95); 
+        background: rgba(52, 211, 153, 0.15);
+      }
+      60% { 
+        transform: translateY(0) scale(1.02);
+        background: rgba(52, 211, 153, 0.15);
+      }
+      100% { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+        background: transparent;
+      }
+    }
 
     /* ── Items ── */
     .folder-dropdown-item {
@@ -2497,6 +2554,7 @@
         box-shadow 0.15s ease;
       position: relative;
       font-weight: 450;
+      will-change: transform, background;
     }
     @media (hover: hover) {
       .folder-dropdown-item:hover,
@@ -2504,10 +2562,20 @@
         background: rgba(255, 255, 255, 0.06);
         color: var(--text);
         transform: translateX(2px);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+      .folder-dropdown-item:hover .folder-dot,
+      .folder-dropdown-item.is-highlighted .folder-dot {
+        transform: scale(1.2);
+        box-shadow: 0 0 8px currentColor;
       }
     }
     .folder-dropdown-item:active {
       transform: scale(0.98);
+    }
+    
+    .folder-dot {
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
     }
 
     /* Active state */
@@ -2526,6 +2594,11 @@
       background: var(--cyan);
       border-radius: 0 3px 3px 0;
       box-shadow: 0 0 8px var(--cyan-glow);
+    }
+    
+    /* Selection animation */
+    .folder-dropdown-item.folder-item-selected {
+      animation: folderItemSelect 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .folder-dropdown-check {
       width: 14px;
@@ -2601,6 +2674,7 @@
       padding: 32px 20px;
       color: var(--text-2);
       font-size: 0.82rem;
+      animation: emptyFadeIn 0.3s ease;
     }
     .folder-dropdown-empty[hidden] {
       display: none !important;
@@ -2608,7 +2682,12 @@
     .folder-dropdown-empty svg {
       color: var(--text-3);
       opacity: 0.4;
+      transition: opacity 0.2s ease;
     }
+    .folder-dropdown-empty:hover svg {
+      opacity: 0.6;
+    }
+    
     .folder-dropdown-zero {
       display: flex;
       flex-direction: column;
@@ -2617,16 +2696,74 @@
       padding: 28px 20px;
       color: var(--text-2);
       font-size: 0.82rem;
+      animation: emptyFadeIn 0.3s ease;
     }
     .folder-dropdown-zero svg {
       color: var(--text-3);
       opacity: 0.35;
       margin-bottom: 4px;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .folder-dropdown-zero:hover svg {
+      opacity: 0.5;
+      transform: scale(1.05);
     }
     .folder-dropdown-zero-hint {
       font-size: 0.72rem;
       color: var(--text-3);
       font-weight: 400;
+    }
+    
+    /* Error state */
+    .folder-dropdown-error {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 28px 20px;
+      color: var(--text-2);
+      font-size: 0.82rem;
+      animation: emptyFadeIn 0.3s ease;
+    }
+    .folder-dropdown-error[hidden] {
+      display: none !important;
+    }
+    .folder-dropdown-error svg {
+      color: var(--danger);
+      opacity: 0.7;
+    }
+    .folder-dropdown-error-msg {
+      text-align: center;
+      line-height: 1.5;
+    }
+    .folder-dropdown-retry-btn {
+      margin-top: 4px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--danger-border);
+      background: var(--danger-faint);
+      color: var(--danger);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    @media (hover: hover) {
+      .folder-dropdown-retry-btn:hover {
+        background: var(--danger);
+        color: #240410;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(251, 113, 133, 0.25);
+      }
+    }
+    .folder-dropdown-retry-btn:active {
+      transform: scale(0.97);
+    }
+    
+    @keyframes emptyFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* ── Footer / Create ── */
@@ -2655,17 +2792,15 @@
         color: #7dd3fc;
         transform: translateY(-1px);
       }
+      .folder-dropdown-create:hover svg {
+        transform: rotate(90deg);
+      }
     }
     .folder-dropdown-create:active {
       transform: scale(0.98);
     }
     .folder-dropdown-create svg {
-      transition: transform 0.15s ease;
-    }
-    @media (hover: hover) {
-      .folder-dropdown-create:hover svg {
-        transform: rotate(90deg);
-      }
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .folder-dropdown-create-suggestion {
       display: flex;
@@ -2676,7 +2811,7 @@
       font-size: 0.82rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.12s, color 0.12s;
+      transition: background 0.12s, color 0.12s, transform 0.12s;
       border-bottom: 1px solid var(--border);
     }
     @media (hover: hover) {
@@ -2684,6 +2819,7 @@
       .folder-dropdown-create-suggestion.is-highlighted {
         background: rgba(56, 189, 248, 0.1);
         color: #7dd3fc;
+        transform: translateX(2px);
       }
     }
     .folder-dropdown-create-suggestion[hidden] {
@@ -2834,10 +2970,16 @@
         transform: translateY(100%);
         transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
         animation: none;
+        /* Prevent content from being hidden by virtual keyboard */
+        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
       .folder-dropdown.is-open {
         transform: translateY(0);
       }
+      .folder-dropdown.is-dragging {
+        transition: none; /* Disable transition during drag for immediate feedback */
+      }
+      /* Bottom sheet handle for swipe gesture affordance */
       .folder-dropdown::before {
         content: '';
         display: block;
@@ -2848,17 +2990,82 @@
         margin: 8px auto 0;
         opacity: 0.4;
         position: relative;
+        transition: opacity 0.2s, width 0.2s;
       }
+      .folder-dropdown.is-dragging::before {
+        opacity: 0.8;
+        width: 48px;
+      }
+      
+      /* Larger touch targets for mobile (44px minimum) */
+      .folder-dropdown-item {
+        padding: 13px 14px;
+        min-height: 44px;
+        font-size: 0.9rem;
+      }
+      .folder-dropdown-create {
+        padding: 15px 16px;
+        min-height: 48px;
+        font-size: 0.9rem;
+      }
+      .folder-dropdown-menu-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px;
+        opacity: 1;
+      }
+      .folder-context-menu {
+        max-width: calc(100vw - 16px);
+        max-height: calc(100vh - 16px);
+        overflow-y: auto;
+      }
+      .folder-dropdown-clear {
+        min-width: 40px;
+        min-height: 40px;
+      }
+      
+      /* Optimize search input for mobile */
+      .folder-dropdown-search {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        padding: 4px 0;
+      }
+      .folder-dropdown-search-wrap {
+        padding: 12px 14px;
+      }
+      
+      /* Body scroll lock when dropdown is open */
+      body.folder-dropdown-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+      }
+      
       .folder-sheet-overlay {
         display: none;
         position: fixed;
         inset: 0;
         background: rgba(0, 0, 0, 0.5);
         z-index: 99;
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
         pointer-events: none;
       }
       .folder-sheet-overlay.is-visible {
         display: block;
+        opacity: 1;
+        pointer-events: auto;
+      }
+      
+      /* Better visual feedback for touch */
+      .folder-dropdown-item:active {
+        transform: scale(0.98);
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .folder-dropdown-create:active {
+        transform: scale(0.98);
       }
     }
   </style>
@@ -2982,13 +3189,13 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            <input type="text" class="folder-dropdown-search" id="folderSearch" placeholder="Search folders..." autocomplete="off" aria-label="Search folders" />
+            <input type="text" class="folder-dropdown-search" id="folderSearch" placeholder="Search folders..." autocomplete="off" aria-label="Search folders" role="combobox" aria-expanded="true" aria-controls="folderList" aria-autocomplete="list" />
             <button type="button" class="folder-dropdown-clear" id="folderClear" hidden aria-label="Clear search">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
 
-          <div class="folder-dropdown-counter" id="folderCounter" hidden>
+          <div class="folder-dropdown-counter" id="folderCounter" hidden role="status" aria-live="polite" aria-atomic="true">
             <span id="folderCounterText">0 folders found</span>
           </div>
 
@@ -3042,6 +3249,16 @@
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
             <span>No folders found</span>
+          </div>
+          
+          <div class="folder-dropdown-error" id="folderError" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div class="folder-dropdown-error-msg">
+              <div id="folderErrorText">Failed to load folders</div>
+            </div>
+            <button class="folder-dropdown-retry-btn" id="folderRetryBtn" type="button">Try Again</button>
           </div>
 
           <div class="folder-dropdown-footer">
@@ -5204,6 +5421,30 @@ copyButton.title = 'Share Public Link';
         let highlighted = -1;
         let savedScrollTop = 0;
         let folderData = [];
+        let searchDebounceTimer = null;
+        let scrollFadeFrame = null;
+        let lastFilterQuery = '';
+
+        // Performance: Debounce utility
+        function debounce(fn, delay) {
+          let timer;
+          return function(...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(this, args), delay);
+          };
+        }
+
+        // Performance: RequestAnimationFrame throttle
+        function rafThrottle(fn) {
+          let frame = null;
+          return function(...args) {
+            if (frame) return;
+            frame = requestAnimationFrame(() => {
+              fn.apply(this, args);
+              frame = null;
+            });
+          };
+        }
 
         function initFolderData() {
           folderData = [];
@@ -5300,24 +5541,37 @@ copyButton.title = 'Share Public Link';
           clearBtn.hidden = true;
           counter.hidden = true;
           createSuggestion.hidden = true;
+          lastFilterQuery = '';
 
           // Position before any scrollIntoView so the dropdown is fixed-position
-          if (window.innerWidth <= 680) {
+          const isMobile = window.innerWidth <= 680;
+          if (isMobile) {
             clearPositionStyles();
+            
+            // Mobile: Body scroll lock to prevent background scrolling (iOS fix)
+            document.body.classList.add('folder-dropdown-open');
+            
+            // Mobile: Create overlay
             let overlay = document.querySelector('.folder-sheet-overlay');
             if (!overlay) {
               overlay = document.createElement('div');
               overlay.className = 'folder-sheet-overlay';
+              overlay.addEventListener('click', () => close());
               document.body.appendChild(overlay);
             }
             overlay.classList.add('is-visible');
             dropdown.classList.add('is-open');
+            
+            // Mobile: Auto-focus search with delay to prevent keyboard covering content
+            setTimeout(() => {
+              search.focus({ preventScroll: true });
+            }, 350);
           } else {
             positionFolderDropdown();
             search.focus({ preventScroll: true });
           }
 
-          filterOptions();
+          filterOptions(true);
           list.scrollTop = savedScrollTop;
           highlighted = getVisibleItems().findIndex(o => o.classList.contains('is-active'));
           if (highlighted < 0) highlighted = 0;
@@ -5326,6 +5580,7 @@ copyButton.title = 'Share Public Link';
           history.pushState({ [MODAL_HISTORY_STATE_KEY]: modalHistoryCount }, '');
           modalHistoryCount++;
 
+          // Performance: Use RAF for smooth scroll fade update
           requestAnimationFrame(updateScrollFade);
         }
 
@@ -5335,14 +5590,28 @@ copyButton.title = 'Share Public Link';
             history.back();
             return;
           }
+          
+          // Performance: Cancel pending operations
+          clearTimeout(searchDebounceTimer);
+          if (scrollFadeFrame) {
+            cancelAnimationFrame(scrollFadeFrame);
+            scrollFadeFrame = null;
+          }
+          
           savedScrollTop = list.scrollTop;
           dropdown.hidden = true;
           btn.setAttribute('aria-expanded', 'false');
+          
+          // Mobile: Remove body scroll lock
+          document.body.classList.remove('folder-dropdown-open');
+          
           const overlay = document.querySelector('.folder-sheet-overlay');
           if (overlay) overlay.classList.remove('is-visible');
           dropdown.classList.remove('is-open');
           clearPositionStyles();
           createSuggestion.hidden = true;
+          const cm = document.getElementById('folderContextMenu');
+          if (cm) cm.hidden = true;
         }
 
         window.closeFolderDropdown = () => close({ fromPopstate: true });
@@ -5358,9 +5627,14 @@ copyButton.title = 'Share Public Link';
         window.addEventListener('scroll', () => { if (!dropdown.hidden) positionFolderDropdown(); }, { passive: true });
         window.addEventListener('resize', () => { if (!dropdown.hidden) positionFolderDropdown(); });
 
-        // ── Filter ──
-        function filterOptions() {
-          const q = search.value.toLowerCase();
+        // ── Filter ── Performance optimized
+        function filterOptions(immediate = false) {
+          const q = search.value.toLowerCase().trim();
+          
+          // Performance: Skip if query hasn't changed
+          if (q === lastFilterQuery && !immediate) return;
+          lastFilterQuery = q;
+          
           const searching = q.length > 0;
           clearBtn.hidden = !searching;
 
@@ -5378,9 +5652,9 @@ copyButton.title = 'Share Public Link';
             return new Date(b.createdAt) - new Date(a.createdAt);
           });
 
-          // Rebuild list: only matching items are rendered
-          list.innerHTML = '';
-          list.append(allHeader);
+          // Performance: Use DocumentFragment for batch DOM updates
+          const fragment = document.createDocumentFragment();
+          fragment.append(allHeader);
 
           // "All" item
           const isAllActive = matched.length > 0 ? !matched.some(f => f.isActive) : true;
@@ -5391,13 +5665,14 @@ copyButton.title = 'Share Public Link';
           if (isAllActive) allBtn.classList.add('is-active');
           allBtn.dataset.folder = '';
           allBtn.dataset.name = 'All';
-          allBtn.setAttribute('role', 'menuitemradio');
-          allBtn.setAttribute('aria-checked', isAllActive ? 'true' : 'false');
+          allBtn.setAttribute('role', 'option');
+          allBtn.setAttribute('aria-selected', isAllActive ? 'true' : 'false');
           allBtn.innerHTML = '<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dropdown-name">All</span>';
           allBtn.addEventListener('click', (e) => { e.preventDefault(); selectItem(allBtn); });
           allRow.appendChild(allBtn);
-          list.append(allRow);
+          fragment.append(allRow);
 
+          // Performance: Reuse template for folder items
           matched.forEach(f => {
             const row = document.createElement('div');
             row.className = 'folder-dropdown-row';
@@ -5430,8 +5705,11 @@ copyButton.title = 'Share Public Link';
             wireMenuButton(menuBtn);
             row.appendChild(menuBtn);
 
-            list.append(row);
+            fragment.append(row);
           });
+
+          // Performance: Single repaint with replaceChildren
+          list.replaceChildren(fragment);
 
           empty.hidden = matched.length > 0;
           allHeader.hidden = matched.length === 0;
@@ -5452,6 +5730,25 @@ copyButton.title = 'Share Public Link';
             createSuggestion.hidden = true;
           }
         }
+        
+        function updateHighlight() {
+          const visible = getVisibleItems();
+          if (search.value.length > 0) {
+            highlighted = visible.findIndex(o => o.dataset.folder);
+            if (highlighted < 0) highlighted = -1;
+          } else {
+            highlighted = visible.length > 0 ? 0 : -1;
+          }
+          highlightOption();
+        }
+
+        function filterWithHighlight(immediate = false) {
+          filterOptions(immediate);
+          updateHighlight();
+        }
+
+        // Performance: Debounced filter for search input
+        const debouncedFilter = debounce(filterWithHighlight, 150);
 
         function highlightMatch(text, query) {
           if (!query) return text;
@@ -5461,18 +5758,13 @@ copyButton.title = 'Share Public Link';
         }
 
         search.addEventListener('input', () => {
-          filterOptions();
-          const visible = getVisibleItems();
-          highlighted = visible.length > 0 ? 0 : -1;
-          highlightOption();
+          debouncedFilter();
         });
 
         clearBtn.addEventListener('click', () => {
           search.value = '';
-          filterOptions();
-          const visible = getVisibleItems();
-          highlighted = visible.length > 0 ? 0 : -1;
-          highlightOption();
+          lastFilterQuery = '';
+          filterWithHighlight(true);
           search.focus({ preventScroll: true });
         });
 
@@ -5480,14 +5772,17 @@ copyButton.title = 'Share Public Link';
         async function createFolderInline(name) {
           createSuggestion.hidden = true;
           // Duplicate check
-const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
+          const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
           if (dup) { showToast('A folder with that name already exists', 'error'); return; }
+          
+          // Performance: Show loading state immediately
+          const origHTML = createSuggestion.innerHTML;
+          createSuggestion.style.pointerEvents = 'none';
+          createSuggestion.style.opacity = '0.6';
+          createSuggestion.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="spin-wrap"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg><span>Creating...</span>';
+          
           try {
             const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-            // Loading state
-            const origText = createSuggestion.querySelector('span')?.textContent || '';
-            createSuggestion.style.pointerEvents = 'none';
-            createSuggestion.style.opacity = '0.6';
             const res = await fetch('/api/folders', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -5497,7 +5792,17 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
             if (!res.ok) { showToast(data.message || 'Failed to create folder', 'error'); return; }
 
             const f = data.folder;
-            folderData.push({ id: f._id, name: f.name, color: f.color, count: '0', isActive: false, createdAt: f.createdAt || new Date().toISOString() });
+            
+            // Performance: Update local state first for instant feedback
+            folderData.push({ 
+              id: f._id, 
+              name: f.name, 
+              color: f.color, 
+              count: '0', 
+              isActive: false, 
+              createdAt: f.createdAt || new Date().toISOString() 
+            });
+            
             const row = document.createElement('div');
             row.className = 'folder-dropdown-row';
             const itemBtn = document.createElement('button');
@@ -5534,6 +5839,7 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
           } finally {
             createSuggestion.style.pointerEvents = '';
             createSuggestion.style.opacity = '';
+            createSuggestion.innerHTML = origHTML;
           }
         }
 
@@ -5543,7 +5849,7 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
           if (q) createFolderInline(q);
         });
 
-        // ── Highlighting & Selection ──
+        // ── Highlighting & Selection ── Enhanced for a11y
         function getVisibleItems() {
           return Array.from(list.querySelectorAll('.folder-dropdown-item'));
         }
@@ -5551,24 +5857,58 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
         function highlightOption() {
           const items = getVisibleItems();
           items.forEach((o, i) => {
-            o.classList.toggle('is-highlighted', i === highlighted);
+            const isHighlighted = i === highlighted;
+            o.classList.toggle('is-highlighted', isHighlighted);
+            // Accessibility: Update aria-selected for screen readers
+            o.setAttribute('aria-selected', isHighlighted ? 'true' : 'false');
           });
-          if (items[highlighted]) items[highlighted].scrollIntoView({ block: 'nearest' });
+          
+          if (items[highlighted]) {
+            items[highlighted].scrollIntoView({ block: 'nearest' });
+            // Accessibility: Announce to screen readers which item is focused
+            search.setAttribute('aria-activedescendant', items[highlighted].id || `folder-option-${highlighted}`);
+            if (!items[highlighted].id) {
+              items[highlighted].id = `folder-option-${highlighted}`;
+            }
+          } else {
+            search.removeAttribute('aria-activedescendant');
+          }
+          
           if (createSuggestion && !createSuggestion.hidden) {
             createSuggestion.classList.toggle('is-highlighted', highlighted >= items.length);
           }
         }
 
         function selectItem(item) {
-          const folderId = item.dataset.folder;
-          saveRecentFolderId(folderId);
-          const url = new URL(window.location);
-          if (folderId) {
-            url.searchParams.set('folderId', folderId);
-          } else {
-            url.searchParams.delete('folderId');
+          // Micro-interaction: Add success pulse animation
+          item.classList.add('folder-item-selected');
+          
+          // Mobile: Haptic feedback on selection (if supported)
+          if ('vibrate' in navigator) {
+            navigator.vibrate(10); // Short, subtle vibration
           }
-          window.location.href = url.toString();
+          
+          // Micro-interaction: Animate button with success state
+          const checkmark = item.querySelector('.folder-dropdown-check');
+          if (checkmark) {
+            checkmark.style.animation = 'checkPulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+          }
+          
+          // Animate dropdown close with fade-out
+          dropdown.style.animation = 'folderDropdownOut 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards';
+          
+          // Delay navigation to show animation
+          setTimeout(() => {
+            const folderId = item.dataset.folder;
+            saveRecentFolderId(folderId);
+            const url = new URL(window.location);
+            if (folderId) {
+              url.searchParams.set('folderId', folderId);
+            } else {
+              url.searchParams.delete('folderId');
+            }
+            window.location.href = url.toString();
+          }, 180);
         }
 
         list.addEventListener('click', e => {
@@ -5578,34 +5918,96 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
         });
 
         btn.addEventListener('keydown', e => {
-          if (e.key === 'Enter' && dropdown.hidden) { e.preventDefault(); open(); return; }
+          if (e.key === 'Enter' && dropdown.hidden) { 
+            e.preventDefault(); 
+            open(); 
+            return; 
+          }
           if (dropdown.hidden) return;
           const visible = getVisibleItems();
+          
           switch (e.key) {
-            case 'ArrowDown': e.preventDefault(); highlighted = Math.min(highlighted + 1, visible.length - 1); highlightOption(); break;
-            case 'ArrowUp': e.preventDefault(); highlighted = Math.max(highlighted - 1, 0); highlightOption(); break;
-            case 'Enter': e.preventDefault(); if (visible[highlighted]) selectItem(visible[highlighted]); break;
-            case 'Escape': close(); break;
-            case 'Tab': close(); break;
+            case 'ArrowDown': 
+              e.preventDefault(); 
+              highlighted = Math.min(highlighted + 1, visible.length - 1); 
+              highlightOption(); 
+              break;
+            case 'ArrowUp': 
+              e.preventDefault(); 
+              highlighted = Math.max(highlighted - 1, 0); 
+              highlightOption(); 
+              break;
+            case 'Home':
+              e.preventDefault();
+              highlighted = 0;
+              highlightOption();
+              break;
+            case 'End':
+              e.preventDefault();
+              highlighted = visible.length - 1;
+              highlightOption();
+              break;
+            case 'Enter': 
+              e.preventDefault(); 
+              if (visible[highlighted]) selectItem(visible[highlighted]); 
+              break;
+            case 'Escape': 
+              close(); 
+              break;
+            case 'Tab': 
+              // Allow tab to move focus to search input
+              if (!e.shiftKey) {
+                e.preventDefault();
+                search.focus();
+              } else {
+                close();
+              }
+              break;
           }
         });
 
         search.addEventListener('keydown', e => {
           const visible = getVisibleItems();
           const maxIdx = (createSuggestion && !createSuggestion.hidden) ? visible.length : visible.length - 1;
+          
           switch (e.key) {
             case 'Escape':
               e.stopPropagation();
               if (search.value.length > 0) {
                 search.value = '';
-                filterOptions();
-                const visible = getVisibleItems();
-                highlighted = visible.length > 0 ? 0 : -1;
-                highlightOption();
-              } else { close(); }
+                lastFilterQuery = '';
+                filterWithHighlight(true);
+              } else { 
+                close(); 
+              }
               break;
-            case 'ArrowDown': e.preventDefault(); highlighted = Math.min(highlighted + 1, maxIdx); highlightOption(); break;
-            case 'ArrowUp': e.preventDefault(); highlighted = Math.max(highlighted - 1, 0); highlightOption(); break;
+            case 'ArrowDown': 
+              e.preventDefault(); 
+              highlighted = Math.min(highlighted + 1, maxIdx); 
+              highlightOption(); 
+              break;
+            case 'ArrowUp': 
+              e.preventDefault(); 
+              if (highlighted <= 0) {
+                // At first item, move focus back to trigger button
+                highlighted = -1;
+                search.removeAttribute('aria-activedescendant');
+                btn.focus();
+              } else {
+                highlighted = Math.max(highlighted - 1, 0); 
+                highlightOption();
+              }
+              break;
+            case 'Home':
+              e.preventDefault();
+              highlighted = 0;
+              highlightOption();
+              break;
+            case 'End':
+              e.preventDefault();
+              highlighted = maxIdx;
+              highlightOption();
+              break;
             case 'Enter':
               e.preventDefault();
               if (createSuggestion && !createSuggestion.hidden && createSuggestion.classList.contains('is-highlighted')) {
@@ -5615,7 +6017,19 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
                 selectItem(visible[highlighted]);
               }
               break;
-            case 'Tab': close(); break;
+            case 'Tab': 
+              if (!e.shiftKey) {
+                // Tab forward - move to first folder item
+                e.preventDefault();
+                highlighted = 0;
+                highlightOption();
+              } else {
+                // Shift+Tab - move to trigger button
+                e.preventDefault();
+                close();
+                btn.focus();
+              }
+              break;
           }
         });
 
@@ -5627,14 +6041,26 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
             e.stopPropagation();
             contextMenuFolderId = menuBtn.dataset.folderId;
             const menu = document.getElementById('folderContextMenu');
+            if (menu.parentElement !== document.body) {
+              document.body.appendChild(menu);
+            }
+            menu.hidden = true;
+            menu.style.removeProperty('top');
+            menu.style.removeProperty('left');
             const rect = menuBtn.getBoundingClientRect();
-            const menuWidth = 180;
+            const menuWidth = Math.min(180, window.innerWidth - 16);
+            const menuHeight = menu.offsetHeight || 120;
             let left = rect.right + 15;
             if (left + menuWidth > window.innerWidth - 8) {
               left = rect.left - menuWidth - 4;
             }
             if (left < 8) left = 8;
-            menu.style.top = rect.top + 'px';
+            let top = rect.top;
+            if (top + menuHeight > window.innerHeight - 8) {
+              top = window.innerHeight - menuHeight - 8;
+            }
+            if (top < 8) top = 8;
+            menu.style.top = top + 'px';
             menu.style.left = left + 'px';
             menu.hidden = false;
           });
@@ -5661,17 +6087,27 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
         });
 
         function updateScrollFade() {
-          const el = list;
-          const scrollTop = el.scrollTop;
-          const maxScroll = el.scrollHeight - el.clientHeight;
-          const isTop = scrollTop <= 4;
-          const isBottom = scrollTop >= maxScroll - 4;
-          el.classList.toggle('is-scrolled-top', isTop);
-          el.classList.toggle('is-scrolled-bottom', isBottom);
-          el.classList.toggle('is-scrolled-both', !isTop && !isBottom);
+          // Performance: Cancel previous frame if still pending
+          if (scrollFadeFrame) {
+            cancelAnimationFrame(scrollFadeFrame);
+          }
+          
+          scrollFadeFrame = requestAnimationFrame(() => {
+            const el = list;
+            const scrollTop = el.scrollTop;
+            const maxScroll = el.scrollHeight - el.clientHeight;
+            const isTop = scrollTop <= 4;
+            const isBottom = scrollTop >= maxScroll - 4;
+            el.classList.toggle('is-scrolled-top', isTop);
+            el.classList.toggle('is-scrolled-bottom', isBottom);
+            el.classList.toggle('is-scrolled-both', !isTop && !isBottom);
+            scrollFadeFrame = null;
+          });
         }
 
-        list.addEventListener('scroll', updateScrollFade, { passive: true });
+        // Performance: Throttled scroll handler
+        const throttledScrollFade = rafThrottle(updateScrollFade);
+        list.addEventListener('scroll', throttledScrollFade, { passive: true });
 
         // ── Create Folder (from dropdown footer) ──
         createBtn.addEventListener('click', () => {
