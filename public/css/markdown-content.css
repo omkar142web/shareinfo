@@ -83,6 +83,8 @@
   padding: 0.12em 0.35em;
 }
 
+/* --------------------------------------------- */
+/* 
 .md-content pre {
   margin: 0 0 1em;
 }
@@ -96,6 +98,45 @@
   padding: 0;
   white-space: pre;
 }
+*/
+
+
+.md-content pre {
+  margin: 0 0 1em;
+  overflow-x: auto;
+  max-width: 100%;
+  display: block;
+}
+
+.md-content pre code {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  display: block;
+  font-size: 0.9em;
+  padding: 0;
+  white-space: pre;
+  min-width: max-content;
+}
+
+ 
+ /* --------------------------------------------- */
+/* .md-content pre {
+  margin: 0 0 1em;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.md-content pre code {
+  white-space: inherit;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  display: block;
+  font-size: 0.9em;
+  padding: 0;
+}  */
+/* --------------------------------------------- */
 
 .md-content .md-code-block {
   margin: 0 0 1em;

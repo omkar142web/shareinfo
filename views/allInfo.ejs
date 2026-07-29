@@ -3058,7 +3058,7 @@
             </button>
           </div>
           <div class="folder-dropdown-kbd-hint">
-            <kbd>↑</kbd> <kbd>↓</kbd> navigate &middot; <kbd>Enter</kbd> select &middot; <kbd>Esc</kbd> close
+            <kbd>↑</kbd> <kbd>↓</kbd> navigate &middot; <kbd>Enter</kbd> select
           </div>
         </div>
       </div>
@@ -5511,14 +5511,16 @@ copyButton.title = 'Share Public Link';
 
         search.addEventListener('input', () => {
           filterOptions();
-          highlighted = 0;
+          const visible = getVisibleItems();
+          highlighted = visible.length > 0 ? 0 : -1;
           highlightOption();
         });
 
         clearBtn.addEventListener('click', () => {
           search.value = '';
           filterOptions();
-          highlighted = 0;
+          const visible = getVisibleItems();
+          highlighted = visible.length > 0 ? 0 : -1;
           highlightOption();
           search.focus({ preventScroll: true });
         });
@@ -5647,7 +5649,8 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
               if (search.value.length > 0) {
                 search.value = '';
                 filterOptions();
-                highlighted = 0;
+                const visible = getVisibleItems();
+                highlighted = visible.length > 0 ? 0 : -1;
                 highlightOption();
               } else { close(); }
               break;
@@ -5676,7 +5679,7 @@ const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
             const menu = document.getElementById('folderContextMenu');
             const rect = menuBtn.getBoundingClientRect();
             const menuWidth = 180;
-            let left = rect.right + 4;
+            let left = rect.right + 15;
             if (left + menuWidth > window.innerWidth - 8) {
               left = rect.left - menuWidth - 4;
             }
