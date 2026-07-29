@@ -5561,11 +5561,6 @@ copyButton.title = 'Share Public Link';
             }
             overlay.classList.add('is-visible');
             dropdown.classList.add('is-open');
-            
-            // Mobile: Auto-focus search with delay to prevent keyboard covering content
-            setTimeout(() => {
-              search.focus({ preventScroll: true });
-            }, 350);
           } else {
             positionFolderDropdown();
             search.focus({ preventScroll: true });
