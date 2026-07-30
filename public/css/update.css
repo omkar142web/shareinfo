@@ -639,9 +639,9 @@ textarea::-webkit-scrollbar-thumb {
 }
 
 .form-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
   padding-top: 20px;
   border-top: 1px solid var(--border);
   margin-top: 4px;
