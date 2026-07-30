@@ -190,7 +190,12 @@
 
             <!-- All folders -->
             <div class="folder-combobox-section">
-              <div class="folder-combobox-section-header" id="folderAllHeader">All Folders</div>
+              <div class="folder-combobox-section-header" id="folderAllHeader">
+                Folders
+                <% if (typeof folders !== 'undefined' && folders && folders.length) { %>
+                  <span style="margin-left: auto; font-size: 10px; opacity: 0.6;"><%= folders.length %> <%= folders.length === 1 ? 'folder' : 'folders' %></span>
+                <% } %>
+              </div>
               <div class="folder-combobox-options" id="folderOptions">
                 <button type="button" class="folder-combobox-option" data-value="" data-name="No folder" role="option">
                   <span class="folder-combobox-dot" style="background: #64748b"></span>
@@ -201,7 +206,7 @@
                 </button>
                 <% if (typeof folders !== 'undefined' && folders && folders.length) { %>
                   <% folders.forEach(function(f) { %>
-                  <button type="button" class="folder-combobox-option" data-value="<%= f._id %>" data-name="<%= f.name %>" data-color="<%= f.color %>" data-count="<%= f.entryCount || 0 %>" data-created="<%= f.createdAt %>" role="option">
+                  <button type="button" class="folder-combobox-option" data-value="<%= f._id %>" data-name="<%= f.name %>" data-color="<%= f.color %>" data-count="<%= f.entryCount || 0 %>" data-created="<%= f.createdAt %>" role="option" style="--folder-accent: <%= f.color %>">
                     <span class="folder-combobox-dot" style="background: <%= f.color %>"></span>
                     <span class="folder-combobox-name"><%= f.name %></span>
                     <span class="folder-combobox-count"><%= f.entryCount || 0 %></span>
@@ -214,25 +219,25 @@
               </div>
             </div>
 
-            <!-- Create suggestion (shown by JS when search has no exact match) -->
-            <div class="folder-combobox-create-suggestion" id="folderCreateSuggestion" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>Create "<span id="folderCreateName"></span>"</span>
+            <!-- Empty state + create option (JS shows when no results match) -->
+            <div class="folder-combobox-empty" id="folderEmpty" hidden>
+              <div class="folder-combobox-empty-text">No matching folders</div>
+              <button type="button" class="folder-combobox-create-suggestion" id="folderCreateSuggestion" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>Create folder "<span id="folderCreateName"></span>"</span>
+              </button>
             </div>
-
-            <!-- Empty state -->
-            <div class="folder-combobox-empty" id="folderEmpty" hidden>No folders found</div>
 
             <div class="folder-combobox-divider"></div>
 
-            <!-- Sticky create button -->
+            <!-- New Folder button — always visible, opens a prompt -->
             <button type="button" class="folder-combobox-create-btn" id="folderCreateBtn">
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              <span>Create Folder</span>
+              <span>New Folder</span>
             </button>
           </div>
         </div>
@@ -489,7 +494,6 @@
       const toast = document.getElementById("folderToast");
 
       const allOptions = Array.from(optionsWrap.querySelectorAll(".folder-combobox-option"));
-      let createTimer = null;
 
       function isOpen() { return !dropdown.hidden; }
 
@@ -554,7 +558,6 @@
 
       function close() {
         if (!isOpen()) return;
-        clearTimeout(createTimer);
         dropdown.hidden = true;
         trigger.setAttribute("aria-expanded", "false");
         search.value = "";
@@ -634,18 +637,12 @@
       function filterOptions(q) {
         const lower = q.toLowerCase().trim();
         let visible = 0;
-        let firstMatch = null;
-        let exactMatch = false;
 
         allOptions.forEach(o => {
           const name = (o.dataset.name || o.querySelector(".folder-combobox-name")?.textContent || "No folder").toLowerCase();
           const show = !lower || name.includes(lower);
           o.hidden = !show;
-          if (show) {
-            visible++;
-            if (o.dataset.value && !firstMatch) firstMatch = o;
-            if (o.dataset.value && name === lower) exactMatch = true;
-          }
+          if (show) visible++;
         });
 
         const recentIds = getRecent();
@@ -664,9 +661,10 @@
         visibleOptions.forEach(o => optionsWrap.appendChild(o));
 
         emptyMsg.hidden = visible > 0;
-        allHeader.textContent = "All Folders";
+        const folderCount = allOptions.filter(o => o.dataset.value).length;
+        allHeader.innerHTML = `Folders <span style="margin-left: auto; font-size: 10px; opacity: 0.6;">${folderCount} ${folderCount === 1 ? 'folder' : 'folders'}</span>`;
 
-        if (lower && !exactMatch && firstMatch) {
+        if (lower && visible === 0) {
           createName.textContent = q.trim();
           createSuggestion.hidden = false;
           createSuggestion.onclick = (e) => {
@@ -689,7 +687,6 @@
       }
 
       async function createFolderFromSearch(name) {
-        clearTimeout(createTimer);
         createBtn.disabled = true;
         createBtn.querySelector("span").textContent = "Creating...";
         try {
@@ -713,6 +710,7 @@
           btn.dataset.count = "0";
           btn.dataset.created = f.createdAt || new Date().toISOString();
           const colorHex = COLOR_HEX[f.color] || f.color;
+          btn.style.setProperty('--folder-accent', colorHex);
           btn.innerHTML = `<span class="folder-combobox-dot" style="background:${colorHex}"></span><span class="folder-combobox-name">${f.name}</span><span class="folder-combobox-count">0</span>`;
           btn.addEventListener("click", (e) => { e.preventDefault(); selectOption(btn); });
           btn.addEventListener("keydown", (e) => optionKeydown(e, btn));
@@ -725,7 +723,7 @@
           showToast(err.message || "Failed to create folder");
         } finally {
           createBtn.disabled = false;
-          createBtn.querySelector("span").textContent = "Create Folder";
+          createBtn.querySelector("span").textContent = "New Folder";
         }
       }
 
@@ -796,11 +794,10 @@
 
       createBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        const q = search.value.trim();
-        if (q) {
-          createFolderFromSearch(q);
-        } else {
-          search.focus();
+        const suggested = search.value.trim();
+        const name = prompt(suggested ? `Create folder "${suggested}"?` : "Enter folder name:", suggested || "");
+        if (name && name.trim()) {
+          createFolderFromSearch(name.trim());
         }
       });
 
