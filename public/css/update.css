@@ -155,7 +155,8 @@ body::before {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 460px;
+  /* max-width: 460px; */
+  max-width: 625px;
   background: var(--surface-1);
   border: 1px solid var(--border-hi);
   border-radius: var(--radius);
@@ -1311,6 +1312,18 @@ input.folder-combobox-search {
     transform: translateY(0) scale(1);
   }
 }
+
+@media (max-width : 625px) {
+  body{
+    padding: 0px;
+  }
+
+  .form-shell{
+    border:none;
+    border-radius:0px;
+  }
+}
+
 
 /* ── Scrollbar (global) ───────────────────────────── */
 @media (min-width: 480px) {
