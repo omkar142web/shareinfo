@@ -699,7 +699,7 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
     }
 
     .card-name {
@@ -1398,7 +1398,7 @@
     }
 
     .empty-action-wrap {
-      margin-top: 8px;
+      margin-top: 14px;
     }
 
     /* ── Modal overlay ───────────────────────────────── */
@@ -2263,6 +2263,7 @@
       align-items: center;
       gap: 5px;
       color: var(--text-3);
+      opacity: 0.85;
       font-size: 0.75rem;
       font-weight: 500;
       letter-spacing: 0.02em;
@@ -5534,6 +5535,7 @@ copyButton.title = 'Share Public Link';
           if (dropdown.parentElement !== document.body) {
             document.body.appendChild(dropdown);
           }
+          dropdown.style.animation = '';   // clear any leftover close animation
 
           dropdown.hidden = false;
           btn.setAttribute('aria-expanded', 'true');
@@ -5608,6 +5610,50 @@ copyButton.title = 'Share Public Link';
           const cm = document.getElementById('folderContextMenu');
           if (cm) cm.hidden = true;
         }
+
+        // ── Swipe-to-dismiss (mobile bottom sheet) ──
+        let dragStartY = null, dragCurrentY = 0, isDragging = false;
+        const DRAG_CLOSE_THRESHOLD = 90;
+
+        dropdown.addEventListener('touchstart', (e) => {
+          if (!window.matchMedia('(max-width: 680px)').matches) return;
+          if (list.scrollTop > 0) return; // don't hijack list scrolling
+          dragStartY = e.touches[0].clientY;
+          isDragging = false;
+        }, { passive: true });
+
+        dropdown.addEventListener('touchmove', (e) => {
+          if (dragStartY === null) return;
+          const delta = e.touches[0].clientY - dragStartY;
+          if (delta <= 0) return; // only downward drags
+          isDragging = true;
+          dragCurrentY = delta;
+          dropdown.classList.add('is-dragging');
+          dropdown.style.transform = `translateY(${delta}px)`;
+        }, { passive: true });
+
+        dropdown.addEventListener('touchend', () => {
+          if (!isDragging) { dragStartY = null; return; }
+          dropdown.classList.remove('is-dragging');
+          dropdown.style.transform = '';
+          if (dragCurrentY > DRAG_CLOSE_THRESHOLD) {
+            close();
+          }
+          dragStartY = null;
+          dragCurrentY = 0;
+          isDragging = false;
+        });
+
+        // ── Focus trap while open ──
+        function trapFocus(e) {
+          if (dropdown.hidden || e.key !== 'Tab') return;
+          const focusables = dropdown.querySelectorAll('button, input, [tabindex]:not([tabindex="-1"])');
+          if (!focusables.length) return;
+          const first = focusables[0], last = focusables[focusables.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+        document.addEventListener('keydown', trapFocus);
 
         window.closeFolderDropdown = () => close({ fromPopstate: true });
 
