@@ -208,11 +208,50 @@
     });
   }
 
+  function ensureHighlightJS() {
+    if (window.hljs) return Promise.resolve(window.hljs);
+
+    return new Promise(function (resolve, reject) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css';
+      document.head.appendChild(link);
+
+      var script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/common.min.js';
+      script.onload = function () { resolve(window.hljs); };
+      script.onerror = function () { link.remove(); reject(new Error('highlight.js failed to load')); };
+      document.head.appendChild(script);
+    });
+  }
+
   function enhanceCodeBlocks(root) {
-    root.querySelectorAll('pre > code').forEach(function (code) {
-      if (window.hljs) {
-        window.hljs.highlightElement(code);
-      }
+    var blocks = root.querySelectorAll('.md-code-block, pre > code');
+    if (!blocks.length) return;
+
+    ensureHighlightJS().then(function (hljs) {
+      blocks.forEach(function (el) {
+        if (el.classList.contains('md-code-block')) {
+          var langClass = null;
+          el.classList.forEach(function (c) {
+            if (c.indexOf('language-') === 0) langClass = c.slice(9);
+          });
+          var result = langClass
+            ? hljs.highlight(el.textContent, { language: langClass })
+            : hljs.highlightAuto(el.textContent);
+          el.innerHTML = result.value;
+          el.classList.add('hljs');
+          if (result.language && !el.classList.contains('language-' + result.language)) {
+            el.classList.add('language-' + result.language);
+          }
+        } else {
+          hljs.highlightElement(el);
+        }
+      });
+
+      root.dispatchEvent(new CustomEvent('markdown:highlighted', { bubbles: true, detail: root }));
+    }).catch(function () {
+      // Highlighting unavailable (e.g. CDN offline); content remains readable
     });
   }
 

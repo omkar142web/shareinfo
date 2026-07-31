@@ -3395,15 +3395,15 @@
         <div class="empty-action-wrap">
           <% if (currentKeyword) { %>
             <button class="btn-retry" type="button" id="emptyRetryBtn">
-              <i class="ti ti-search" aria-hidden="true"></i> Try a different search
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg> Try a different search
             </button>
           <% } else if (currentVis !== 'all') { %>
             <button class="btn-retry" type="button" id="emptyRetryBtn">
-              <i class="ti ti-filter-off" aria-hidden="true"></i> Show all entries
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6 8v5l-4 2v-7z" /><path d="M3 3l18 18" /></svg> Show all entries
             </button>
           <% } else { %>
             <button class="btn-primary" type="button" onclick="window.location.href='/add'">
-              <i class="ti ti-plus" aria-hidden="true"></i> Add your first entry
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg> Add your first entry
             </button>
           <% } %>
         </div>
@@ -3752,7 +3752,6 @@
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.3/dist/purify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked@15.0.6/marked.min.js"></script>
     <script src="/js/linkify-it.bundle.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/common.min.js"></script>
     <script src="/js/markdown-renderer.js"></script>
     <script>
       const initialPagination = {
@@ -3783,6 +3782,16 @@
         renderMarkdownInto(el, (info.info || '').replace(/\\n/g, '\n'));
       });
       requestAnimationFrame(function () { refreshCardOverflowState(); });
+      // Re-measure once when lazy-loaded highlight.js finishes (code blocks change height)
+      let highlightReMeasureScheduled = false;
+      document.addEventListener('markdown:highlighted', () => {
+        if (highlightReMeasureScheduled) return;
+        highlightReMeasureScheduled = true;
+        requestAnimationFrame(() => {
+          highlightReMeasureScheduled = false;
+          refreshCardOverflowState();
+        });
+      });
       if (wall) {
         wall.addEventListener('click', (event) => {
           const card = event.target.closest('.info-card');
@@ -3922,7 +3931,7 @@
           if (actionWrap) {
             actionWrap.innerHTML = `
               <button class="btn-retry" type="button" id="emptyRetryBtn">
-                <i class="ti ti-search" aria-hidden="true"></i> Try a different search
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg> Try a different search
               </button>
             `;
           }
@@ -3935,7 +3944,7 @@
           if (actionWrap) {
             actionWrap.innerHTML = `
               <button class="btn-retry" type="button" id="emptyRetryBtn">
-                <i class="ti ti-filter-off" aria-hidden="true"></i> Show all entries
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6 8v5l-4 2v-7z" /><path d="M3 3l18 18" /></svg> Show all entries
               </button>
             `;
             document.getElementById('emptyRetryBtn')?.addEventListener('click', () => {
@@ -3952,7 +3961,7 @@
           if (actionWrap) {
             actionWrap.innerHTML = `
               <button class="btn-primary" type="button" onclick="window.location.href='/add'">
-                <i class="ti ti-plus" aria-hidden="true"></i> Add your first entry
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg> Add your first entry
               </button>
             `;
           }
