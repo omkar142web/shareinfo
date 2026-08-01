@@ -5668,7 +5668,6 @@ copyButton.title = 'Share Public Link';
           filterOptions(true);
           list.scrollTop = savedScrollTop;
           highlighted = getVisibleItems().findIndex(o => o.classList.contains('is-active'));
-          if (highlighted < 0) highlighted = 0;
           highlightOption();
 
           history.pushState({ [MODAL_HISTORY_STATE_KEY]: modalHistoryCount }, '');
@@ -5684,6 +5683,9 @@ copyButton.title = 'Share Public Link';
             if (closePending) return;
             closePending = true;
             history.back();
+            // Self-heal: if that popstate gets consumed by another overlay's
+            // branch (modal closing on top), never let the guard stick forever
+            setTimeout(() => { closePending = false; }, 400);
             return;
           }
           closePending = false;
@@ -5764,7 +5766,16 @@ copyButton.title = 'Share Public Link';
         btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
 
         document.addEventListener('click', (e) => {
-          if (!e.target.closest('.folder-selector') && !dropdown.contains(e.target)) close();
+          if (!e.target.closest('.folder-selector') && !dropdown.contains(e.target)) {
+            // Don't close while a folder modal (delete/rename/color/create)
+            // is stacked above the dropdown: the context-menu click that opens
+            // those bubbles up here too, and a spurious close() would fire
+            // history.back() whose popstate is consumed by the modal's branch —
+            // leaving closePending stuck so the dropdown could never close again.
+            const top = getActiveOverlay();
+            if (top && top !== dropdown) return;
+            close();
+          }
         });
 
         window.addEventListener('scroll', () => { if (!dropdown.hidden) positionFolderDropdown(); }, { passive: true });
@@ -5962,7 +5973,7 @@ copyButton.title = 'Share Public Link';
             highlighted = visible.findIndex(o => o.dataset.folder);
             if (highlighted < 0) highlighted = -1;
           } else {
-            highlighted = visible.length > 0 ? 0 : -1;
+            highlighted = visible.findIndex(o => o.classList.contains('is-active'));
           }
           highlightOption();
         }
@@ -6073,8 +6084,9 @@ copyButton.title = 'Share Public Link';
           items.forEach((o, i) => {
             const isHighlighted = i === highlighted;
             o.classList.toggle('is-highlighted', isHighlighted);
-            // Accessibility: Update aria-selected for screen readers
-            o.setAttribute('aria-selected', isHighlighted ? 'true' : 'false');
+            // Accessibility: aria-selected tracks both keyboard focus and the
+            // currently active folder/All (highlight re-runs must not wipe it)
+            o.setAttribute('aria-selected', (isHighlighted || o.classList.contains('is-active')) ? 'true' : 'false');
           });
           
           if (items[highlighted]) {
@@ -6343,7 +6355,12 @@ copyButton.title = 'Share Public Link';
         window.refreshFolderDropdown = () => {
           lastFilterQuery = '';
           filterOptions(true);
-          updateHighlight();
+          // Don't force the keyboard-nav highlight onto row 0 ("All") after
+          // a background refresh (rename/delete/color) — that reads as an
+          // unwanted hover on All. The rebuilt rows are already unhighlighted;
+          // just reset the tracked index so nothing looks stuck.
+          highlighted = -1;
+          search.removeAttribute('aria-activedescendant');
         };
 
         window.folderData = folderData;
@@ -6477,7 +6494,8 @@ copyButton.title = 'Share Public Link';
             showToast(data.message || 'Failed', 'error');
             return;
           }
-          closeOverlay(document.getElementById('folderModal'), 'is-open');
+          closeOverlay(document.getElementById('folderModal'), 'is-open', null, true, { fromPopstate: true });
+          if (modalHistoryCount > 0) modalHistoryCount--;
           showToast(`Created: ${data.folder.name}`);
 
           // Optimistic: push into the shared folderData array and re-render the
@@ -6540,7 +6558,8 @@ copyButton.title = 'Share Public Link';
             showToast(data.message || 'Failed', 'error');
             return;
           }
-          closeOverlay(modal, 'is-open');
+          closeOverlay(modal, 'is-open', null, true, { fromPopstate: true });
+          if (modalHistoryCount > 0) modalHistoryCount--;
           showToast('Folder renamed');
           // Optimistic: patch in-memory state + visible DOM, no page reload
           const folder = (window.folderData || []).find(f => f.id === folderId);
@@ -6578,7 +6597,8 @@ copyButton.title = 'Share Public Link';
           const res = await fetch(`/api/folders/${folderId}`, { method: 'DELETE' });
           const data = await res.json();
           if (!res.ok) { showToast(data.message || 'Failed', 'error'); return; }
-          closeOverlay(modal, 'is-active');
+          closeOverlay(modal, 'is-active', null, true, { fromPopstate: true });
+          if (modalHistoryCount > 0) modalHistoryCount--;
           showToast(`Folder deleted (${data.orphanedEntries} entries unlinked)`);
           const folder = (window.folderData || []).find(f => f.id === folderId);
           // If the deleted folder is the one being viewed, leave the folder view
@@ -6634,7 +6654,8 @@ copyButton.title = 'Share Public Link';
               body: JSON.stringify({ color }),
             });
             if (!res.ok) { showToast('Failed', 'error'); return; }
-            closeOverlay(modal, 'is-open');
+            closeOverlay(modal, 'is-open', null, true, { fromPopstate: true });
+            if (modalHistoryCount > 0) modalHistoryCount--;
             showToast('Color updated');
             // Optimistic: patch in-memory state + visible DOM, no page reload
             const folder = (window.folderData || []).find(f => f.id === folderId);
