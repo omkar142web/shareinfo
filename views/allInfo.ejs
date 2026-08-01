@@ -2513,6 +2513,8 @@
       padding: 1px 6px;
       animation: folderRowIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
+    /* display:flex above would override the UA [hidden] rule */
+    .folder-dropdown-row[hidden] { display: none; }
     .folder-dropdown-row:nth-child(1) { animation-delay: 15ms; }
     .folder-dropdown-row:nth-child(2) { animation-delay: 30ms; }
     .folder-dropdown-row:nth-child(3) { animation-delay: 45ms; }
@@ -2973,6 +2975,11 @@
       border-color: var(--text);
       transform: scale(1.1);
     }
+    .color-swatch:disabled {
+      opacity: 0.55;
+      cursor: default;
+      transform: none;
+    }
 
     /* ── Keyboard hint ── */
     .folder-dropdown-kbd-hint {
@@ -3224,7 +3231,7 @@
 
       <% if (typeof isMaster === "undefined" || !isMaster) { %>
       <div class="folder-selector" id="folderSelector">
-        <button class="folder-selector-btn" id="folderSelectorBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+        <button class="folder-selector-btn" id="folderSelectorBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
           <span class="folder-selector-label">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
@@ -3244,12 +3251,12 @@
           </svg>
         </button>
 
-        <div class="folder-dropdown" id="folderDropdown" role="menu" hidden>
+        <div class="folder-dropdown" id="folderDropdown" hidden>
           <div class="folder-dropdown-search-wrap">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            <input type="text" class="folder-dropdown-search" id="folderSearch" placeholder="Search folders..." autocomplete="off" aria-label="Search folders" role="combobox" aria-expanded="true" aria-controls="folderList" aria-autocomplete="list" />
+            <input type="text" class="folder-dropdown-search" id="folderSearch" placeholder="Search folders..." maxlength="255" autocomplete="off" aria-label="Search folders" role="combobox" aria-expanded="true" aria-controls="folderList" aria-autocomplete="list" />
             <button type="button" class="folder-dropdown-clear" id="folderClear" hidden aria-label="Clear search">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
@@ -3270,7 +3277,7 @@
           <div class="folder-dropdown-list" id="folderList" role="listbox" aria-label="Folders">
             <div class="folder-dropdown-section-header" id="folderAllHeader">All Folders</div>
 
-            <button class="folder-dropdown-item <%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'is-active' : '' %>" data-folder="" role="menuitemradio" aria-checked="<%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'true' : 'false' %>">
+            <button class="folder-dropdown-item <%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'is-active' : '' %>" data-folder="" role="option" aria-selected="<%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'true' : 'false' %>">
               <span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>
               <span>All</span>
             </button>
@@ -3278,7 +3285,7 @@
             <% if (typeof folders !== 'undefined' && folders.length > 0) { %>
               <% folders.forEach(function(folder) { %>
               <div class="folder-dropdown-row">
-                <div class="folder-dropdown-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-folder="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-created="<%= folder.createdAt %>" role="menuitemradio" aria-checked="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>" tabindex="-1">
+                <div class="folder-dropdown-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-folder="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-created="<%= folder.createdAt %>" role="option" aria-selected="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>" tabindex="-1">
                   <span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>
                   <span class="folder-dot" style="background: var(--folder-<%= folder.color %>)"></span>
                   <span class="folder-dropdown-name"><%= folder.name || 'Untitled' %></span>
@@ -3528,7 +3535,7 @@
       %>
 
         <!-- Card: <%= cardType %> -->
-        <article id="<%= person._id %>" class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" data-id="<%= person._id %>" data-is-public="<%= person.isPublic === true ? 'true' : 'false' %>" data-is-favorite="<%= isFavorite ? 'true' : 'false' %>" style="--stagger: <%= index %>">
+        <article id="<%= person._id %>" class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" data-id="<%= person._id %>" data-is-public="<%= person.isPublic === true ? 'true' : 'false' %>" data-is-favorite="<%= isFavorite ? 'true' : 'false' %>" data-folder-id="<%= person.folderId || '' %>" style="--stagger: <%= index %>">
 
           <!-- Card type indicator -->
           <div class="card-type-strip" aria-hidden="true">
@@ -3721,12 +3728,12 @@
           <div class="field-group" style="margin-top: 12px;">
             <label>Color</label>
             <div class="color-picker" id="folderColorPicker">
-              <button class="color-swatch is-selected" data-color="blue" style="background:var(--folder-blue)"></button>
-              <button class="color-swatch" data-color="purple" style="background:var(--folder-purple)"></button>
-              <button class="color-swatch" data-color="green" style="background:var(--folder-green)"></button>
-              <button class="color-swatch" data-color="red" style="background:var(--folder-red)"></button>
-              <button class="color-swatch" data-color="orange" style="background:var(--folder-orange)"></button>
-              <button class="color-swatch" data-color="pink" style="background:var(--folder-pink)"></button>
+              <button class="color-swatch is-selected" data-color="blue" style="background:var(--folder-blue)" aria-label="Blue"></button>
+              <button class="color-swatch" data-color="purple" style="background:var(--folder-purple)" aria-label="Purple"></button>
+              <button class="color-swatch" data-color="green" style="background:var(--folder-green)" aria-label="Green"></button>
+              <button class="color-swatch" data-color="red" style="background:var(--folder-red)" aria-label="Red"></button>
+              <button class="color-swatch" data-color="orange" style="background:var(--folder-orange)" aria-label="Orange"></button>
+              <button class="color-swatch" data-color="pink" style="background:var(--folder-pink)" aria-label="Pink"></button>
             </div>
           </div>
         </div>
@@ -3789,12 +3796,12 @@
         </div>
         <div class="modal-divider"></div>
         <div class="modal-body" style="display:flex;gap:10px;justify-content:center;padding:16px;">
-          <button class="color-swatch" data-color="blue" style="background:var(--folder-blue)"></button>
-          <button class="color-swatch" data-color="purple" style="background:var(--folder-purple)"></button>
-          <button class="color-swatch" data-color="green" style="background:var(--folder-green)"></button>
-          <button class="color-swatch" data-color="red" style="background:var(--folder-red)"></button>
-          <button class="color-swatch" data-color="orange" style="background:var(--folder-orange)"></button>
-          <button class="color-swatch" data-color="pink" style="background:var(--folder-pink)"></button>
+          <button class="color-swatch" data-color="blue" style="background:var(--folder-blue)" aria-label="Blue"></button>
+          <button class="color-swatch" data-color="purple" style="background:var(--folder-purple)" aria-label="Purple"></button>
+          <button class="color-swatch" data-color="green" style="background:var(--folder-green)" aria-label="Green"></button>
+          <button class="color-swatch" data-color="red" style="background:var(--folder-red)" aria-label="Red"></button>
+          <button class="color-swatch" data-color="orange" style="background:var(--folder-orange)" aria-label="Orange"></button>
+          <button class="color-swatch" data-color="pink" style="background:var(--folder-pink)" aria-label="Pink"></button>
         </div>
       </div>
     </div>
@@ -4215,7 +4222,15 @@
       function getActiveOverlay() {
         // Topmost overlay first — add future modals here in stacking order.
         if (confirmOverlay && !confirmOverlay.hidden) return confirmOverlay;
+        const folderDeleteModal = document.getElementById('folderDeleteModal');
+        if (folderDeleteModal && !folderDeleteModal.hidden) return folderDeleteModal;
         if (overlay && !overlay.hidden) return overlay;
+        const folderModal = document.getElementById('folderModal');
+        if (folderModal && !folderModal.hidden) return folderModal;
+        const renameFolderModal = document.getElementById('renameFolderModal');
+        if (renameFolderModal && !renameFolderModal.hidden) return renameFolderModal;
+        const colorPickerModal = document.getElementById('colorPickerModal');
+        if (colorPickerModal && !colorPickerModal.hidden) return colorPickerModal;
         const folderDropdown = document.getElementById('folderDropdown');
         if (folderDropdown && !folderDropdown.hidden) return folderDropdown;
         return null;
@@ -4757,6 +4772,7 @@
         card.id = id;
         card.dataset.isPublic = isPublic ? 'true' : 'false';
         card.dataset.isFavorite = isFavorite ? 'true' : 'false';
+        card.dataset.folderId = item.folderId || '';
         card.style.animationDelay = `${batchIndex * 60}ms`;
 
         const typeStrip = document.createElement('div');
@@ -5162,12 +5178,17 @@ copyButton.title = 'Share Public Link';
         if (e.key === 'Escape') {
           const activeElement = getActiveOverlay();
           if (!activeElement) return;
+          const id = activeElement.id;
 
-          if (activeElement === confirmOverlay) {
+          if (id === 'confirmOverlay') {
             closeConfirmModal();
-          } else if (activeElement === overlay) {
+          } else if (id === 'modalOverlay') {
             closeModal();
+          } else if (id === 'folderModal' || id === 'renameFolderModal' || id === 'folderDeleteModal' || id === 'colorPickerModal') {
+            // Folder CRUD modals close generically through the shared overlay system
+            closeOverlay(activeElement);
           }
+          // folderDropdown handles its own Escape via the dropdown IIFE keydown handlers
         }
       });
 
@@ -5689,8 +5710,8 @@ copyButton.title = 'Share Public Link';
         const DRAG_CLOSE_THRESHOLD = 90;
 
         dropdown.addEventListener('touchstart', (e) => {
-          if (!window.matchMedia('(max-width: 680px)').matches) return;
-          if (list.scrollTop > 0) return; // don't hijack list scrolling
+          if (!window.matchMedia('(max-width: 680px)').matches) { dragStartY = null; return; }
+          if (list.scrollTop > 0) { dragStartY = null; return; } // don't hijack list scrolling
           dragStartY = e.touches[0].clientY;
           isDragging = false;
         }, { passive: true });
@@ -5719,7 +5740,10 @@ copyButton.title = 'Share Public Link';
 
         // ── Focus trap while open ──
         function trapFocus(e) {
-          if (dropdown.hidden || e.key !== 'Tab') return;
+          if (e.key !== 'Tab') return;
+          // Only trap when the dropdown is the topmost overlay — a folder
+          // modal stacked above it must keep its own focus scope
+          if (getActiveOverlay() !== dropdown) return;
           const focusables = dropdown.querySelectorAll('button, input, [tabindex]:not([tabindex="-1"])');
           if (!focusables.length) return;
           const first = focusables[0], last = focusables[focusables.length - 1];
@@ -5751,6 +5775,88 @@ copyButton.title = 'Share Public Link';
           
           const searching = q.length > 0;
           clearBtn.hidden = !searching;
+
+          // If the "No folders yet" state was ever destroyed (search typed,
+          // or every folder deleted at runtime), rebuild the list to it —
+          // "no data exists" and "no search matches" need different copy
+          function renderZeroStateIfNeeded() {
+            if (list.querySelector('#folderZero')) return;
+            const fragment = document.createDocumentFragment();
+            fragment.append(allHeader);
+            const allRow = document.createElement('div');
+            allRow.className = 'folder-dropdown-row';
+            const allBtn = document.createElement('button');
+            allBtn.className = 'folder-dropdown-item is-active';
+            allBtn.dataset.folder = '';
+            allBtn.dataset.name = 'All';
+            allBtn.setAttribute('role', 'option');
+            allBtn.setAttribute('aria-selected', 'true');
+            allBtn.innerHTML = '<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dropdown-name">All</span>';
+            allRow.appendChild(allBtn);
+            fragment.append(allRow);
+            const zero = document.createElement('div');
+            zero.className = 'folder-dropdown-zero';
+            zero.id = 'folderZero';
+            zero.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span>No folders yet</span><span class="folder-dropdown-zero-hint">Create your first folder</span>';
+            fragment.append(zero);
+            list.replaceChildren(fragment);
+          }
+
+          // Empty-account state: keep the "No folders yet" (#folderZero)
+          // state instead of rebuilding the list (which would destroy it)
+          // or showing the search-empty "No folders found" copy
+          if (folderData.length === 0 && !searching) {
+            empty.hidden = true;
+            allHeader.hidden = false;
+            counter.hidden = true;
+            createSuggestion.hidden = true;
+            renderZeroStateIfNeeded();
+            return;
+          }
+
+          // Fast path (search keystrokes): the rows are already rendered, so
+          // toggle visibility instead of tearing down and recreating every
+          // row (createElement + wireMenuButton per row per keystroke).
+          // Full rebuilds (open/clear/refresh) pass immediate=true.
+          if (!immediate && list.querySelector('.folder-dropdown-row')) {
+            let visibleCount = 0;
+            let exactMatch = false;
+            list.querySelectorAll('.folder-dropdown-row').forEach(row => {
+              const item = row.querySelector('.folder-dropdown-item[data-folder]');
+              if (!item || !item.dataset.folder) return; // "All" row stays visible
+              const f = folderData.find(x => x.id === item.dataset.folder);
+              const name = f ? f.name : (item.dataset.name || '');
+              const match = !searching || name.toLowerCase().includes(q);
+              if (match) {
+                row.hidden = false;
+                visibleCount++;
+                if (name.toLowerCase() === q) exactMatch = true;
+                const nameEl = item.querySelector('.folder-dropdown-name');
+                if (nameEl) {
+                  const html = searching ? highlightMatch(escapeHTML(name), escapeHTML(q)) : escapeHTML(name);
+                  if (nameEl.innerHTML !== html) nameEl.innerHTML = html;
+                }
+              } else {
+                row.hidden = true;
+              }
+            });
+            empty.hidden = visibleCount > 0;
+            allHeader.hidden = visibleCount === 0;
+            if (searching) {
+              counter.hidden = false;
+              counterText.textContent = visibleCount + ' folder' + (visibleCount !== 1 ? 's' : '') + ' found';
+              if (q && !exactMatch && visibleCount > 0) {
+                createSuggestionName.textContent = search.value.trim();
+                createSuggestion.hidden = false;
+              } else {
+                createSuggestion.hidden = true;
+              }
+            } else {
+              counter.hidden = true;
+              createSuggestion.hidden = true;
+            }
+            return;
+          }
 
           const matched = searching
             ? folderData.filter(f => f.name.toLowerCase().includes(q))
@@ -5796,8 +5902,8 @@ copyButton.title = 'Share Public Link';
             btn.dataset.folder = f.id;
             btn.dataset.name = f.name;
             btn.dataset.color = f.color;
-            btn.setAttribute('role', 'menuitemradio');
-            btn.setAttribute('aria-checked', f.isActive ? 'true' : 'false');
+            btn.setAttribute('role', 'option');
+            btn.setAttribute('aria-selected', f.isActive ? 'true' : 'false');
 
             const safeName = escapeHTML(f.name);
             const nameDisplay = searching ? highlightMatch(safeName, escapeHTML(q)) : safeName;
@@ -5903,7 +6009,14 @@ copyButton.title = 'Share Public Link';
               body: JSON.stringify({ name, color }),
             });
             const data = await res.json();
-            if (!res.ok) { showToast(data.message || 'Failed to create folder', 'error'); return; }
+            if (!res.ok) {
+              // Duplicate-name races (two tabs / in-flight create + modal)
+              // are settled authoritatively by the server's 409 — surface the
+              // same friendly copy as the local pre-check for consistency
+              if (res.status === 409) { showToast('A folder with that name already exists', 'error'); return; }
+              showToast(data.message || 'Failed to create folder', 'error');
+              return;
+            }
 
             const f = data.folder;
             
@@ -5926,8 +6039,8 @@ copyButton.title = 'Share Public Link';
             itemBtn.dataset.name = f.name;
             itemBtn.dataset.color = f.color;
             itemBtn.dataset.created = f.createdAt || new Date().toISOString();
-            itemBtn.setAttribute('role', 'menuitemradio');
-            itemBtn.setAttribute('aria-checked', 'false');
+            itemBtn.setAttribute('role', 'option');
+            itemBtn.setAttribute('aria-selected', 'false');
             const colorVar = COLOR_HEX[f.color] || f.color;
             const safeName = escapeHTML(f.name);
             itemBtn.innerHTML = `<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dot" style="background:${colorVar}"></span><span class="folder-dropdown-name" title="${safeName}">${safeName}</span><span class="folder-dropdown-count">0</span>`;
@@ -5948,7 +6061,11 @@ copyButton.title = 'Share Public Link';
             saveRecentFolderId(f._id);
             close();
             showToast(`Created: ${f.name}`);
-            selectItem(itemBtn);
+            // Navigate straight to the new folder — no selectItem() (it would
+            // re-save recency, vibrate again, and add a needless 180ms delay)
+            const url = new URL(window.location);
+            url.searchParams.set('folderId', f._id);
+            window.location.href = url.toString();
           } catch (err) {
             showToast('Network error', 'error');
           } finally {
@@ -5966,7 +6083,9 @@ copyButton.title = 'Share Public Link';
 
         // ── Highlighting & Selection ── Enhanced for a11y
         function getVisibleItems() {
-          return Array.from(list.querySelectorAll('.folder-dropdown-item'));
+          // Skip rows hidden by the search fast-path filter
+          return Array.from(list.querySelectorAll('.folder-dropdown-item'))
+            .filter(o => !o.closest('.folder-dropdown-row[hidden]'));
         }
 
         function highlightOption() {
@@ -6231,9 +6350,21 @@ copyButton.title = 'Share Public Link';
 
         // ── Create Folder (from dropdown footer) ──
         createBtn.addEventListener('click', () => {
-          close();
+          // Close synchronously (skip history.back()) so the modal's pushed
+          // history entry lands on top of the dropdown's — the back button
+          // then closes the modal first, then the dropdown.
+          close({ fromPopstate: true });
           openFolderModal();
         });
+
+        // Exposed for the folder-modals section: force a re-render of the
+        // open dropdown list after an optimistic rename/delete/color so the
+        // visible rows never go stale
+        window.refreshFolderDropdown = () => {
+          lastFilterQuery = '';
+          filterOptions(true);
+          updateHighlight();
+        };
 
         window.folderData = folderData;
       })();
@@ -6241,33 +6372,55 @@ copyButton.title = 'Share Public Link';
       // ── Folder Modals ──
       let selectedFolderColor = 'blue';
 
-      function showOverlay(el, animClass) {
-        el.hidden = false;
-        requestAnimationFrame(() => el.classList.add(animClass));
+      // ── Optimistic UI helpers (rename/delete/color avoid full-page reloads) ──
+
+      // Patch every visible card badge belonging to a folder
+      function patchFolderCards(folderId, { name, color } = {}) {
+        document.querySelectorAll(`.info-card[data-folder-id="${folderId}"] .card-folder-badge`).forEach(badge => {
+          if (color) badge.style.setProperty('--badge-color', `var(--folder-${color})`);
+          if (name !== undefined) {
+            badge.innerHTML = `<span class="badge-dot" style="background:var(--badge-color)"></span>${escapeHTML(name)}`;
+          }
+        });
       }
 
-      function hideOverlay(el, animClass) {
-        el.classList.remove(animClass);
-        setTimeout(() => { el.hidden = true; }, 300);
+      // Refresh the folder name/color shown on the selector button and the
+      // breadcrumb when the renamed/recolored folder is the one being viewed
+      function updateActiveFolderDisplay(name, color) {
+        const current = document.getElementById('folderSelectorCurrent');
+        if (current) {
+          current.replaceChildren();
+          const dot = document.createElement('span');
+          dot.className = 'folder-dot';
+          dot.style.background = `var(--folder-${color})`;
+          current.append(dot, document.createTextNode(name));
+        }
+        const crumb = document.querySelector('.breadcrumb .current');
+        if (crumb && crumb.querySelector('.folder-dot')) {
+          crumb.replaceChildren();
+          const dot = document.createElement('span');
+          dot.className = 'folder-dot';
+          dot.style.background = `var(--folder-${color})`;
+          crumb.append(dot, document.createTextNode(name));
+        }
       }
 
       function openFolderModal() {
         const modal = document.getElementById('folderModal');
         const input = document.getElementById('folderNameInput');
-        showOverlay(modal, 'is-open');
         input.value = '';
-        input.focus({ preventScroll: true });
         selectedFolderColor = 'blue';
         document.querySelectorAll('#folderColorPicker .color-swatch').forEach(s => {
           s.classList.toggle('is-selected', s.dataset.color === 'blue');
         });
+        openOverlay(modal, 'is-open', input);
       }
 
       document.getElementById('folderModalClose')?.addEventListener('click', () => {
-        hideOverlay(document.getElementById('folderModal'), 'is-open');
+        closeOverlay(document.getElementById('folderModal'), 'is-open');
       });
       document.getElementById('folderModalCancel')?.addEventListener('click', () => {
-        hideOverlay(document.getElementById('folderModal'), 'is-open');
+        closeOverlay(document.getElementById('folderModal'), 'is-open');
       });
 
       document.querySelectorAll('#folderColorPicker .color-swatch').forEach(swatch => {
@@ -6293,8 +6446,12 @@ copyButton.title = 'Share Public Link';
             body: JSON.stringify({ name, color: selectedFolderColor }),
           });
           const data = await res.json();
-          if (!res.ok) { showToast(data.message || 'Failed', 'error'); return; }
-          hideOverlay(document.getElementById('folderModal'), 'is-open');
+          if (!res.ok) {
+            if (res.status === 409) { showToast('A folder with that name already exists', 'error'); return; }
+            showToast(data.message || 'Failed', 'error');
+            return;
+          }
+          closeOverlay(document.getElementById('folderModal'), 'is-open');
           showToast('Folder created');
           window.location.reload();
         } catch (err) { showToast('Network error', 'error'); }
@@ -6305,20 +6462,21 @@ copyButton.title = 'Share Public Link';
       function openFolderRenameModal(folderId) {
         const modal = document.getElementById('renameFolderModal');
         const input = document.getElementById('renameFolderInput');
-        const row = document.querySelector(`.folder-dropdown-menu-btn[data-folder-id="${folderId}"]`);
-        const currentName = row?.dataset.folderName || '';
-        input.value = currentName;
-        modal.dataset.folderId = folderId;
-        showOverlay(modal, 'is-open');
-        input.focus({ preventScroll: true });
+        // Read from in-memory folderData — a live DOM lookup can silently
+        // return null after the list re-renders (e.g. a search filtered the
+        // folder out), leaving the modal with an empty name
+        const folder = (window.folderData || []).find(f => f.id === folderId);
+        input.value = folder?.name || '';
         input.select();
+        modal.dataset.folderId = folderId;
+        openOverlay(modal, 'is-open', input);
       }
 
       document.getElementById('renameFolderModalClose')?.addEventListener('click', () => {
-        hideOverlay(document.getElementById('renameFolderModal'), 'is-open');
+        closeOverlay(document.getElementById('renameFolderModal'), 'is-open');
       });
       document.getElementById('renameFolderCancel')?.addEventListener('click', () => {
-        hideOverlay(document.getElementById('renameFolderModal'), 'is-open');
+        closeOverlay(document.getElementById('renameFolderModal'), 'is-open');
       });
 
       document.getElementById('renameFolderConfirmBtn')?.addEventListener('click', async () => {
@@ -6338,10 +6496,22 @@ copyButton.title = 'Share Public Link';
             body: JSON.stringify({ name }),
           });
           const data = await res.json();
-          if (!res.ok) { showToast(data.message || 'Failed', 'error'); return; }
-          hideOverlay(modal, 'is-open');
+          if (!res.ok) {
+            if (res.status === 409) { showToast('A folder with that name already exists', 'error'); return; }
+            showToast(data.message || 'Failed', 'error');
+            return;
+          }
+          closeOverlay(modal, 'is-open');
           showToast('Folder renamed');
-          window.location.reload();
+          // Optimistic: patch in-memory state + visible DOM, no page reload
+          const folder = (window.folderData || []).find(f => f.id === folderId);
+          if (folder) {
+            const wasActive = folder.isActive;
+            folder.name = name;
+            patchFolderCards(folderId, { name });
+            if (wasActive) updateActiveFolderDisplay(name, folder.color);
+          }
+          window.refreshFolderDropdown && window.refreshFolderDropdown();
         } catch (err) { showToast('Network error', 'error'); }
         finally { btn.disabled = false; btn.innerHTML = '<span>Save</span>'; }
       });
@@ -6349,48 +6519,61 @@ copyButton.title = 'Share Public Link';
       // ── Folder Delete Confirm ──
       function openFolderDeleteConfirm(folderId) {
         const modal = document.getElementById('folderDeleteModal');
-        const row = document.querySelector(`.folder-dropdown-menu-btn[data-folder-id="${folderId}"]`);
-        const folderName = row?.dataset.folderName || '';
+        const folder = (window.folderData || []).find(f => f.id === folderId);
         modal.dataset.folderId = folderId;
-        document.getElementById('folderDeleteName').textContent = folderName;
-        showOverlay(modal, 'is-active');
+        document.getElementById('folderDeleteName').textContent = folder?.name || '';
+        openOverlay(modal, 'is-active', document.getElementById('folderDeleteConfirmBtn'));
       }
 
       document.getElementById('folderDeleteCancel')?.addEventListener('click', () => {
-        hideOverlay(document.getElementById('folderDeleteModal'), 'is-active');
+        closeOverlay(document.getElementById('folderDeleteModal'), 'is-active');
       });
 
       document.getElementById('folderDeleteConfirmBtn')?.addEventListener('click', async () => {
         const modal = document.getElementById('folderDeleteModal');
         const folderId = modal.dataset.folderId;
+        const btn = document.getElementById('folderDeleteConfirmBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"></path></svg> Deleting...';
         try {
           const res = await fetch(`/api/folders/${folderId}`, { method: 'DELETE' });
           const data = await res.json();
           if (!res.ok) { showToast(data.message || 'Failed', 'error'); return; }
-          hideOverlay(modal, 'is-active');
+          closeOverlay(modal, 'is-active');
           showToast(`Folder deleted (${data.orphanedEntries} entries unlinked)`);
-          if (window.location.search.includes(`folderId=${folderId}`)) {
+          const folder = (window.folderData || []).find(f => f.id === folderId);
+          // If the deleted folder is the one being viewed, leave the folder view
+          if (folder && folder.isActive) {
             window.location.href = '/';
-          } else {
-            window.location.reload();
+            return;
           }
+          // Optimistic: drop it from in-memory state, remove its cards, no reload
+          const idx = (window.folderData || []).findIndex(f => f.id === folderId);
+          if (idx > -1) window.folderData.splice(idx, 1);
+          const wall = document.getElementById('masonryWall');
+          if (wall) {
+            wall.querySelectorAll(`.info-card[data-folder-id="${folderId}"]`).forEach(card => card.remove());
+            updateAllCardBadges();
+          }
+          window.refreshFolderDropdown && window.refreshFolderDropdown();
         } catch (err) { showToast('Network error', 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = '<span>Delete</span>'; }
       });
 
       // ── Color Picker Modal ──
       function openFolderColorPicker(folderId) {
         const modal = document.getElementById('colorPickerModal');
         modal.dataset.folderId = folderId;
-        const row = document.querySelector(`.folder-dropdown-menu-btn[data-folder-id="${folderId}"]`);
-        const currentColor = row?.dataset.folderColor || 'blue';
+        const folder = (window.folderData || []).find(f => f.id === folderId);
+        const currentColor = folder?.color || 'blue';
         document.querySelectorAll('#colorPickerModal .color-swatch').forEach(s => {
           s.classList.toggle('is-selected', s.dataset.color === currentColor);
         });
-        showOverlay(modal, 'is-open');
+        openOverlay(modal, 'is-open');
       }
 
       document.getElementById('colorPickerModalClose')?.addEventListener('click', () => {
-        hideOverlay(document.getElementById('colorPickerModal'), 'is-open');
+        closeOverlay(document.getElementById('colorPickerModal'), 'is-open');
       });
 
       document.querySelectorAll('#colorPickerModal .color-swatch').forEach(swatch => {
@@ -6398,6 +6581,13 @@ copyButton.title = 'Share Public Link';
           const modal = document.getElementById('colorPickerModal');
           const folderId = modal.dataset.folderId;
           const color = swatch.dataset.color;
+
+          // Optimistic: show the picked swatch immediately, and block further
+          // clicks while the request is in flight to avoid out-of-order writes
+          document.querySelectorAll('#colorPickerModal .color-swatch').forEach(s => {
+            s.classList.toggle('is-selected', s === swatch);
+            s.disabled = true;
+          });
           try {
             const res = await fetch(`/api/folders/${folderId}/color`, {
               method: 'PATCH',
@@ -6405,20 +6595,31 @@ copyButton.title = 'Share Public Link';
               body: JSON.stringify({ color }),
             });
             if (!res.ok) { showToast('Failed', 'error'); return; }
-            hideOverlay(modal, 'is-open');
+            closeOverlay(modal, 'is-open');
             showToast('Color updated');
-            window.location.reload();
+            // Optimistic: patch in-memory state + visible DOM, no page reload
+            const folder = (window.folderData || []).find(f => f.id === folderId);
+            if (folder) {
+              const wasActive = folder.isActive;
+              folder.color = color;
+              patchFolderCards(folderId, { color });
+              if (wasActive) updateActiveFolderDisplay(folder.name, color);
+            }
+            window.refreshFolderDropdown && window.refreshFolderDropdown();
           } catch (err) { showToast('Network error', 'error'); }
+          finally {
+            document.querySelectorAll('#colorPickerModal .color-swatch').forEach(s => { s.disabled = false; });
+          }
         });
       });
 
       // Close modals on overlay click
       ['folderModal', 'renameFolderModal', 'colorPickerModal'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('click', (e) => { if (e.target === el) hideOverlay(el, 'is-open'); });
+        if (el) el.addEventListener('click', (e) => { if (e.target === el) closeOverlay(el, 'is-open'); });
       });
       document.getElementById('folderDeleteModal')?.addEventListener('click', (e) => {
-        if (e.target.id === 'folderDeleteModal') hideOverlay(e.target, 'is-active');
+        if (e.target.id === 'folderDeleteModal') closeOverlay(e.target, 'is-active');
       });
     </script>
 
