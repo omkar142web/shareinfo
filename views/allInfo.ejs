@@ -3841,7 +3841,8 @@
       const isAdminUser = <%= typeof isAdmin !== "undefined" ? Boolean(isAdmin) : false %>;
       let searchKeyword = <%- JSON.stringify(typeof activeKeyword !== "undefined" ? activeKeyword : "") %>;
       let currentSort = '<%= typeof activeSort !== "undefined" ? activeSort : "updated" %>';
-      const activeFolderId = <%- JSON.stringify(typeof activeFolderId !== "undefined" ? activeFolderId : null) %>;
+      // Mutable: enterFolderView() (inline folder create) switches it in place
+      let activeFolderId = <%- JSON.stringify(typeof activeFolderId !== "undefined" ? activeFolderId : null) %>;
 
       function escapeHTML(value = '') {
         return String(value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -5497,7 +5498,6 @@ copyButton.title = 'Share Public Link';
         const LS_KEY = "shareinfo_recent_folders";
         const MAX_RECENT = 4;
         const COLORS = ["blue","purple","green","red","orange","pink"];
-        const COLOR_HEX = { blue:"#3b82f6", purple:"#a855f7", green:"#22c55e", red:"#ef4444", orange:"#f97316", pink:"#ec4899" };
 
         const btn = document.getElementById('folderSelectorBtn');
         if (!btn) return;
@@ -6034,43 +6034,18 @@ copyButton.title = 'Share Public Link';
               isActive: false, 
               createdAt: f.createdAt || new Date().toISOString() 
             });
-            
-            const row = document.createElement('div');
-            row.className = 'folder-dropdown-row';
-            const itemBtn = document.createElement('div');
-            itemBtn.className = 'folder-dropdown-item';
-            itemBtn.tabIndex = -1;
-            itemBtn.dataset.folder = f._id;
-            itemBtn.dataset.name = f.name;
-            itemBtn.dataset.color = f.color;
-            itemBtn.dataset.created = f.createdAt || new Date().toISOString();
-            itemBtn.setAttribute('role', 'option');
-            itemBtn.setAttribute('aria-selected', 'false');
-            const colorVar = COLOR_HEX[f.color] || f.color;
-            const safeName = escapeHTML(f.name);
-            itemBtn.innerHTML = `<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dot" style="background:${colorVar}"></span><span class="folder-dropdown-name" title="${safeName}">${safeName}</span><span class="folder-dropdown-count">0</span>`;
-
-            const menuBtn = document.createElement('button');
-            menuBtn.className = 'folder-dropdown-menu-btn';
-            menuBtn.dataset.folderId = f._id;
-            menuBtn.dataset.folderName = f.name;
-            menuBtn.dataset.folderColor = f.color;
-            menuBtn.setAttribute('aria-label', f.name + ' options');
-            menuBtn.setAttribute('title', 'Folder options');
-            menuBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>`;
-            wireMenuButton(menuBtn);
-            row.appendChild(itemBtn);
-            itemBtn.appendChild(menuBtn);
-            list.appendChild(row);
 
             saveRecentFolderId(f._id);
-            close();
             showToast(`Created: ${f.name}`);
-            // Navigate straight to the new folder — no selectItem() (it would
-            // re-save recency, vibrate again, and add a needless 180ms delay)
-            const url = new URL(window.location);
-            url.searchParams.set('folderId', f._id);
-            window.location.href = url.toString();
+
+            // Close synchronously (skip the history.back() round-trip) so we
+            // can replace the dropdown's history entry with the new folder's
+            // URL, then switch to the folder view in place — no page reload,
+            // no skeleton flash. enterFolderView() re-renders the dropdown
+            // list from folderData (replacing the old manual row build).
+            close({ fromPopstate: true });
+            if (modalHistoryCount > 0) modalHistoryCount--;
+            enterFolderView(f._id, f.name, f.color);
           } catch (err) {
             showToast('Network error', 'error');
           } finally {
@@ -6400,14 +6375,60 @@ copyButton.title = 'Share Public Link';
           dot.style.background = `var(--folder-${color})`;
           current.append(dot, document.createTextNode(name));
         }
-        const crumb = document.querySelector('.breadcrumb .current');
-        if (crumb && crumb.querySelector('.folder-dot')) {
-          crumb.replaceChildren();
-          const dot = document.createElement('span');
-          dot.className = 'folder-dot';
-          dot.style.background = `var(--folder-${color})`;
-          crumb.append(dot, document.createTextNode(name));
+        const crumb = document.querySelector('.breadcrumb');
+        if (crumb) {
+          let crumbCurrent = crumb.querySelector('.current');
+          if (crumbCurrent && !crumbCurrent.querySelector('.folder-dot')) {
+            // No folder was active (breadcrumb ends at "Dashboard") — insert
+            // the "Dashboard /" trail before the folder crumb, mirroring SSR
+            crumbCurrent.replaceWith(
+              Object.assign(document.createElement('a'), { href: '/', textContent: 'Dashboard' }),
+              Object.assign(document.createElement('span'), { className: 'sep', textContent: '/' }),
+              Object.assign(document.createElement('span'), { className: 'current' })
+            );
+            crumbCurrent = crumb.querySelector('.current');
+          }
+          if (crumbCurrent) {
+            crumbCurrent.replaceChildren();
+            const dot = document.createElement('span');
+            dot.className = 'folder-dot';
+            dot.style.background = `var(--folder-${color})`;
+            crumbCurrent.append(dot, document.createTextNode(name));
+          }
         }
+      }
+
+      // Switch the dashboard to a folder view in place (no page load) —
+      // used after inline create so landing in the new (empty) folder is
+      // instant. Mirrors what the server would render for `?folderId=<id>`.
+      function enterFolderView(folderId, name, color) {
+        // URL first — no navigation. The caller closed the dropdown
+        // synchronously and balanced its history entry, so replaceState
+        // swaps that entry for the folder URL (back exits the folder view).
+        const url = new URL(window.location);
+        url.searchParams.set('folderId', folderId);
+        history.replaceState(null, '', url.toString());
+
+        activeFolderId = folderId;
+
+        // Mark the new folder active in the shared in-memory state
+        (window.folderData || []).forEach(f => { f.isActive = f.id === folderId; });
+
+        // Selector button + breadcrumb trail
+        updateActiveFolderDisplay(name, color);
+
+        // Re-render the (now closed) dropdown list with the folder active —
+        // this replaces the old manual row-build in createFolderInline()
+        window.refreshFolderDropdown && window.refreshFolderDropdown();
+
+        // A brand-new folder is always empty — clear the wall and show the
+        // matching empty state directly, no fetch needed
+        if (wall) {
+          wall.textContent = '';
+          updateEmptyState(searchKeyword, activeVisibility);
+        }
+        // Reset pagination so a stale observer/nextCursor can't refire
+        finishFeed();
       }
 
       function openFolderModal() {
@@ -6457,8 +6478,21 @@ copyButton.title = 'Share Public Link';
             return;
           }
           closeOverlay(document.getElementById('folderModal'), 'is-open');
-          showToast('Folder created');
-          window.location.reload();
+          showToast(`Created: ${data.folder.name}`);
+
+          // Optimistic: push into the shared folderData array and re-render the
+          // dropdown list — same pattern already used for rename/delete/color.
+          // No page reload (scroll position, current filter, etc. all stay intact).
+          const f = data.folder;
+          window.folderData.push({
+            id: f._id,
+            name: f.name,
+            color: f.color,
+            count: '0',
+            isActive: false,
+            createdAt: f.createdAt || new Date().toISOString()
+          });
+          window.refreshFolderDropdown && window.refreshFolderDropdown();
         } catch (err) { showToast('Network error', 'error'); }
         finally { btn.disabled = false; btn.innerHTML = '<span>Create</span>'; }
       });
