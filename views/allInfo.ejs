@@ -5493,6 +5493,8 @@ copyButton.title = 'Share Public Link';
         let searchDebounceTimer = null;
         let scrollFadeFrame = null;
         let lastFilterQuery = '';
+        let closePending = false;
+        let isSelecting = false;
 
         // Performance: Debounce utility
         function debounce(fn, delay) {
@@ -5604,6 +5606,7 @@ copyButton.title = 'Share Public Link';
             document.body.appendChild(dropdown);
           }
           dropdown.style.animation = '';   // clear any leftover close animation
+          closePending = false;            // clear any pending close guard from a prior back() round-trip
 
           dropdown.hidden = false;
           btn.setAttribute('aria-expanded', 'true');
@@ -5652,10 +5655,12 @@ copyButton.title = 'Share Public Link';
         function close({ fromPopstate = false } = {}) {
           if (dropdown.hidden) return;
           if (!fromPopstate && modalHistoryCount > 0) {
+            if (closePending) return;
+            closePending = true;
             history.back();
             return;
           }
-          
+          closePending = false;
           // Performance: Cancel pending operations
           clearTimeout(searchDebounceTimer);
           if (scrollFadeFrame) {
@@ -5777,7 +5782,6 @@ copyButton.title = 'Share Public Link';
           allBtn.setAttribute('role', 'option');
           allBtn.setAttribute('aria-selected', isAllActive ? 'true' : 'false');
           allBtn.innerHTML = '<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dropdown-name">All</span>';
-          allBtn.addEventListener('click', (e) => { e.preventDefault(); selectItem(allBtn); });
           allRow.appendChild(allBtn);
           fragment.append(allRow);
 
@@ -5795,12 +5799,12 @@ copyButton.title = 'Share Public Link';
             btn.setAttribute('role', 'menuitemradio');
             btn.setAttribute('aria-checked', f.isActive ? 'true' : 'false');
 
-            const nameDisplay = searching ? highlightMatch(f.name, q) : f.name;
+            const safeName = escapeHTML(f.name);
+            const nameDisplay = searching ? highlightMatch(safeName, escapeHTML(q)) : safeName;
             btn.innerHTML = '<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>' +
               '<span class="folder-dot" style="background:var(--folder-' + f.color + ')"></span>' +
-              '<span class="folder-dropdown-name" title="' + f.name.replace(/"/g, '&quot;') + '">' + nameDisplay + '</span>' +
+              '<span class="folder-dropdown-name" title="' + safeName + '">' + nameDisplay + '</span>' +
               '<span class="folder-dropdown-count">' + f.count + '</span>';
-            btn.addEventListener('click', (e) => { e.preventDefault(); selectItem(btn); });
 
             row.appendChild(btn);
 
@@ -5925,8 +5929,8 @@ copyButton.title = 'Share Public Link';
             itemBtn.setAttribute('role', 'menuitemradio');
             itemBtn.setAttribute('aria-checked', 'false');
             const colorVar = COLOR_HEX[f.color] || f.color;
-            itemBtn.innerHTML = `<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dot" style="background:${colorVar}"></span><span class="folder-dropdown-name">${f.name}</span><span class="folder-dropdown-count">0</span>`;
-            itemBtn.addEventListener('click', (e) => { e.preventDefault(); selectItem(itemBtn); });
+            const safeName = escapeHTML(f.name);
+            itemBtn.innerHTML = `<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dot" style="background:${colorVar}"></span><span class="folder-dropdown-name" title="${safeName}">${safeName}</span><span class="folder-dropdown-count">0</span>`;
 
             const menuBtn = document.createElement('button');
             menuBtn.className = 'folder-dropdown-menu-btn';
@@ -5991,6 +5995,8 @@ copyButton.title = 'Share Public Link';
         }
 
         function selectItem(item) {
+          if (isSelecting) return;
+          isSelecting = true;
           // Micro-interaction: Add success pulse animation
           item.classList.add('folder-item-selected');
           
@@ -6020,6 +6026,7 @@ copyButton.title = 'Share Public Link';
             } else {
               url.searchParams.delete('folderId');
             }
+            isSelecting = false;
             window.location.href = url.toString();
           }, 180);
         }
@@ -6027,7 +6034,7 @@ copyButton.title = 'Share Public Link';
         list.addEventListener('click', e => {
           if (e.target.closest('.folder-dropdown-menu-btn')) return;
           const item = e.target.closest('.folder-dropdown-item');
-          if (item) selectItem(item);
+          if (item) { e.preventDefault(); selectItem(item); }
         });
 
         btn.addEventListener('keydown', e => {
