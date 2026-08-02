@@ -5915,6 +5915,7 @@ copyButton.title = 'Share Public Link';
           if (!immediate && list.querySelector('.folder-dropdown-row')) {
             let visibleCount = 0;
             let exactMatch = false;
+            const visibleRows = [];
             list.querySelectorAll('.folder-dropdown-row').forEach(row => {
               const item = row.querySelector('.folder-dropdown-item[data-folder]');
               if (!item || !item.dataset.folder) return; // "All" row handled after the loop
@@ -5930,10 +5931,27 @@ copyButton.title = 'Share Public Link';
                   const html = searching ? highlightMatch(escapeHTML(name), escapeHTML(q)) : escapeHTML(name);
                   if (nameEl.innerHTML !== html) nameEl.innerHTML = html;
                 }
+                visibleRows.push({ row, name });
               } else {
                 row.hidden = true;
               }
             });
+
+            // While searching, reorder visible rows by match position first (a name
+            // starting with the query ranks above one where the query is buried mid-word),
+            // then alphabetically as a tiebreaker. Moving existing nodes keeps their
+            // event listeners intact — no recreation needed.
+            if (searching && visibleRows.length > 1) {
+              visibleRows
+                .sort((a, b) => {
+                  const aIdx = a.name.toLowerCase().indexOf(q);
+                  const bIdx = b.name.toLowerCase().indexOf(q);
+                  if (aIdx !== bIdx) return aIdx - bIdx;
+                  return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+                })
+                .forEach(({ row }) => list.appendChild(row));
+            }
+
             const isEmptyResult = searching && visibleCount === 0;
             const allRow = list.querySelector('.folder-dropdown-item[data-folder=""]');
             if (allRow) allRow.closest('.folder-dropdown-row').hidden = isEmptyResult;
@@ -5956,15 +5974,24 @@ copyButton.title = 'Share Public Link';
             ? folderData.filter(f => f.name.toLowerCase().includes(q))
             : folderData;
 
-          const recentIds = getRecentFolderIds();
-          matched.sort((a, b) => {
-            const aIdx = recentIds.indexOf(a.id);
-            const bIdx = recentIds.indexOf(b.id);
-            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-            if (aIdx !== -1) return -1;
-            if (bIdx !== -1) return 1;
-            return new Date(b.createdAt) - new Date(a.createdAt);
-          });
+          if (searching) {
+            matched.sort((a, b) => {
+              const aIdx = a.name.toLowerCase().indexOf(q);
+              const bIdx = b.name.toLowerCase().indexOf(q);
+              if (aIdx !== bIdx) return aIdx - bIdx;
+              return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+            });
+          } else {
+            const recentIds = getRecentFolderIds();
+            matched.sort((a, b) => {
+              const aIdx = recentIds.indexOf(a.id);
+              const bIdx = recentIds.indexOf(b.id);
+              if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+              if (aIdx !== -1) return -1;
+              if (bIdx !== -1) return 1;
+              return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+          }
 
           // Performance: Use DocumentFragment for batch DOM updates
           const fragment = document.createDocumentFragment();
