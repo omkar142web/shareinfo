@@ -2731,13 +2731,26 @@
     .folder-dropdown-empty[hidden] {
       display: none !important;
     }
-    .folder-dropdown-empty svg {
-      color: var(--text-3);
-      opacity: 0.4;
-      transition: opacity 0.2s ease;
+    .folder-dropdown-empty .folder-empty-illustration {
+      width: 52px;
+      height: 52px;
+      color: var(--cyan);
+      filter: drop-shadow(0 6px 14px rgba(56, 189, 248, 0.35));
+      animation: folderEmptyFloat 2.8s ease-in-out infinite;
     }
-    .folder-dropdown-empty:hover svg {
-      opacity: 0.6;
+    .folder-dropdown-empty .folder-empty-title {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.86rem;
+    }
+    @keyframes folderEmptyFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .folder-dropdown-empty .folder-empty-illustration {
+        animation: none;
+      }
     }
     
     .folder-dropdown-zero {
@@ -3316,10 +3329,37 @@
           </div>
 
           <div class="folder-dropdown-empty" id="folderEmpty" hidden>
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <svg class="folder-empty-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="52" height="52" fill="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="folderEmptyGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7dd3fc"></stop>
+                  <stop offset="100%" stop-color="#2563eb"></stop>
+                </linearGradient>
+                <filter id="folderEmptyShadow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.25"/>
+                </filter>
+              </defs>
+
+              <g filter="url(#folderEmptyShadow)">
+                <!-- Folder body -->
+                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z"
+                      fill="url(#folderEmptyGrad)" opacity="0.12"></path>
+                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z"
+                      stroke="url(#folderEmptyGrad)" stroke-width="2.4" stroke-linejoin="round"></path>
+
+                <!-- Folder "content" lines -->
+                <line x1="28" y1="52" x2="72" y2="52" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.4"></line>
+                <line x1="28" y1="64" x2="58" y2="64" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.3"></line>
+                <line x1="28" y1="76" x2="64" y2="76" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.2"></line>
+
+                <!-- Magnifying glass -->
+                <circle cx="82" cy="66" r="17" fill="#0d1628" stroke="url(#folderEmptyGrad)" stroke-width="3"></circle>
+                <circle cx="82" cy="66" r="17" fill="#38bdf8" opacity="0.1"></circle>
+                <line x1="94.5" y1="78.5" x2="104" y2="88" stroke="url(#folderEmptyGrad)" stroke-width="4" stroke-linecap="round"></line>
+              </g>
             </svg>
-            <span>No folders found</span>
+            <span class="folder-empty-title">No folders found</span>
+            <!-- <span>Try a different search or create a new folder</span> -->
           </div>
           
           <div class="folder-dropdown-error" id="folderError" hidden>
@@ -5870,7 +5910,7 @@ copyButton.title = 'Share Public Link';
             let exactMatch = false;
             list.querySelectorAll('.folder-dropdown-row').forEach(row => {
               const item = row.querySelector('.folder-dropdown-item[data-folder]');
-              if (!item || !item.dataset.folder) return; // "All" row stays visible
+              if (!item || !item.dataset.folder) return; // "All" row handled after the loop
               const f = folderData.find(x => x.id === item.dataset.folder);
               const name = f ? f.name : (item.dataset.name || '');
               const match = !searching || name.toLowerCase().includes(q);
@@ -5887,13 +5927,16 @@ copyButton.title = 'Share Public Link';
                 row.hidden = true;
               }
             });
+            const isEmptyResult = searching && visibleCount === 0;
+            const allRow = list.querySelector('.folder-dropdown-item[data-folder=""]');
+            if (allRow) allRow.closest('.folder-dropdown-row').hidden = isEmptyResult;
             allHeader.hidden = visibleCount === 0;
             if (searching) {
               const showCreate = Boolean(q) && !exactMatch;
-              counter.hidden = false;
+              counter.hidden = isEmptyResult;
               counterText.textContent = visibleCount + ' folder' + (visibleCount !== 1 ? 's' : '') + ' found';
               setCreateButtonMode(showCreate ? 'create' : 'new', search.value.trim());
-              empty.hidden = visibleCount > 0 || showCreate;
+              empty.hidden = !isEmptyResult;
             } else {
               counter.hidden = true;
               setCreateButtonMode('new');
@@ -5920,20 +5963,24 @@ copyButton.title = 'Share Public Link';
           const fragment = document.createDocumentFragment();
           fragment.append(allHeader);
 
-          // "All" item
-          const isAllActive = matched.length > 0 ? !matched.some(f => f.isActive) : true;
-          const allRow = document.createElement('div');
-          allRow.className = 'folder-dropdown-row';
-          const allBtn = document.createElement('button');
-          allBtn.className = 'folder-dropdown-item';
-          if (isAllActive) allBtn.classList.add('is-active');
-          allBtn.dataset.folder = '';
-          allBtn.dataset.name = 'All';
-          allBtn.setAttribute('role', 'option');
-          allBtn.setAttribute('aria-selected', isAllActive ? 'true' : 'false');
-          allBtn.innerHTML = '<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dropdown-name">All</span>';
-          allRow.appendChild(allBtn);
-          fragment.append(allRow);
+          const isEmptyResult = searching && matched.length === 0;
+
+          // "All" item — skipped when a search has zero matches
+          if (!isEmptyResult) {
+            const isAllActive = matched.length > 0 ? !matched.some(f => f.isActive) : true;
+            const allRow = document.createElement('div');
+            allRow.className = 'folder-dropdown-row';
+            const allBtn = document.createElement('button');
+            allBtn.className = 'folder-dropdown-item';
+            if (isAllActive) allBtn.classList.add('is-active');
+            allBtn.dataset.folder = '';
+            allBtn.dataset.name = 'All';
+            allBtn.setAttribute('role', 'option');
+            allBtn.setAttribute('aria-selected', isAllActive ? 'true' : 'false');
+            allBtn.innerHTML = '<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dropdown-name">All</span>';
+            allRow.appendChild(allBtn);
+            fragment.append(allRow);
+          }
 
           // Performance: Reuse template for folder items
           matched.forEach(f => {
@@ -5981,11 +6028,11 @@ copyButton.title = 'Share Public Link';
             const exactMatch = matched.some(f => f.name.toLowerCase() === q);
             const showCreate = Boolean(q) && !exactMatch;
 
-            counter.hidden = false;
+            counter.hidden = isEmptyResult;
             counterText.textContent = matched.length + ' folder' + (matched.length !== 1 ? 's' : '') + ' found';
 
             setCreateButtonMode(showCreate ? 'create' : 'new', search.value.trim());
-            empty.hidden = matched.length > 0 || showCreate;
+            empty.hidden = !isEmptyResult;
           } else {
             counter.hidden = true;
             setCreateButtonMode('new');
