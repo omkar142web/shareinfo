@@ -2661,10 +2661,17 @@
       font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       margin-left: auto;
-      padding-left: 8px;
+      /* padding-left: 8px; */
       font-weight: 500;
       letter-spacing: 0.02em;
       flex-shrink: 0;
+
+      padding: 2px 8px;
+      background: rgba(255, 255, 255, 0.06);
+      text-align: center;
+      min-width: 24px;
+      border-radius: 100px;
+      font-size: 10.5px;
     }
     .folder-dropdown-menu-btn {
       /* width: 30px; */
@@ -3263,7 +3270,7 @@
             </svg>
             Folder
           </span>
-          <span class="folder-selector-current">
+          <span class="folder-selector-current" id="folderSelectorCurrent">
             <% if (typeof activeFolderName !== 'undefined' && activeFolderName) { %>
               <span class="folder-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
               <%= activeFolderName %>
