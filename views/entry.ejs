@@ -26,6 +26,9 @@
       --success-faint: rgba(52, 211, 153, 0.1);
       --success-border: rgba(52, 211, 153, 0.22);
       --danger: #f87171;
+      --ring: rgba(56, 189, 248, 0.35);
+      --cyan-bright: #7dd3fc;
+      --success-glow: rgba(52, 211, 153, 0.18);
       --danger-faint: rgba(248, 113, 113, 0.1);
       --border: rgba(255, 255, 255, 0.12);
       --border-md: rgba(255, 255, 255, 0.13);
@@ -114,32 +117,81 @@
     }
 
     .btn {
+      position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      min-height: 38px;
-      padding: 0 14px;
-      border-radius: 8px;
+      gap: 8px;
+      min-height: 40px;
+      padding: 0 16px;
+      border-radius: 10px;
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.035);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 10px rgba(0, 0, 0, 0.25);
       color: var(--text-2);
       text-decoration: none;
-      font-weight: 700;
-      font-size: 13px;
+      font-weight: 600;
+      font-size: 13.5px;
+      letter-spacing: 0.01em;
       cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
       transition:
-        transform 0.14s,
-        background 0.14s,
-        border-color 0.14s,
-        color 0.14s;
+        transform 0.16s cubic-bezier(0.4, 0, 0.2, 1),
+        background 0.16s ease,
+        border-color 0.16s ease,
+        color 0.16s ease,
+        box-shadow 0.16s ease;
+    }
+
+    .btn svg {
+      flex-shrink: 0;
+    }
+
+    .btn svg[hidden] {
+      display: none;
+    }
+
+    .btn:active {
+      transform: translateY(0) scale(0.97);
+    }
+
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--ring), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     .btn-copy {
       border-color: var(--cyan-border);
-      background: rgba(56, 189, 248, 0.08);
-      color: var(--cyan);
-      font-weight: 600;
+      background:
+        linear-gradient(180deg, rgba(56, 189, 248, 0.14), rgba(56, 189, 248, 0.05)),
+        rgba(56, 189, 248, 0.05);
+      color: var(--cyan-bright);
+    }
+
+    .btn.is-copied {
+      border-color: var(--success-border);
+      background: linear-gradient(180deg, rgba(52, 211, 153, 0.16), rgba(52, 211, 153, 0.05));
+      color: var(--success);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 22px var(--success-glow);
+    }
+
+    .btn.is-copied svg {
+      animation: icon-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes icon-pop {
+      0% {
+        transform: scale(0.4) rotate(-12deg);
+      }
+
+      60% {
+        transform: scale(1.25) rotate(4deg);
+      }
+
+      100% {
+        transform: scale(1) rotate(0);
+      }
     }
 
     .article {
@@ -473,15 +525,23 @@
 
     @media (hover: hover) {
       .btn:hover {
-        background: rgba(255, 255, 255, 0.08);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
+        border-color: var(--border-hi);
         color: var(--text);
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 6px 18px rgba(0, 0, 0, 0.3);
       }
 
       .btn-copy:hover {
-        background: rgba(56, 189, 248, 0.16);
-        color: #bae6fd;
-        border-color: rgba(56, 189, 248, 0.45);
+        background: linear-gradient(180deg, rgba(56, 189, 248, 0.22), rgba(56, 189, 248, 0.08));
+        border-color: rgba(56, 189, 248, 0.5);
+        color: #e0f2fe;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 22px var(--cyan-glow);
+      }
+
+      .inline-link:hover {
+        color: #e0f2fe;
+        text-decoration-color: var(--cyan);
       }
 
       #backToTop:hover {
@@ -535,13 +595,25 @@
         Back to Home
       </a>
       <div class="topbar-group">
-        <button class="btn" type="button" id="copyLink">Copy Link</button>
-        <button class="btn btn-copy" type="button" id="copyLinkIcon" title="Copy public link" style="display: flex; align-items: center; gap: 6px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <button class="btn" type="button" id="copyLink">
+          <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+          <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span class="btn-label">Copy Link</span>
+        </button>
+        <button class="btn btn-copy" type="button" id="copyLinkIcon" title="Copy public link">
+          <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
           </svg>
-          Copy Text
+          <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span class="btn-label">Copy Text</span>
         </button>
       </div>
     </nav>
@@ -692,13 +764,16 @@
           textarea.style.opacity = '0';
           document.body.appendChild(textarea);
           textarea.select();
-          document.execCommand('copy');
+          const ok = document.execCommand('copy');
           textarea.remove();
+          if (!ok) throw new Error('execCommand copy failed');
         }
         showToast('Public link copied');
+        return true;
       } catch (err) {
         console.error(err);
         showToast('Failed to copy link', 'error');
+        return false;
       }
     }
 
@@ -715,19 +790,56 @@
           textarea.style.opacity = '0';
           document.body.appendChild(textarea);
           textarea.select();
-          document.execCommand('copy');
+          const ok = document.execCommand('copy');
           textarea.remove();
+          if (!ok) throw new Error('execCommand copy failed');
         }
         showToast('Content copied');
+        return true;
       } catch (err) {
         console.error(err);
         showToast('Failed to copy content', 'error');
+        return false;
       }
     }
 
+    function flashCopyFeedback(btn) {
+      if (!btn || btn.dataset.copied === 'true') return;
+      const label = btn.querySelector('.btn-label');
+      const copyIcon = btn.querySelector('.copy-icon');
+      const checkIcon = btn.querySelector('.check-icon');
+      if (!label || !copyIcon || !checkIcon) return;
+      btn.dataset.copied = 'true';
+      btn.classList.add('is-copied');
+
+      copyIcon.setAttribute('hidden', '');
+      checkIcon.removeAttribute('hidden');
+
+      const originalLabel = label.textContent;
+      label.textContent = 'Copied!';
+
+      setTimeout(() => {
+        copyIcon.removeAttribute('hidden');
+        checkIcon.setAttribute('hidden', '');
+        label.textContent = originalLabel;
+        btn.classList.remove('is-copied');
+        btn.removeAttribute('data-copied');
+      }, 1600);
+    }
+
     enhanceMarkdownContent(content);
-    document.getElementById('copyLink').addEventListener('click', copyCurrentLink);
-    document.getElementById('copyLinkIcon').addEventListener('click', copyContent);
+    document.getElementById('copyLink').addEventListener('click', async (event) => {
+      const btn = event.currentTarget;
+      if (await copyCurrentLink()) {
+        flashCopyFeedback(btn);
+      }
+    });
+    document.getElementById('copyLinkIcon').addEventListener('click', async (event) => {
+      const btn = event.currentTarget;
+      if (await copyContent()) {
+        flashCopyFeedback(btn);
+      }
+    });
 
     if (backToTop) {
       window.addEventListener('scroll', () => {
