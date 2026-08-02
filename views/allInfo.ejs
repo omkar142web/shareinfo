@@ -3278,14 +3278,6 @@
             <span id="folderCounterText">0 folders found</span>
           </div>
 
-          <!-- Create suggestion (shown by JS when search has no exact match) -->
-          <div class="folder-dropdown-create-suggestion" id="folderCreateSuggestion" hidden>
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            <span>Create "<span id="folderCreateSuggestionName"></span>"</span>
-          </div>
-
           <div class="folder-dropdown-list" id="folderList" role="listbox" aria-label="Folders">
             <div class="folder-dropdown-section-header" id="folderAllHeader">All Folders</div>
 
@@ -5541,8 +5533,17 @@ copyButton.title = 'Share Public Link';
         const empty = document.getElementById('folderEmpty');
         const allHeader = document.getElementById('folderAllHeader');
         const createBtn = document.getElementById('folderDropdownCreate');
-        const createSuggestion = document.getElementById('folderCreateSuggestion');
-        const createSuggestionName = document.getElementById('folderCreateSuggestionName');
+        const createBtnLabel = document.getElementById('folderCreateText');
+        let createButtonMode = 'new'; // 'new' | 'create'
+        let createButtonPendingName = '';
+
+        function setCreateButtonMode(mode, name = '') {
+          createButtonMode = mode;
+          createButtonPendingName = name;
+          if (createBtnLabel) {
+            createBtnLabel.textContent = mode === 'create' ? `Create Folder "${name}"` : 'New Folder';
+          }
+        }
         function getAllItems() { return Array.from(list.querySelectorAll('.folder-dropdown-item[data-folder]:not([data-folder=""])')); }
         let highlighted = -1;
         let savedScrollTop = 0;
@@ -5670,7 +5671,7 @@ copyButton.title = 'Share Public Link';
           search.value = '';
           clearBtn.hidden = true;
           counter.hidden = true;
-          createSuggestion.hidden = true;
+          setCreateButtonMode('new');
           lastFilterQuery = '';
 
           // Position before any scrollIntoView so the dropdown is fixed-position
@@ -5738,7 +5739,6 @@ copyButton.title = 'Share Public Link';
           if (overlay) overlay.classList.remove('is-visible');
           dropdown.classList.remove('is-open');
           clearPositionStyles();
-          createSuggestion.hidden = true;
           const cm = document.getElementById('folderContextMenu');
           if (cm) cm.hidden = true;
         }
@@ -5856,7 +5856,7 @@ copyButton.title = 'Share Public Link';
             empty.hidden = true;
             allHeader.hidden = false;
             counter.hidden = true;
-            createSuggestion.hidden = true;
+            setCreateButtonMode('new');
             renderZeroStateIfNeeded();
             return;
           }
@@ -5887,20 +5887,17 @@ copyButton.title = 'Share Public Link';
                 row.hidden = true;
               }
             });
-            empty.hidden = visibleCount > 0;
             allHeader.hidden = visibleCount === 0;
             if (searching) {
+              const showCreate = Boolean(q) && !exactMatch;
               counter.hidden = false;
               counterText.textContent = visibleCount + ' folder' + (visibleCount !== 1 ? 's' : '') + ' found';
-              if (q && !exactMatch && visibleCount > 0) {
-                createSuggestionName.textContent = search.value.trim();
-                createSuggestion.hidden = false;
-              } else {
-                createSuggestion.hidden = true;
-              }
+              setCreateButtonMode(showCreate ? 'create' : 'new', search.value.trim());
+              empty.hidden = visibleCount > 0 || showCreate;
             } else {
               counter.hidden = true;
-              createSuggestion.hidden = true;
+              setCreateButtonMode('new');
+              empty.hidden = visibleCount > 0;
             }
             return;
           }
@@ -5978,23 +5975,21 @@ copyButton.title = 'Share Public Link';
           // Performance: Single repaint with replaceChildren
           list.replaceChildren(fragment);
 
-          empty.hidden = matched.length > 0;
           allHeader.hidden = matched.length === 0;
 
           if (searching) {
+            const exactMatch = matched.some(f => f.name.toLowerCase() === q);
+            const showCreate = Boolean(q) && !exactMatch;
+
             counter.hidden = false;
             counterText.textContent = matched.length + ' folder' + (matched.length !== 1 ? 's' : '') + ' found';
 
-            const exactMatch = matched.some(f => f.name.toLowerCase() === q);
-            if (q && !exactMatch && matched.length > 0) {
-              createSuggestionName.textContent = search.value.trim();
-              createSuggestion.hidden = false;
-            } else {
-              createSuggestion.hidden = true;
-            }
+            setCreateButtonMode(showCreate ? 'create' : 'new', search.value.trim());
+            empty.hidden = matched.length > 0 || showCreate;
           } else {
             counter.hidden = true;
-            createSuggestion.hidden = true;
+            setCreateButtonMode('new');
+            empty.hidden = matched.length > 0;
           }
         }
         
@@ -6037,16 +6032,15 @@ copyButton.title = 'Share Public Link';
 
         // ── Inline Create Folder ──
         async function createFolderInline(name) {
-          createSuggestion.hidden = true;
           // Duplicate check
           const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
           if (dup) { showToast('A folder with that name already exists', 'error'); return; }
-          
-          // Performance: Show loading state immediately
-          const origHTML = createSuggestion.innerHTML;
-          createSuggestion.style.pointerEvents = 'none';
-          createSuggestion.style.opacity = '0.6';
-          createSuggestion.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="spin-wrap"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg><span>Creating...</span>';
+
+          // Performance: Show loading state immediately on the footer button
+          createBtn.disabled = true;
+          createBtn.style.pointerEvents = 'none';
+          createBtn.style.opacity = '0.6';
+          if (createBtnLabel) createBtnLabel.textContent = 'Creating...';
           
           try {
             const color = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -6091,17 +6085,12 @@ copyButton.title = 'Share Public Link';
           } catch (err) {
             showToast('Network error', 'error');
           } finally {
-            createSuggestion.style.pointerEvents = '';
-            createSuggestion.style.opacity = '';
-            createSuggestion.innerHTML = origHTML;
+            createBtn.disabled = false;
+            createBtn.style.pointerEvents = '';
+            createBtn.style.opacity = '';
+            setCreateButtonMode(createButtonMode, createButtonPendingName);
           }
         }
-
-        createSuggestion.addEventListener('click', (e) => {
-          e.preventDefault();
-          const q = search.value.trim();
-          if (q) createFolderInline(q);
-        });
 
         // ── Highlighting & Selection ── Enhanced for a11y
         function getVisibleItems() {
@@ -6129,10 +6118,6 @@ copyButton.title = 'Share Public Link';
             }
           } else {
             search.removeAttribute('aria-activedescendant');
-          }
-          
-          if (createSuggestion && !createSuggestion.hidden) {
-            createSuggestion.classList.toggle('is-highlighted', highlighted >= items.length);
           }
         }
 
@@ -6230,7 +6215,7 @@ copyButton.title = 'Share Public Link';
 
         search.addEventListener('keydown', e => {
           const visible = getVisibleItems();
-          const maxIdx = (createSuggestion && !createSuggestion.hidden) ? visible.length : visible.length - 1;
+          const maxIdx = visible.length - 1;
           
           switch (e.key) {
             case 'Escape':
@@ -6272,11 +6257,10 @@ copyButton.title = 'Share Public Link';
               break;
             case 'Enter':
               e.preventDefault();
-              if (createSuggestion && !createSuggestion.hidden && createSuggestion.classList.contains('is-highlighted')) {
-                const q = search.value.trim();
-                if (q) createFolderInline(q);
-              } else if (visible[highlighted]) {
+              if (visible[highlighted]) {
                 selectItem(visible[highlighted]);
+              } else if (createButtonMode === 'create' && createButtonPendingName) {
+                createFolderInline(createButtonPendingName);
               }
               break;
             case 'Tab': 
@@ -6373,6 +6357,10 @@ copyButton.title = 'Share Public Link';
 
         // ── Create Folder (from dropdown footer) ──
         createBtn.addEventListener('click', () => {
+          if (createButtonMode === 'create' && createButtonPendingName) {
+            createFolderInline(createButtonPendingName);
+            return;
+          }
           // Close synchronously (skip history.back()) so the modal's pushed
           // history entry lands on top of the dropdown's — the back button
           // then closes the modal first, then the dropdown.
