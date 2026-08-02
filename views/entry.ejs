@@ -223,8 +223,11 @@
 
     .eyebrow {
       display: inline-flex;
-      margin-bottom: 16px;
-      padding: 6px 10px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      /* padding: 5px 14px 5px 6px; */
+      padding: 0px 12px 0px 0px;
       border: 1px solid var(--cyan-border);
       border-radius: 999px;
       background: var(--cyan-faint);
@@ -232,6 +235,26 @@
       font: 500 11px var(--font-mono);
       text-transform: uppercase;
       letter-spacing: 0.08em;
+    }
+
+    .eyebrow-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* width: 20px; */
+      /* height: 20px; */
+      width: 40px;
+      height: 22px;
+      /* border-radius: 50%; */
+      border-radius: 25% 0% 0% 25%;
+      background: rgba(56, 189, 248, 0.18);
+      color: var(--cyan-bright);
+      flex-shrink: 0;
+    }
+
+    .eyebrow-icon svg {
+      width: 14px;
+      height: 14px;
     }
 
     h1 {
@@ -243,11 +266,19 @@
     }
 
     .meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       color: var(--text-3);
       font-size: 13px;
       /* font-family: var(--font-mono); */
       font-family: var(--font-body);
       letter-spacing: 0.02em;
+    }
+
+    .meta svg {
+      flex-shrink: 0;
+      opacity: 0.85;
     }
 
     .article-body {
@@ -582,6 +613,11 @@
         border-right:  none;
       }
     }
+
+    .svg-top-1 {
+      position: relative;
+      top: -1px;
+    }
   </style>
 </head>
 
@@ -620,9 +656,23 @@
 
     <article class="article">
       <header class="article-header">
-        <span class="eyebrow"><% const ownerName = entry.ownerName || entry.email; %><%= ownerName ? `Note by ${ownerName}` : 'Public Note' %></span>
+        <span class="eyebrow">
+          <span class="eyebrow-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+            </svg>
+          </span>
+          <% const ownerName = entry.ownerName || entry.email; %><%= ownerName ? `Note by ${ownerName}` : 'Public Note' %>
+        </span>
         <h1><%= entry.name %></h1>
         <p class="meta">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="svg-top-1">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
           Published <%= entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('en', { year: 'numeric', month: 'short', day: 'numeric' }) : 'recently' %>
         </p>
       </header>
