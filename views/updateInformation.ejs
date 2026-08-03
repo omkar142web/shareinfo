@@ -538,6 +538,7 @@
       let allItems = Array.from(list.querySelectorAll(".folder-modal-item"));
       let highlighted = -1;
       let scrollY = 0;
+      let modalHistoryPushed = false;
 
       let createButtonMode = "new"; // 'new' | 'create'
       let createButtonPendingName = "";
@@ -638,9 +639,15 @@
         filterItems("");
         document.addEventListener("keydown", onKeydown);
         setTimeout(() => search.focus(), 80);
+
+        history.pushState({ folderModal: true }, "");
+        modalHistoryPushed = true;
+        window.addEventListener("popstate", onPopState);
       }
 
-      function close() {
+      function close(opts = {}) {
+        const fromPopState = opts.fromPopState === true;
+
         overlay.classList.remove("is-open");
         trigger.setAttribute("aria-expanded", "false");
         document.removeEventListener("keydown", onKeydown);
@@ -649,6 +656,20 @@
           unlockScroll();
         }, 200);
         trigger.focus({ preventScroll: true });
+
+        window.removeEventListener("popstate", onPopState);
+
+        if (modalHistoryPushed && !fromPopState) {
+          modalHistoryPushed = false;
+          history.back();
+        } else {
+          modalHistoryPushed = false;
+        }
+      }
+
+      function onPopState() {
+        if (!overlay.classList.contains("is-open")) return;
+        close({ fromPopState: true });
       }
 
       function onKeydown(e) {
