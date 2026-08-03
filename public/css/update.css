@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap");
-
 /* ============================================================
    Add / Update Form — Share Info Dashboard
    Matches: Dark Glassmorphism · Linear / Vercel aesthetic
@@ -981,10 +979,18 @@ textarea::-webkit-scrollbar-thumb {
 }
 .folder-modal-search-wrap svg { color: var(--text-3, #607a96); flex-shrink: 0; }
 .folder-modal-search-wrap:focus-within svg { color: var(--cyan, #38bdf8); }
-.folder-modal-search-wrap .folder-modal-search {
+
+.folder-modal-search-inner {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.folder-modal-search-inner .folder-modal-search {
   flex: 1; background: transparent; outline: none;
   color: var(--text, #f0f6ff); font: 450 14px var(--font-body, sans-serif);
-  height: 38px; padding: 10px 10px;
+  height: 38px; padding: 10px 32px 10px 10px;
   border: 1px solid var(--border-hi);
   box-shadow: none;
 }
@@ -992,6 +998,9 @@ textarea::-webkit-scrollbar-thumb {
 .folder-modal-search:focus { background-color: var(--input-focus); }
 .folder-modal-search::placeholder { color: var(--text-3, #607a96); }
 .folder-modal-clear {
+  position: absolute;
+  top: 50%; right: 4px;
+  transform: translateY(-50%);
   background: none; border: none; color: var(--text-3, #607a96); cursor: pointer;
   padding: 4px; border-radius: 50%; display: flex;
 }
@@ -1063,16 +1072,25 @@ textarea::-webkit-scrollbar-thumb {
   padding: 32px 20px; color: var(--text-2, #a8bdd4); text-align: center;
 }
 .folder-modal-empty[hidden] { display: none; }
-.folder-modal-empty-icon { color: var(--text-3, #607a96); opacity: .5; }
+.folder-empty-illustration {
+      width: 52px;
+      height: 52px;
+      color: var(--cyan);
+      filter: drop-shadow(0 6px 14px rgba(56, 189, 248, 0.35));
+      animation: folderEmptyFloat 2.8s ease-in-out infinite;
+    }
+@keyframes folderEmptyFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
 .folder-modal-empty-title { font-weight: 600; font-size: .85rem; color: var(--text, #f0f6ff); }
-.folder-modal-create-suggestion {
-  display: flex; align-items: center; gap: 8px; margin-top: 4px;
-  padding: 8px 14px; border-radius: 100px;
-  background: var(--cyan-faint, rgba(56,189,248,.1)); border: 1px solid var(--cyan-border, rgba(56,189,248,.25));
-  color: var(--cyan, #38bdf8); font-size: .8rem; font-weight: 600; cursor: pointer;
+
+.folder-modal-highlight {
+  background: rgba(56, 189, 248, 0.25);
+  color: var(--text);
+  border-radius: 2px;
+  padding: 0 1px;
 }
-.folder-modal-create-suggestion:hover { background: rgba(56,189,248,.18); }
-.folder-modal-create-suggestion[hidden] { display: none; }
 
 .folder-modal-footer { border-top: 1px solid var(--border, rgba(255,255,255,.09)); flex-shrink: 0; }
 .folder-modal-create-btn {
