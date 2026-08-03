@@ -16,6 +16,7 @@ export const normalizePublicEntry = (entry = {}) => {
     isPublic: entry.isPublic === true,
     createdAt: entry.createdAt || entry._id?.getTimestamp?.() || null,
     updatedAt: entry.updatedAt || null,
+    shortId: entry.shortId || null,
   };
 };
 
@@ -136,6 +137,15 @@ export const findPublicEntryById = async (id) => {
 
   return collection.findOne({
     _id: new ObjectId(id),
+    isPublic: true,
+  });
+};
+
+export const findPublicEntryByShortId = async (shortId) => {
+  const collection = getCollection("anyInformation");
+
+  return collection.findOne({
+    shortId,
     isPublic: true,
   });
 };

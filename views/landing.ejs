@@ -2087,7 +2087,7 @@
 
       if (event.target.closest('.card-action-copy')) {
         event.preventDefault();
-        shareText(card.dataset.info || '', card.id);
+        shareText(card.dataset.info || '', card.id, card.dataset.shortId || '');
         return;
       }
 
@@ -2248,8 +2248,10 @@
       return true;
     }
 
-    async function shareText(text, id) {
-      const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
+    async function shareText(text, id, shortId) {
+      const link = shortId
+        ? `${window.location.origin}/e/${encodeURIComponent(shortId)}`
+        : `${window.location.origin}/entry/${encodeURIComponent(id)}`;
 
       try {
         await copyToClipboard(link);
@@ -2351,6 +2353,7 @@
       card.id = item._id;
       card.dataset.name = item.name || '';
       card.dataset.info = item.info || '';
+      card.dataset.shortId = item.shortId || '';
 
       const strip = document.createElement('div');
       strip.className = 'card-strip';
@@ -2375,7 +2378,7 @@
 
       const title = document.createElement('a');
       title.className = 'card-title';
-      title.href = `/entry/${encodeURIComponent(item._id)}`;
+      title.href = item.shortId ? `/e/${encodeURIComponent(item.shortId)}` : `/entry/${encodeURIComponent(item._id)}`;
       title.textContent = item.name || 'Untitled';
       body.append(title);
 
@@ -2396,7 +2399,7 @@
 
       const read = document.createElement('a');
       read.className = 'card-action';
-      read.href = `/entry/${encodeURIComponent(item._id)}`;
+      read.href = item.shortId ? `/e/${encodeURIComponent(item.shortId)}` : `/entry/${encodeURIComponent(item._id)}`;
       read.textContent = 'Read';
       footer.append(read);
 

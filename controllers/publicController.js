@@ -1,10 +1,12 @@
 import {
   findPublicEntryById,
+  findPublicEntryByShortId,
   getPagedPublicEntries,
   getPublicEntriesForSitemap,
   normalizePublicEntry,
   searchPublicEntries,
 } from "../services/public.service.js";
+import { setShortIdForEntry } from "../services/auth.service.js";
 import { createHttpError } from "../middleware/errorHandlers.js";
 import { renderMarkdown } from "../services/markdown.service.js";
 
@@ -86,14 +88,38 @@ export const getEntryPage = async (req, res, next) => {
       return next(createHttpError(404, "Entry not found"));
     }
 
+    let shortId = entry.shortId;
+    if (!shortId) {
+      shortId = await setShortIdForEntry(id);
+    }
+
+    return res.redirect(`/e/${shortId}`);
+  } catch (err) {
+    console.error("Public entry page error:", err);
+    return next(err);
+  }
+};
+
+export const redirectFromShortUrl = async (req, res, next) => {
+  try {
+    const { shortId } = req.params;
+    if (!shortId || typeof shortId !== "string" || shortId.length > 20) {
+      return next(createHttpError(404, "Entry not found"));
+    }
+
+    const entry = await findPublicEntryByShortId(shortId);
+    if (!entry) {
+      return next(createHttpError(404, "Entry not found"));
+    }
+
     return res.render("entry", {
       entry: normalizePublicEntry(entry),
       siteUrl: SITE_URL,
-      canonicalUrl: `${SITE_URL}/entry/${encodeURIComponent(id)}`,
+      canonicalUrl: `${SITE_URL}/e/${shortId}`,
       renderMarkdown,
     });
   } catch (err) {
-    console.error("Public entry page error:", err);
+    console.error("Short URL error:", err);
     return next(err);
   }
 };
@@ -126,9 +152,10 @@ export const getSitemapXml = async (req, res) => {
   </url>`,
       ...entries.map((entry) => {
         const id = entry._id.toString();
+        const shortId = entry.shortId || id;
         const lastmod = (entry.updatedAt || entry.createdAt || entry._id.getTimestamp()).toISOString();
         return `  <url>
-    <loc>${escapeXml(`${SITE_URL}/entry/${encodeURIComponent(id)}`)}</loc>
+    <loc>${escapeXml(`${SITE_URL}/e/${shortId}`)}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

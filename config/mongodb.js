@@ -14,10 +14,17 @@ async function createIndexes() {
   const usersCollection = actuallDB.collection("users");
   const foldersCollection = actuallDB.collection("folders");
 
+  try {
+    await infoCollection.dropIndex("shortId_1");
+  } catch {
+    // Index didn't exist yet, ignore
+  }
+
   await Promise.all([
     infoCollection.createIndex({ email: 1, _id: -1 }),
     infoCollection.createIndex({ isPublic: 1, _id: -1 }),
     infoCollection.createIndex({ email: 1, folderId: 1, _id: -1 }),
+    infoCollection.createIndex({ shortId: 1 }, { unique: true, sparse: true }),
     usersCollection.createIndex({ email: 1 }, { unique: true }),
     foldersCollection.createIndex({ email: 1, name: 1 }, { unique: true }),
   ]);

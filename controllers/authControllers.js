@@ -5,7 +5,7 @@ import OpenAI from "openai";
 import { getCollection } from "../config/mongodb.js";
 import { createHttpError } from "../middleware/errorHandlers.js";
 
-// GET USER BY EMAIL and all..
+//! GET USER BY EMAIL and all..
 import {
   findUserByEmail,
   createUser,
@@ -14,6 +14,8 @@ import {
   getPagedAllData,
   getPagedAllDataWithVisibility,
   getPagedUsers,
+  findEntryByShortId,
+  setShortIdForEntry,
 } from "../services/auth.service.js";
 
 import { getLandingPage } from "./publicController.js";
@@ -270,6 +272,7 @@ export const getEntriesPage = async (req, res) => {
       items: page.items.map((item) => ({
         ...item,
         _id: item._id.toString(),
+        shortId: item.shortId || null,
       })),
       nextCursor: page.nextCursor,
       hasMore: page.hasMore,
@@ -648,6 +651,9 @@ export const createPost = async (req, res, next) => {
       email: user.email, // trusted email from backend
     });
 
+    const newId = addedData.insertedId.toString();
+    const shortId = await setShortIdForEntry(newId);
+
     const io = req.app.get("io");
     if (io) {
       emitEntryToAudiences({
@@ -656,7 +662,8 @@ export const createPost = async (req, res, next) => {
         event: "entry:created",
         isPublic: req.body.isPublic === true,
         payload: {
-        _id: addedData.insertedId,
+        _id: newId,
+        shortId,
         name,
         info,
         isPublic: req.body.isPublic === true,
@@ -672,7 +679,11 @@ export const createPost = async (req, res, next) => {
 
     return res.status(201).json({
       message: "Post created successfully",
-      addedData,
+      addedData: {
+        ...addedData,
+        insertedId: newId,
+        shortId,
+      },
     });
   } catch (err) {
     console.error("Error creating post:", err);
@@ -765,9 +776,15 @@ export const getUpdatePage = async (req, res, next) => {
 
     const collection = getCollection("anyInformation");
 
-    const data = await collection.findOne({
-      _id: new ObjectId(req.params.id),
-    });
+    let data;
+    const { id } = req.params;
+    if (ObjectId.isValid(id)) {
+      data = await collection.findOne({
+        _id: new ObjectId(id),
+      });
+    } else if (typeof id === "string" && id.length <= 20) {
+      data = await findEntryByShortId(id);
+    }
 
     if (!data) {
       return next(createHttpError(404, "Post not found"));

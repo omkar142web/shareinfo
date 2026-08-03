@@ -56,7 +56,7 @@ router.patch("/api/entries/:id/favorite", requireObjectId, toggleFavorite);
 
 router.delete("/user/:id", requireObjectId, deleteMasterUser);
 
-router.get("/update/:id", passInvalidIdToNotFound, getUpdatePage);
+router.get("/update/:id", getUpdatePage);
 
 router
   .route("/:id")

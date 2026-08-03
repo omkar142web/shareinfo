@@ -7,6 +7,7 @@ import {
   getRobotsTxt,
   getSitemapXml,
   searchPublicEntriesController,
+  redirectFromShortUrl,
 } from "../controllers/publicController.js";
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.get("/explore", getLandingPage);
 router.get("/robots.txt", getRobotsTxt);
 router.get("/sitemap.xml", getSitemapXml);
 router.get("/entry/:id", getEntryPage);
+router.get("/e/:shortId", redirectFromShortUrl);
 router.get("/api/public", getPublicEntries);
 router.get("/api/public/search", searchPublicEntriesController);
 

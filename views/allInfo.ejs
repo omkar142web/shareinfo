@@ -3611,7 +3611,7 @@
       %>
 
         <!-- Card: <%= cardType %> -->
-        <article id="<%= person._id %>" class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" data-id="<%= person._id %>" data-is-public="<%= person.isPublic === true ? 'true' : 'false' %>" data-is-favorite="<%= isFavorite ? 'true' : 'false' %>" data-folder-id="<%= person.folderId || '' %>" style="--stagger: <%= index %>">
+        <article id="<%= person._id %>" class="info-card card-<%= cardType %> card-pending" data-index="<%= index %>" data-name="<%= safeName %>" data-info="<%= safeInfo %>" data-email="<%= safeEmail %>" data-password="<%= safePassword %>" data-id="<%= person._id %>" data-short-id="<%= person.shortId || '' %>" data-is-public="<%= person.isPublic === true ? 'true' : 'false' %>" data-is-favorite="<%= isFavorite ? 'true' : 'false' %>" data-folder-id="<%= person.folderId || '' %>" style="--stagger: <%= index %>">
 
           <!-- Card type indicator -->
           <div class="card-type-strip" aria-hidden="true">
@@ -3960,13 +3960,13 @@
 
           if (event.target.closest('.action-copy')) {
             event.stopPropagation();
-            shareText((card.dataset.info || '').replace(/\\n/g, '\n'), card.dataset.id || card.id);
+            shareText((card.dataset.info || '').replace(/\\n/g, '\n'), card.dataset.id || card.id, card.dataset.shortId || '');
             return;
           }
 
           if (event.target.closest('.action-edit')) {
             event.stopPropagation();
-            window.location.href = `update/${encodeURIComponent(card.dataset.id || card.id)}`;
+            window.location.href = `update/${encodeURIComponent(card.dataset.shortId || card.dataset.id || card.id)}`;
             return;
           }
 
@@ -4691,8 +4691,10 @@
         return true;
       }
 
-      async function shareText(text, id) {
-        const link = `${window.location.origin}/entry/${encodeURIComponent(id)}`;
+      async function shareText(text, id, shortId) {
+        const link = shortId
+          ? `${window.location.origin}/e/${encodeURIComponent(shortId)}`
+          : `${window.location.origin}/entry/${encodeURIComponent(id)}`;
 
         try {
           await copyToClipboard(link);
@@ -4836,6 +4838,7 @@
         const email = String(item.email ?? '');
         const password = String(item.password ?? '');
         const id = String(item._id ?? '');
+        const shortId = String(item.shortId ?? '');
         const isPublic = item.isPublic === true;
         const isFavorite = item.isFavorite === true;
         const card = document.createElement('article');
@@ -4846,6 +4849,7 @@
         card.dataset.email = email;
         card.dataset.password = password;
         card.dataset.id = id;
+        card.dataset.shortId = shortId;
         card.id = id;
         card.dataset.isPublic = isPublic ? 'true' : 'false';
         card.dataset.isFavorite = isFavorite ? 'true' : 'false';
@@ -5339,12 +5343,12 @@ copyButton.title = 'Share Public Link';
         }, 200);
       }
 
-      async function autoLoadUntilHashFound(id) {
+      async function autoLoadUntilHashFound(id, isShortId) {
         activeHashLoadId = id;
         isAutoLoading = true;
 
         try {
-          while (!document.getElementById(id)) {
+          while (!getHashTarget(id, isShortId)) {
             if (activeHashLoadId !== id || exhausted || !nextCursor) break;
 
             if (isFetching) {
@@ -5371,25 +5375,36 @@ copyButton.title = 'Share Public Link';
         }
       }
 
+      function getHashTarget(id, isShortId) {
+        if (isShortId) {
+          return document.querySelector(`.info-card[data-short-id="${id}"]`);
+        }
+        return document.getElementById(id);
+      }
+
       function scrollToHashedCard() {
         if (!window.location.hash) return;
         const hash = window.location.hash;
         const id = hash.replace(/^#/, '');
         if (!id) return;
 
-        if (scrollElementToCenter(hash)) {
+        const isShortId = !/^[a-f\d]{24}$/i.test(id);
+        const target = getHashTarget(id, isShortId);
+
+        if (target) {
           activeHashLoadId = null;
           if (hashScrollInterval) {
             clearInterval(hashScrollInterval);
             hashScrollInterval = null;
           }
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
         }
 
         if (activeHashLoadId === id) return;
 
         startHashPolling(hash);
-        autoLoadUntilHashFound(id);
+        autoLoadUntilHashFound(id, isShortId);
       }
 
       window.addEventListener('load', scrollToHashedCard);

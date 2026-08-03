@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 
 import { getCollection } from "../config/mongodb.js";
+import { generateShortId, ensureUniqueShortId } from "../utils/shortId.js";
 
 const escapeRegex = (value = "") => {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -202,7 +203,21 @@ export const getPagedUsers = async (
   });
 };
 
-//! User repository functions
+//! Entry repository functions
+export const findEntryByShortId = async (shortId) => {
+  const collection = getCollection("anyInformation");
+  return collection.findOne({ shortId });
+};
+
+export const setShortIdForEntry = async (entryId) => {
+  const collection = getCollection("anyInformation");
+  const shortId = await ensureUniqueShortId(collection);
+  await collection.updateOne(
+    { _id: new ObjectId(entryId) },
+    { $set: { shortId } }
+  );
+  return shortId;
+};
 export const getUserData = async (email) => {
   return await getCollection().find({ email }).sort({ _id: -1 }).toArray();
 };
