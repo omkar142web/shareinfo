@@ -712,6 +712,7 @@
         sorted.forEach((el) => list.appendChild(el));
 
         emptyMsg.hidden = visibleCount > 0;
+        list.hidden = visibleCount === 0;
         counter.hidden = !q;
         if (q) counterText.textContent = `${visibleCount} folder${visibleCount === 1 ? "" : "s"} found`;
 
