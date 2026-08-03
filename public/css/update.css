@@ -778,458 +778,11 @@ textarea::-webkit-scrollbar-thumb {
   h1 {
     font-size: 1.3rem;
   }
-}
 
-/* ╔═══════════════════════════════════════════════════════════════════════╗
-   ║  FOLDER COMBOBOX — Premium Linear/Notion Style                       ║
-   ║  Redesigned for enterprise-grade polish & modern SaaS aesthetics     ║
-   ╚═══════════════════════════════════════════════════════════════════════╝ */
-
-/* ── Trigger Button ─────────────────────────────────────────────────── */
-.field-folder .folder-combobox-wrap {
-  position: relative;
-}
-
-.folder-combobox-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  padding: 11px 14px;
-  background: var(--input-bg);
-  border: 1px solid var(--border-md);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: 
-    border-color 0.16s ease,
-    background 0.16s ease,
-    box-shadow 0.16s ease,
-    transform 0.12s ease;
-  text-align: left;
-}
-
-.folder-combobox-trigger:hover {
-  background: var(--input-hover);
-  border-color: var(--border-hi);
-}
-
-.folder-combobox-trigger:focus,
-.folder-combobox-trigger[aria-expanded="true"] {
-  border-color: var(--cyan-border);
-  background: var(--input-focus);
-  box-shadow: 0 0 0 3px var(--cyan-faint), inset 0 1px 3px rgba(0,0,0,0.2);
-  outline: none;
-}
-
-.folder-combobox-label {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.folder-combobox-chevron {
-  flex-shrink: 0;
-  color: var(--text-3);
-  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.folder-combobox-trigger[aria-expanded="true"] .folder-combobox-chevron {
-  transform: rotate(180deg);
+  #folderModalList::-webkit-scrollbar { width: 5px; }
 }
 
 /* ── Dropdown Container ──────────────────────────────────────────────── */
-.folder-combobox-dropdown {
-  position: fixed;
-  background: rgba(18, 28, 48, 0.96);
-  border: 1px solid var(--border-hi);
-  border-radius: 12px;
-  box-shadow: 
-    0 0 0 1px rgba(56, 189, 248, 0.08),
-    0 24px 64px rgba(0, 0, 0, 0.72),
-    0 8px 24px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(32px) saturate(1.5);
-  -webkit-backdrop-filter: blur(32px) saturate(1.5);
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  max-height: 480px;
-  min-width: 280px;
-  opacity: 0;
-  transform: translateY(-8px) scale(0.96);
-  animation: folder-dropdown-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  pointer-events: auto;
-  overflow: hidden;
-}
-
-@keyframes folder-dropdown-in {
-  to { 
-    opacity: 1; 
-    transform: translateY(0) scale(1); 
-  }
-}
-
-/* ── Search Input ────────────────────────────────────────────────────── */
-.folder-combobox-search-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-3);
-  background: rgba(18, 28, 48, 0.98);
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  flex-shrink: 0;
-}
-
-.folder-combobox-search-wrap svg {
-  flex-shrink: 0;
-  opacity: 0.6;
-}
-
-.folder-combobox-search {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 13.5px;
-  font-weight: 400;
-  padding: 0;
-  height: auto;
-  outline: none;
-  caret-color: var(--cyan);
-}
-
-.folder-combobox-search:focus {
-  border: none;
-  box-shadow: none;
-  background: transparent;
-}
-
-.folder-combobox-search::placeholder {
-  color: var(--text-3);
-  opacity: 0.7;
-}
-
-input.folder-combobox-search {
-  border-radius: 0;
-}
-
-/* ── Section Header ──────────────────────────────────────────────────── */
-.folder-combobox-section {
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.folder-combobox-section:has(.folder-combobox-options) {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.folder-combobox-section-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--text-2);
-  padding: 12px 14px 8px;
-  user-select: none;
-  flex-shrink: 0;
-}
-
-.folder-combobox-section-header::before {
-  content: "📁";
-  font-size: 13px;
-  line-height: 1;
-}
-
-/* ── Divider ─────────────────────────────────────────────────────────── */
-.folder-combobox-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 6px 10px;
-  flex-shrink: 0;
-}
-
-/* ── Options List (Scrollable) ────────────────────────────────────────── */
-.folder-combobox-options {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 6px 8px;
-}
-
-.folder-combobox-options::-webkit-scrollbar { 
-  width: 5px; 
-}
-.folder-combobox-options::-webkit-scrollbar-track { 
-  background: transparent; 
-}
-.folder-combobox-options::-webkit-scrollbar-thumb { 
-  background: rgba(56, 189, 248, 0.15); 
-  border-radius: 100px;
-  border: none;
-}
-.folder-combobox-options::-webkit-scrollbar-thumb:hover { 
-  background: rgba(56, 189, 248, 0.25); 
-}
-
-/* ── Folder Option Row ────────────────────────────────────────────────── */
-.folder-combobox-option {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 9px 11px 9px 16px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 13.5px;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: left;
-  transition: 
-    background 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.15s ease,
-    transform 0.12s ease;
-  margin-bottom: 3px;
-}
-
-.folder-combobox-option::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 6px;
-  bottom: 6px;
-  width: 3px;
-  background: var(--folder-accent, var(--text-3));
-  border-radius: 0 2px 2px 0;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.folder-combobox-option:hover::before {
-  opacity: 1;
-}
-
-.folder-combobox-option:hover,
-.folder-combobox-option.is-highlighted {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.06);
-  outline: none;
-}
-
-.folder-combobox-option.is-selected {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.22);
-  color: var(--cyan);
-  box-shadow: 
-    inset 0 1px 2px rgba(56, 189, 248, 0.1),
-    0 0 0 1px rgba(56, 189, 248, 0.08);
-}
-
-.folder-combobox-option.is-selected::before {
-  opacity: 1;
-  background: var(--cyan);
-}
-
-/* ── Folder Icon (consistent across all folders) ─────────────────────── */
-/* Hidden - using folder emoji in header instead */
-.folder-combobox-option::after {
-  display: none;
-}
-
-/* ── Folder Dot (left accent indicator) ─────────────────────────────── */
-.folder-combobox-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 0 6px currentColor, inset 0 -1px 2px rgba(0,0,0,0.3);
-  opacity: 0.85;
-  transition: 
-    opacity 0.15s ease,
-    transform 0.15s ease;
-}
-
-.folder-combobox-option:hover .folder-combobox-dot,
-.folder-combobox-option.is-selected .folder-combobox-dot {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-/* ── Folder Name ─────────────────────────────────────────────────────── */
-.folder-combobox-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  letter-spacing: -0.01em;
-}
-
-/* ── Count Badge ──────────────────────────────────────────────────────── */
-.folder-combobox-count {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--text-3);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 100px;
-  padding: 2px 8px;
-  min-width: 24px;
-  text-align: center;
-  letter-spacing: 0.02em;
-}
-
-.folder-combobox-option.is-selected .folder-combobox-count {
-  background: rgba(56, 189, 248, 0.18);
-  border-color: rgba(56, 189, 248, 0.25);
-  color: var(--cyan);
-}
-
-/* ── Checkmark Icon ───────────────────────────────────────────────────── */
-.folder-combobox-check {
-  flex-shrink: 0;
-  color: var(--cyan);
-  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4));
-  animation: checkmark-appear 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes checkmark-appear {
-  from {
-    opacity: 0;
-    transform: scale(0.7) rotate(-8deg);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-/* ── Empty State ──────────────────────────────────────────────────────── */
-.folder-combobox-empty {
-  padding: 20px 14px 10px;
-  text-align: center;
-  color: var(--text-3);
-  font-size: 12.5px;
-  font-weight: 400;
-  line-height: 1.5;
-  flex-shrink: 0;
-}
-
-.folder-combobox-empty-text {
-  margin-bottom: 8px;
-}
-
-/* ── Create Suggestion (shown inside empty state when no results) ──────── */
-.folder-combobox-create-suggestion {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  color: var(--cyan);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border-radius: 8px;
-  border: 1px dashed rgba(56, 189, 248, 0.3);
-  background: rgba(56, 189, 248, 0.05);
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.folder-combobox-create-suggestion:hover {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.5);
-}
-
-/* ── New Folder Button (Sticky Bottom CTA) ─────────────────────────────── */
-.folder-combobox-create-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: calc(100% - 20px);
-  /* margin: 0 10px 10px; */
-  /* margin: 8px 10px 0px; */
-  margin: 8px 10px 14px;
-  padding: 11px 16px;
-  background: linear-gradient(135deg, var(--cyan-dim) 0%, var(--cyan) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  border-radius: 8px;
-  color: #040b18;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  cursor: pointer;
-  transition: 
-    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.15s ease,
-    opacity 0.15s ease;
-  box-shadow: 
-    0 4px 12px rgba(56, 189, 248, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  flex-shrink: 0;
-}
-
-.folder-combobox-create-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 6px 20px rgba(56, 189, 248, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.folder-combobox-create-btn:active {
-  transform: translateY(0) scale(0.98);
-}
-
-.folder-combobox-create-btn:disabled {
-  opacity: 0.5;
-  cursor: wait;
-  transform: none;
-}
-
-/* ── Keyboard Navigation Hints ──────────────────────────────────────────── */
-/* .folder-combobox-dropdown::after {
-  content: "";
-  display: block;
-  /* height: 32px; 
-  height: 15px;
-  background: linear-gradient(to bottom, transparent, rgba(18, 28, 48, 0.98));
-  position: sticky;
-  bottom: 54px;
-  pointer-events: none;
-  margin: 0 -8px;
-  z-index: 1;
-} */
-
 /* ── Toast Notification ───────────────────────────────────────────────── */
 .folder-toast {
   position: fixed;
@@ -1262,54 +815,15 @@ input.folder-combobox-search {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ── Mobile Bottom Sheet ──────────────────────────────────────────────── */
-@media (max-width: 680px) {
-  .folder-combobox-dropdown {
-    left: 0 !important;
-    right: 0 !important;
-    top: auto !important;
-    bottom: 0;
-    border-radius: 20px 20px 0 0;
-    box-shadow: 
-      0 0 0 1px rgba(56, 189, 248, 0.1),
-      0 -24px 80px rgba(0, 0, 0, 0.8);
-    transform: translateY(100%);
-    animation: folder-sheet-in 0.28s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-    max-height: 75vh;
-    padding-bottom: max(env(safe-area-inset-bottom, 0), 16px);
-  }
-
-  @keyframes folder-sheet-in {
-    from { 
-      opacity: 0; 
-    }
-    to { 
-      opacity: 1; 
-      transform: translateY(0); 
-    }
-  }
-
-  .folder-combobox-options {
-    max-height: 45vh;
-  }
-  
-  .folder-combobox-create-btn {
-    margin-bottom: 0;
-  }
-}
-
 /* ── Smooth Animations (Respect reduced motion) ───────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .folder-combobox-dropdown,
-  .folder-combobox-option,
-  .folder-combobox-check,
   .folder-toast {
     animation: none !important;
     transition-duration: 0.05s !important;
   }
-  .folder-combobox-dropdown {
+  .folder-toast {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(-50%) translateY(0);
   }
 }
 
@@ -1355,4 +869,246 @@ input.folder-combobox-search {
     /* scrollbar-width: thin; */
     /* scrollbar-color: rgba(56, 189, 248, 0.5) rgba(8, 13, 26, 0.9); */
   /* } */
+}
+
+/* ══════════ Folder Select Modal (dashboard-inspired) ══════════ */
+:root {
+  --folder-blue: #3b82f6;
+  --folder-purple: #a855f7;
+  --folder-green: #22c55e;
+  --folder-red: #ef4444;
+  --folder-orange: #f97316;
+  --folder-pink: #ec4899;
+}
+
+/* Trigger button */
+.folder-select-wrap { position: relative; }
+
+.folder-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 14px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--border-hi, rgba(255,255,255,0.16));
+  background: rgba(13, 22, 40, 0.72);
+  color: var(--text, #f0f6ff);
+  font: 500 14px var(--font-body, "DM Sans", sans-serif);
+  cursor: pointer;
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.folder-select-trigger:hover {
+  border-color: var(--cyan-border, rgba(56,189,248,.35));
+  background: rgba(18, 28, 50, 0.85);
+}
+.folder-select-trigger:active { transform: scale(0.99); }
+
+.folder-select-label { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.folder-select-label span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.folder-select-placeholder { color: var(--text-3, #607a96); }
+.folder-select-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.folder-select-chevron { color: var(--text-3, #607a96); flex-shrink: 0; transition: transform .2s; }
+.folder-select-trigger[aria-expanded="true"] .folder-select-chevron { transform: rotate(180deg); color: var(--cyan, #38bdf8); }
+
+/* Overlay */
+.folder-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 1000);
+  background: rgba(4, 8, 20, 0.72);
+  backdrop-filter: blur(8px) saturate(1.2);
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.folder-modal-overlay.is-open { opacity: 1; }
+.folder-modal-overlay[hidden] { display: none; }
+
+/* Modal card */
+.folder-modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: 78dvh;
+  background: linear-gradient(180deg, rgba(19,29,53,.97) 0%, rgba(11,18,35,.97) 100%);
+  border: 1px solid var(--border-hi, rgba(255,255,255,.18));
+  border-radius: 20px;
+  box-shadow: 0 32px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(18px) scale(.97);
+  transition: transform .24s cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+}
+.folder-modal::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan, #38bdf8), transparent);
+  opacity: .5;
+}
+.folder-modal-overlay.is-open .folder-modal { transform: translateY(0) scale(1); }
+
+.folder-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,.09));
+}
+.folder-modal-title {
+  font-family: var(--font-display, "Sora", sans-serif);
+  font-size: 1rem; font-weight: 700; color: var(--text, #f0f6ff);
+  letter-spacing: -0.02em;
+}
+.folder-modal-close {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border-md, rgba(255,255,255,.13));
+  color: var(--text-2, #a8bdd4); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s, transform .2s;
+}
+.folder-modal-close:hover { background: rgba(251,113,133,.1); color: #fb7185; border-color: rgba(251,113,133,.22); transform: rotate(90deg); }
+
+.folder-modal-search-wrap {
+  display: flex; align-items: center; gap: 9px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,.09));
+}
+.folder-modal-search-wrap svg { color: var(--text-3, #607a96); flex-shrink: 0; }
+.folder-modal-search-wrap:focus-within svg { color: var(--cyan, #38bdf8); }
+.folder-modal-search-wrap .folder-modal-search {
+  flex: 1; background: transparent; outline: none;
+  color: var(--text, #f0f6ff); font: 450 14px var(--font-body, sans-serif);
+  height: 38px; padding: 10px 10px;
+  border: 1px solid var(--border-hi);
+  box-shadow: none;
+}
+
+.folder-modal-search:focus { background-color: var(--input-focus); }
+.folder-modal-search::placeholder { color: var(--text-3, #607a96); }
+.folder-modal-clear {
+  background: none; border: none; color: var(--text-3, #607a96); cursor: pointer;
+  padding: 4px; border-radius: 50%; display: flex;
+}
+.folder-modal-clear:hover { color: var(--text, #f0f6ff); background: rgba(255,255,255,.08); }
+.folder-modal-clear[hidden] { display: none; }
+
+.folder-modal-counter {
+  padding: 8px 16px;
+  font: 500 11px var(--font-mono, monospace);
+  color: var(--text-3, #607a96);
+  border-bottom: 1px solid var(--border, rgba(255,255,255,.06));
+}
+.folder-modal-counter[hidden] { display: none; }
+
+.folder-modal-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+  min-height: 60px;
+}
+
+.folder-modal-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 10px;
+  border: none; background: none; border-radius: 10px;
+  color: var(--text-2, #a8bdd4);
+  font: 500 14px var(--font-body, sans-serif);
+  cursor: pointer; text-align: left; position: relative;
+  transition: background .15s, color .15s, transform .15s;
+}
+
+.folder-modal-list .folder-modal-item:not(:first-child) { background-clip: padding-box; border-top: 3px solid transparent; }
+
+.folder-modal-item:hover,
+.folder-modal-item.is-highlighted {
+  background: rgba(255,255,255,.055);
+  color: var(--text, #f0f6ff);
+}
+.folder-modal-item:active { transform: scale(.985); }
+.folder-modal-item.is-active {
+  background: var(--cyan-faint, rgba(56,189,248,.09));
+  color: var(--text, #f0f6ff);
+  font-weight: 600;
+}
+.folder-modal-item.is-active::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 16px; background: var(--cyan, #38bdf8); border-radius: 999px;
+}
+.folder-modal-item[hidden] { display: none; }
+
+.folder-modal-check {
+  width: 14px; flex-shrink: 0; color: var(--cyan, #38bdf8);
+  opacity: 0; transform: scale(.5);
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .18s, transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.folder-modal-item.is-active .folder-modal-check { opacity: 1; transform: scale(1); }
+
+.folder-modal-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.folder-modal-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.folder-modal-count {
+  font: 500 10.5px var(--font-mono, monospace); color: var(--text-3, #607a96);
+  background: rgba(255,255,255,.06); padding: 2px 8px; border-radius: 100px;
+  flex-shrink: 0;
+}
+
+.folder-modal-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 32px 20px; color: var(--text-2, #a8bdd4); text-align: center;
+}
+.folder-modal-empty[hidden] { display: none; }
+.folder-modal-empty-icon { color: var(--text-3, #607a96); opacity: .5; }
+.folder-modal-empty-title { font-weight: 600; font-size: .85rem; color: var(--text, #f0f6ff); }
+.folder-modal-create-suggestion {
+  display: flex; align-items: center; gap: 8px; margin-top: 4px;
+  padding: 8px 14px; border-radius: 100px;
+  background: var(--cyan-faint, rgba(56,189,248,.1)); border: 1px solid var(--cyan-border, rgba(56,189,248,.25));
+  color: var(--cyan, #38bdf8); font-size: .8rem; font-weight: 600; cursor: pointer;
+}
+.folder-modal-create-suggestion:hover { background: rgba(56,189,248,.18); }
+.folder-modal-create-suggestion[hidden] { display: none; }
+
+.folder-modal-footer { border-top: 1px solid var(--border, rgba(255,255,255,.09)); flex-shrink: 0; }
+.folder-modal-create-btn {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  padding: 13px 16px; background: transparent; border: none;
+  color: var(--cyan, #38bdf8); font: 600 13.5px var(--font-body, sans-serif); cursor: pointer;
+  transition: background .15s, color .15s;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,.09));
+}
+.folder-modal-create-btn:hover { background: var(--cyan-faint, rgba(56,189,248,.08)); color: #7dd3fc; }
+.folder-modal-create-btn:disabled { opacity: .6; cursor: default; }
+
+.folder-modal-kbd-hint {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 6px 12px 10px;
+  font: 400 10px var(--font-mono, monospace); color: var(--text-3, #607a96);
+}
+.folder-modal-kbd-hint kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px; padding: 0 4px; border-radius: 3px;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+  font: inherit; color: var(--text-2, #a8bdd4); line-height: 1;
+}
+
+.folder-modal-list::-webkit-scrollbar { width: 8px; }
+.folder-modal-list::-webkit-scrollbar-track { background: transparent; }
+.folder-modal-list::-webkit-scrollbar-thumb { background: rgba(56,189,248,.25); border-radius: 100px; }
+.folder-modal-list::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,.45); }
+
+@media (max-width: 480px) {
+  .folder-modal-overlay { padding: 0; align-items: flex-end; }
+  .folder-modal { max-height: 85dvh; border-radius: 20px 20px 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .folder-modal, .folder-modal-overlay, .folder-modal-item, .folder-select-chevron {
+    transition: none !important;
+  }
 }
