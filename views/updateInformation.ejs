@@ -602,14 +602,22 @@
         window.scrollTo(0, scrollY);
       }
 
-      function getVisible() { return allItems.filter((el) => !el.hidden); }
+      function getVisible() {
+        return Array.from(list.children).filter(
+          (el) => el.classList.contains("folder-modal-item") && !el.hidden
+        );
+      }
 
       function applyHighlight() {
         const visible = getVisible();
-        allItems.forEach((el) => el.classList.remove("is-highlighted"));
+        allItems.forEach((el) => {
+          el.classList.remove("is-highlighted");
+          el.setAttribute("aria-selected", el.classList.contains("is-active") ? "true" : "false");
+        });
         const target = visible[highlighted];
         if (target) {
           target.classList.add("is-highlighted");
+          target.setAttribute("aria-selected", "true");
           target.scrollIntoView({ block: "nearest" });
         }
       }
@@ -736,7 +744,14 @@
         );
         setCreateButtonMode(trimmedQuery && !exactMatch ? "create" : "new", trimmedQuery);
 
-        highlighted = -1;
+        const visible = getVisible();
+        if (q) {
+          highlighted = visible.findIndex((el) => el.dataset.value);
+        } else {
+          highlighted = visible.findIndex((el) => el.classList.contains("is-active"));
+        }
+        applyHighlight();
+
         clearBtn.hidden = !q;
       }
 
