@@ -17,5 +17,6 @@ router.patch("/api/folders/:id", requireObjectId, fc.renameFolder);
 router.patch("/api/folders/:id/color", requireObjectId, fc.updateColor);
 router.delete("/api/folders/:id", requireObjectId, fc.deleteFolder);
 router.patch("/api/entries/:id/move-folder", requireObjectId, fc.moveEntryToFolder);
+router.get("/f/:shortId", fc.redirectFromFolderShortUrl);
 
 export default router;

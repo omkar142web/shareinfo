@@ -20,7 +20,7 @@ import {
 
 import { getLandingPage } from "./publicController.js";
 import { renderMarkdown } from "../services/markdown.service.js";
-import { listFolders } from "../services/folderService.js";
+import { listFolders, setShortIdForFolder } from "../services/folderService.js";
 
 import Path from "path";
 import { fileURLToPath } from "url";
@@ -153,6 +153,16 @@ export const getHome = async (req, res, next) => {
         .toArray();
 
       if (folders.length > 0) {
+        const foldersWithoutShortId = folders.filter((f) => !f.shortId);
+        for (const folder of foldersWithoutShortId) {
+          try {
+            const shortId = await setShortIdForFolder(folder._id.toString());
+            folder.shortId = shortId;
+          } catch (err) {
+            console.error("Failed to generate shortId for folder:", folder._id, err);
+          }
+        }
+
         const folderIds = folders.map((f) => f._id);
         const counts = await getCollection("anyInformation")
           .aggregate([

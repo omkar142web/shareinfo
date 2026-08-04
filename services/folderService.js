@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { getCollection } from "../config/mongodb.js";
+import { ensureUniqueShortId } from "../utils/shortId.js";
 
 const VALID_COLORS = new Set(["blue", "purple", "green", "red", "orange", "pink"]);
 
@@ -27,6 +28,7 @@ export const listFolders = async (email) => {
     color: f.color,
     entryCount: countMap.get(f._id.toString()) || 0,
     createdAt: f.createdAt,
+    shortId: f.shortId || null,
   }));
 };
 
@@ -46,7 +48,19 @@ export const createFolder = async (email, name, color) => {
 
   const folder = { email, name: trimmed, color, createdAt: new Date() };
   const result = await getCollection("folders").insertOne(folder);
-  return { ...folder, _id: result.insertedId };
+  const createdFolder = { ...folder, _id: result.insertedId };
+
+  try {
+    const shortId = await ensureUniqueShortId(getCollection("folders"));
+    await getCollection("folders").updateOne(
+      { _id: result.insertedId },
+      { $set: { shortId } }
+    );
+    return { ...createdFolder, shortId };
+  } catch (err) {
+    console.error("Failed to generate shortId for folder:", err);
+    return createdFolder;
+  }
 };
 
 export const renameFolder = async (email, folderId, name) => {
@@ -182,4 +196,21 @@ export const moveEntryToFolder = async (email, entryId, folderId) => {
     folderName,
     folderColor,
   };
+};
+
+export const findFolderByShortId = async (shortId) => {
+  if (!shortId || typeof shortId !== "string" || shortId.length > 20) {
+    return null;
+  }
+  return getCollection("folders").findOne({ shortId });
+};
+
+export const setShortIdForFolder = async (folderId) => {
+  const collection = getCollection("folders");
+  const shortId = await ensureUniqueShortId(collection);
+  await collection.updateOne(
+    { _id: new ObjectId(folderId) },
+    { $set: { shortId } }
+  );
+  return shortId;
 };

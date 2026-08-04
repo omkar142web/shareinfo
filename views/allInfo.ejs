@@ -3310,12 +3310,12 @@
             <% if (typeof folders !== 'undefined' && folders.length > 0) { %>
               <% folders.forEach(function(folder) { %>
               <div class="folder-dropdown-row">
-                <div class="folder-dropdown-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-folder="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-created="<%= folder.createdAt %>" role="option" aria-selected="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>" tabindex="-1">
+                <div class="folder-dropdown-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-folder="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-created="<%= folder.createdAt %>" data-short-id="<%= folder.shortId || '' %>" role="option" aria-selected="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>" tabindex="-1">
                   <span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>
                   <span class="folder-dot" style="background: var(--folder-<%= folder.color %>)"></span>
                   <span class="folder-dropdown-name"><%= folder.name || 'Untitled' %></span>
                   <span class="folder-dropdown-count"><%= folder.entryCount %></span>
-                  <button class="folder-dropdown-menu-btn" data-folder-id="<%= folder._id %>" data-folder-name="<%= folder.name || 'Untitled' %>" data-folder-color="<%= folder.color %>" aria-label="<%= folder.name || 'Untitled' %> options" title="Folder options">
+                  <button class="folder-dropdown-menu-btn" data-folder-id="<%= folder._id %>" data-folder-name="<%= folder.name || 'Untitled' %>" data-folder-color="<%= folder.color %>" data-folder-short-id="<%= folder.shortId || '' %>" aria-label="<%= folder.name || 'Untitled' %> options" title="Folder options">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
                     </svg>
@@ -3411,6 +3411,13 @@
             <circle cx="17.5" cy="11.5" r="1.4" fill="currentColor" stroke="none"/>
           </svg>
           Change Color
+        </button>
+        <button class="context-item" data-action="copy-link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+          Copy Short Link
         </button>
         <div class="context-divider"></div>
         <button class="context-item context-danger" data-action="delete">
@@ -5710,7 +5717,8 @@ copyButton.title = 'Share Public Link';
               color: opt.dataset.color || 'blue',
               count: opt.querySelector('.folder-dropdown-count')?.textContent || '0',
               isActive: opt.classList.contains('is-active'),
-              createdAt: opt.dataset.created || null
+              createdAt: opt.dataset.created || null,
+              shortId: opt.dataset.shortId || null
             });
           });
         }
@@ -6104,6 +6112,7 @@ copyButton.title = 'Share Public Link';
             btn.dataset.folder = f.id;
             btn.dataset.name = f.name;
             btn.dataset.color = f.color;
+            if (f.shortId) btn.dataset.shortId = f.shortId;
             btn.setAttribute('role', 'option');
             btn.setAttribute('aria-selected', f.isActive ? 'true' : 'false');
 
@@ -6121,6 +6130,7 @@ copyButton.title = 'Share Public Link';
             menuBtn.dataset.folderId = f.id;
             menuBtn.dataset.folderName = f.name;
             menuBtn.dataset.folderColor = f.color;
+            if (f.shortId) menuBtn.dataset.folderShortId = f.shortId;
             menuBtn.setAttribute('aria-label', f.name + ' options');
             menuBtn.setAttribute('title', 'Folder options');
             menuBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
@@ -6226,7 +6236,8 @@ copyButton.title = 'Share Public Link';
               color: f.color, 
               count: '0', 
               isActive: false, 
-              createdAt: f.createdAt || new Date().toISOString() 
+              createdAt: f.createdAt || new Date().toISOString(),
+              shortId: f.shortId || null
             });
 
             saveRecentFolderId(f._id);
@@ -6515,11 +6526,13 @@ copyButton.title = 'Share Public Link';
 
         // ── Folder Context Menu (⋮) — reusable wiring ──
         let contextMenuFolderId = null;
+        let contextMenuFolderShortId = '';
 
         function wireMenuButton(menuBtn) {
           menuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             contextMenuFolderId = menuBtn.dataset.folderId;
+            contextMenuFolderShortId = menuBtn.dataset.folderShortId || '';
             const menu = document.getElementById('folderContextMenu');
             if (menu.parentElement !== document.body) {
               document.body.appendChild(menu);
@@ -6561,6 +6574,20 @@ copyButton.title = 'Share Public Link';
             const cm = document.getElementById('folderContextMenu');
             if (action === 'rename') openFolderRenameModal(contextMenuFolderId);
             else if (action === 'color') openFolderColorPicker(contextMenuFolderId);
+            else if (action === 'copy-link') {
+              const folder = (window.folderData || []).find(f => f.id === contextMenuFolderId);
+              let shortId = contextMenuFolderShortId || folder?.shortId;
+              if (!shortId) {
+                showToast('Short link not ready yet, try again in a moment', 'error');
+              } else {
+                const shortUrl = `${window.location.origin}/f/${shortId}`;
+                navigator.clipboard.writeText(shortUrl).then(() => {
+                  showToast('Short link copied to clipboard');
+                }).catch(() => {
+                  showToast('Failed to copy link', 'error');
+                });
+              }
+            }
             else if (action === 'delete') openFolderDeleteConfirm(contextMenuFolderId);
             if (cm) cm.hidden = true;
           });
@@ -6788,7 +6815,8 @@ copyButton.title = 'Share Public Link';
             color: f.color,
             count: '0',
             isActive: false,
-            createdAt: f.createdAt || new Date().toISOString()
+            createdAt: f.createdAt || new Date().toISOString(),
+            shortId: f.shortId || null
           });
           window.refreshFolderDropdown && window.refreshFolderDropdown();
         } catch (err) { showToast('Network error', 'error'); }

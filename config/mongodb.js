@@ -20,6 +20,12 @@ async function createIndexes() {
     // Index didn't exist yet, ignore
   }
 
+  try {
+    await foldersCollection.dropIndex("shortId_1");
+  } catch {
+    // Index didn't exist yet, ignore
+  }
+
   await Promise.all([
     infoCollection.createIndex({ email: 1, _id: -1 }),
     infoCollection.createIndex({ isPublic: 1, _id: -1 }),
@@ -27,6 +33,7 @@ async function createIndexes() {
     infoCollection.createIndex({ shortId: 1 }, { unique: true, sparse: true }),
     usersCollection.createIndex({ email: 1 }, { unique: true }),
     foldersCollection.createIndex({ email: 1, name: 1 }, { unique: true }),
+    foldersCollection.createIndex({ shortId: 1 }, { unique: true, sparse: true }),
   ]);
 
   console.log("Database indexes are ready");

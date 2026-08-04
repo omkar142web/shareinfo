@@ -7,6 +7,25 @@ function clearUserCookies(res) {
   });
 }
 
+export const redirectFromFolderShortUrl = async (req, res) => {
+  try {
+    const { shortId } = req.params;
+    if (!shortId || typeof shortId !== "string" || shortId.length > 20) {
+      return res.redirect("/");
+    }
+
+    const folder = await folderService.findFolderByShortId(shortId);
+    if (!folder) {
+      return res.redirect("/");
+    }
+
+    return res.redirect(`/?folderId=${folder._id.toString()}`);
+  } catch (err) {
+    console.error("Folder short URL error:", err);
+    return res.redirect("/");
+  }
+};
+
 export const listFolders = async (req, res) => {
   try {
     if (!req.cookies.email || !req.cookies.password) {
