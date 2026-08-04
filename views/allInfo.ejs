@@ -3907,7 +3907,7 @@
       let isAutoLoading = false;
       let exhausted = !initialPagination.hasMore;
       let observer;
-      const activeVisibility = '<%= activeVisibility || "all" %>';
+      let activeVisibility = '<%= activeVisibility || "all" %>';
       const currentUserEmail = <%- JSON.stringify(typeof currentUserEmail !== "undefined" ? currentUserEmail : "") %>;
       const isAdminUser = <%= typeof isAdmin !== "undefined" ? Boolean(isAdmin) : false %>;
       let searchKeyword = <%- JSON.stringify(typeof activeKeyword !== "undefined" ? activeKeyword : "") %>;
@@ -4402,12 +4402,19 @@
           return;
         }
 
-        // Handle folder navigation via back/forward buttons
+        // Handle folder and visibility navigation via back/forward buttons
         const params = new URLSearchParams(window.location.search);
         const rawFolderId = params.get('folderId');
         const folderId = rawFolderId && /^[a-f\d]{24}$/i.test(rawFolderId) ? rawFolderId : null;
+        const rawVisibility = params.get('visibility');
+        const visibility = ['public', 'private', 'favorite'].includes(rawVisibility) ? rawVisibility : 'all';
 
-        if (folderId !== activeFolderId) {
+        const folderChanged = folderId !== activeFolderId;
+        const visibilityChanged = visibility !== activeVisibility;
+
+        if (!folderChanged && !visibilityChanged) return;
+
+        if (folderChanged) {
           activeFolderId = folderId;
           const folder = (window.folderData || []).find(f => f.id === folderId);
           const folderName = folder ? folder.name : '';
@@ -4438,10 +4445,17 @@
 
           (window.folderData || []).forEach(f => { f.isActive = f.id === folderId; });
           window.refreshFolderDropdown && window.refreshFolderDropdown();
-
-          const input = document.getElementById('searchInput');
-          runSearch(input ? input.value : '');
         }
+
+        if (visibilityChanged) {
+          activeVisibility = visibility;
+          document.querySelectorAll('.filter-btn').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.filter === visibility);
+          });
+        }
+
+        const input = document.getElementById('searchInput');
+        runSearch(input ? input.value : '');
       });
 
       function resetConfirmButton() {
@@ -5340,14 +5354,19 @@ copyButton.title = 'Share Public Link';
       document.querySelectorAll('.filter-btn').forEach((button) => {
         button.addEventListener('click', () => {
           const filter = button.dataset.filter || 'all';
-          const url = new URL('/', window.location.origin);
-          const currentParams = new URLSearchParams(window.location.search);
-          const folderId = currentParams.get('folderId');
-          if (folderId) url.searchParams.set('folderId', folderId);
-          if (filter !== 'all') {
+          const url = new URL(window.location);
+          if (filter === 'all') {
+            url.searchParams.delete('visibility');
+          } else {
             url.searchParams.set('visibility', filter);
           }
-          window.location.href = url.toString();
+          activeVisibility = filter;
+          document.querySelectorAll('.filter-btn').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.filter === filter);
+          });
+          history.pushState(null, '', url.toString());
+          const input = document.getElementById('searchInput');
+          runSearch(input ? input.value : '');
         });
       });
 
@@ -6332,7 +6351,7 @@ copyButton.title = 'Share Public Link';
                   dot.className = 'folder-dot';
                   dot.style.background = `var(--folder-${folderColor})`;
                   newCurrent.append(dot, document.createTextNode(folderName));
-                  currentSpan.replaceWith(sep, newCurrent);
+                  currentSpan.after(sep, newCurrent);
                 } else if (currentSpan && currentSpan.querySelector('.folder-dot')) {
                   currentSpan.replaceChildren();
                   const dot = document.createElement('span');
@@ -6636,13 +6655,19 @@ copyButton.title = 'Share Public Link';
           if (name) {
             if (crumbCurrent && !crumbCurrent.querySelector('.folder-dot')) {
               // No folder was active (breadcrumb ends at "Dashboard") — insert
-              // the "Dashboard /" trail before the folder crumb, mirroring SSR
-              crumbCurrent.replaceWith(
-                Object.assign(document.createElement('a'), { href: '/', textContent: 'Dashboard' }),
-                Object.assign(document.createElement('span'), { className: 'sep', textContent: '/' }),
-                Object.assign(document.createElement('span'), { className: 'current' })
-              );
-              crumbCurrent = crumb.querySelector('.current');
+              // the folder trail after Dashboard, mirroring SSR
+              const sep = document.createElement('span');
+              sep.className = 'sep';
+              sep.setAttribute('aria-hidden', 'true');
+              sep.textContent = '/';
+              const newCurrent = document.createElement('span');
+              newCurrent.className = 'current';
+              const dot = document.createElement('span');
+              dot.className = 'folder-dot';
+              dot.style.background = `var(--folder-${color})`;
+              newCurrent.append(dot, document.createTextNode(name));
+              crumbCurrent.after(sep, newCurrent);
+              crumbCurrent = newCurrent;
             }
             if (crumbCurrent) {
               crumbCurrent.replaceChildren();
