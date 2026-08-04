@@ -4387,19 +4387,61 @@
 
       window.addEventListener('popstate', () => {
         const activeElement = getActiveOverlay();
-        if (!activeElement) return;
+        if (activeElement) {
+          if (activeElement.id === 'folderDropdown') {
+            if (modalHistoryCount > 0) modalHistoryCount--;
+            closeFolderDropdown();
+            return;
+          }
 
-        if (activeElement.id === 'folderDropdown') {
-          if (modalHistoryCount > 0) modalHistoryCount--;
-          closeFolderDropdown();
+          if (modalHistoryCount <= 0) return;
+          modalHistoryCount--;
+          closeOverlay(activeElement, null, null, true, {
+            fromPopstate: true
+          });
           return;
         }
 
-        if (modalHistoryCount <= 0) return;
-        modalHistoryCount--;
-        closeOverlay(activeElement, null, null, true, {
-          fromPopstate: true
-        });
+        // Handle folder navigation via back/forward buttons
+        const params = new URLSearchParams(window.location.search);
+        const rawFolderId = params.get('folderId');
+        const folderId = rawFolderId && /^[a-f\d]{24}$/i.test(rawFolderId) ? rawFolderId : null;
+
+        if (folderId !== activeFolderId) {
+          activeFolderId = folderId;
+          const folder = (window.folderData || []).find(f => f.id === folderId);
+          const folderName = folder ? folder.name : '';
+          const folderColor = folder ? folder.color : 'blue';
+
+          if (folderName) {
+            updateActiveFolderDisplay(folderName, folderColor);
+          } else {
+            const current = document.getElementById('folderSelectorCurrent');
+            if (current) current.textContent = 'All';
+
+            const crumb = document.querySelector('.breadcrumb');
+            if (crumb) {
+              const dashboardLink = crumb.querySelector('a[href="/"]');
+              const currentSpan = crumb.querySelector('.current');
+              if (currentSpan && currentSpan.querySelector('.folder-dot')) {
+                const sep = currentSpan.previousElementSibling;
+                if (sep && sep.classList.contains('sep')) {
+                  sep.remove();
+                }
+                currentSpan.remove();
+                if (dashboardLink) dashboardLink.classList.add('current');
+              } else if (currentSpan && currentSpan.tagName === 'A') {
+                currentSpan.classList.add('current');
+              }
+            }
+          }
+
+          (window.folderData || []).forEach(f => { f.isActive = f.id === folderId; });
+          window.refreshFolderDropdown && window.refreshFolderDropdown();
+
+          const input = document.getElementById('searchInput');
+          runSearch(input ? input.value : '');
+        }
       });
 
       function resetConfirmButton() {
@@ -6242,16 +6284,92 @@ copyButton.title = 'Share Public Link';
           
           // Delay navigation to show animation
           setTimeout(() => {
-            const folderId = item.dataset.folder;
+            const folderId = item.dataset.folder || null;
+            const folderName = item.dataset.name || '';
+            const folderColor = item.dataset.color || 'blue';
             saveRecentFolderId(folderId);
+            
             const url = new URL(window.location);
             if (folderId) {
               url.searchParams.set('folderId', folderId);
             } else {
               url.searchParams.delete('folderId');
             }
+            
+            // Update active folder state
+            activeFolderId = folderId;
+            
+            // Update folder selector button display
+            const current = document.getElementById('folderSelectorCurrent');
+            if (current) {
+              current.replaceChildren();
+              if (folderId) {
+                const dot = document.createElement('span');
+                dot.className = 'folder-dot';
+                dot.style.background = `var(--folder-${folderColor})`;
+                current.append(dot, document.createTextNode(folderName));
+              } else {
+                current.textContent = 'All';
+              }
+            }
+            
+            // Update breadcrumb
+            const crumb = document.querySelector('.breadcrumb');
+            if (crumb) {
+              const dashboardLink = crumb.querySelector('a[href="/"]');
+              const currentSpan = crumb.querySelector('.current');
+              
+              if (folderId) {
+                if (dashboardLink) dashboardLink.classList.remove('current');
+                if (currentSpan && !currentSpan.querySelector('.folder-dot')) {
+                  const sep = document.createElement('span');
+                  sep.className = 'sep';
+                  sep.setAttribute('aria-hidden', 'true');
+                  sep.textContent = '/';
+                  const newCurrent = document.createElement('span');
+                  newCurrent.className = 'current';
+                  const dot = document.createElement('span');
+                  dot.className = 'folder-dot';
+                  dot.style.background = `var(--folder-${folderColor})`;
+                  newCurrent.append(dot, document.createTextNode(folderName));
+                  currentSpan.replaceWith(sep, newCurrent);
+                } else if (currentSpan && currentSpan.querySelector('.folder-dot')) {
+                  currentSpan.replaceChildren();
+                  const dot = document.createElement('span');
+                  dot.className = 'folder-dot';
+                  dot.style.background = `var(--folder-${folderColor})`;
+                  currentSpan.append(dot, document.createTextNode(folderName));
+                }
+              } else {
+                if (currentSpan && currentSpan.querySelector('.folder-dot')) {
+                  const sep = currentSpan.previousElementSibling;
+                  if (sep && sep.classList.contains('sep')) {
+                    sep.remove();
+                  }
+                  currentSpan.remove();
+                  if (dashboardLink) dashboardLink.classList.add('current');
+                } else if (currentSpan && currentSpan.tagName === 'A') {
+                  currentSpan.classList.add('current');
+                }
+              }
+            }
+            
+            // Update URL without reloading
+            history.pushState(null, '', url.toString());
+            
+            // Close dropdown properly
+            close({ fromPopstate: true });
+            if (modalHistoryCount > 0) modalHistoryCount--;
+            
+            // Update folderData active states and refresh dropdown
+            (window.folderData || []).forEach(f => { f.isActive = f.id === folderId; });
+            window.refreshFolderDropdown && window.refreshFolderDropdown();
+            
+            // Fetch and render entries for the selected folder
+            const input = document.getElementById('searchInput');
+            runSearch(input ? input.value : '');
+            
             isSelecting = false;
-            window.location.href = url.toString();
           }, 180);
         }
 
@@ -6503,30 +6621,51 @@ copyButton.title = 'Share Public Link';
         const current = document.getElementById('folderSelectorCurrent');
         if (current) {
           current.replaceChildren();
-          const dot = document.createElement('span');
-          dot.className = 'folder-dot';
-          dot.style.background = `var(--folder-${color})`;
-          current.append(dot, document.createTextNode(name));
+          if (name) {
+            const dot = document.createElement('span');
+            dot.className = 'folder-dot';
+            dot.style.background = `var(--folder-${color})`;
+            current.append(dot, document.createTextNode(name));
+          } else {
+            current.textContent = 'All';
+          }
         }
         const crumb = document.querySelector('.breadcrumb');
         if (crumb) {
           let crumbCurrent = crumb.querySelector('.current');
-          if (crumbCurrent && !crumbCurrent.querySelector('.folder-dot')) {
-            // No folder was active (breadcrumb ends at "Dashboard") — insert
-            // the "Dashboard /" trail before the folder crumb, mirroring SSR
-            crumbCurrent.replaceWith(
-              Object.assign(document.createElement('a'), { href: '/', textContent: 'Dashboard' }),
-              Object.assign(document.createElement('span'), { className: 'sep', textContent: '/' }),
-              Object.assign(document.createElement('span'), { className: 'current' })
-            );
-            crumbCurrent = crumb.querySelector('.current');
-          }
-          if (crumbCurrent) {
-            crumbCurrent.replaceChildren();
-            const dot = document.createElement('span');
-            dot.className = 'folder-dot';
-            dot.style.background = `var(--folder-${color})`;
-            crumbCurrent.append(dot, document.createTextNode(name));
+          if (name) {
+            if (crumbCurrent && !crumbCurrent.querySelector('.folder-dot')) {
+              // No folder was active (breadcrumb ends at "Dashboard") — insert
+              // the "Dashboard /" trail before the folder crumb, mirroring SSR
+              crumbCurrent.replaceWith(
+                Object.assign(document.createElement('a'), { href: '/', textContent: 'Dashboard' }),
+                Object.assign(document.createElement('span'), { className: 'sep', textContent: '/' }),
+                Object.assign(document.createElement('span'), { className: 'current' })
+              );
+              crumbCurrent = crumb.querySelector('.current');
+            }
+            if (crumbCurrent) {
+              crumbCurrent.replaceChildren();
+              const dot = document.createElement('span');
+              dot.className = 'folder-dot';
+              dot.style.background = `var(--folder-${color})`;
+              crumbCurrent.append(dot, document.createTextNode(name));
+            }
+          } else {
+            // Reset breadcrumb to Dashboard only
+            const dashboardLink = crumb.querySelector('a[href="/"]');
+            if (crumbCurrent && crumbCurrent.querySelector('.folder-dot')) {
+              const sep = crumbCurrent.previousElementSibling;
+              if (sep && sep.classList.contains('sep')) {
+                sep.remove();
+              }
+              crumbCurrent.remove();
+              if (dashboardLink) dashboardLink.classList.add('current');
+            } else if (dashboardLink && !crumbCurrent) {
+              dashboardLink.classList.add('current');
+            } else if (crumbCurrent && crumbCurrent.tagName === 'A') {
+              crumbCurrent.classList.add('current');
+            }
           }
         }
       }
