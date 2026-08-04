@@ -170,10 +170,10 @@
           <button type="button" class="folder-select-trigger" id="folderTrigger" aria-haspopup="dialog" aria-expanded="false">
             <span class="folder-select-label" id="folderTriggerLabel">
               <% if (activeFolderId && activeFolderName) { %>
-                <span class="folder-select-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
-                <span><%= activeFolderName %></span>
+              <span class="folder-select-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
+              <span><%= activeFolderName %></span>
               <% } else { %>
-                <span class="folder-select-placeholder">No folder</span>
+              <span class="folder-select-placeholder">No folder</span>
               <% } %>
             </span>
             <svg class="folder-select-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -235,19 +235,24 @@
         <h3 class="folder-modal-title" id="folderModalTitle">Select Folder</h3>
         <button type="button" class="folder-modal-close" id="folderModalCloseBtn" aria-label="Close">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>
 
       <div class="folder-modal-search-wrap">
         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <div class="folder-modal-search-inner">
           <input type="text" id="folderModalSearch" class="folder-modal-search" placeholder="Search folders..." autocomplete="off" />
           <button type="button" class="folder-modal-clear" id="folderModalClear" hidden aria-label="Clear search">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
       </div>
@@ -259,63 +264,66 @@
       <div class="folder-modal-list" id="folderModalList" role="listbox" aria-label="Folders">
         <button type="button" class="folder-modal-item <%= !activeFolderId ? 'is-active' : '' %>" data-value="" data-name="No folder" role="option" aria-selected="<%= !activeFolderId ? 'true' : 'false' %>">
           <span class="folder-modal-check" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
           </span>
           <span class="folder-modal-dot" style="background:#64748b"></span>
           <span class="folder-modal-name">No folder</span>
         </button>
 
         <% if (typeof folders !== 'undefined' && folders && folders.length) { %>
-          <% folders.forEach(function(f) { %>
-          <button type="button" class="folder-modal-item <%= activeFolderId === f._id.toString() ? 'is-active' : '' %>" data-value="<%= f._id %>" data-name="<%= f.name %>" data-color="<%= f.color %>" data-count="<%= f.entryCount || 0 %>" data-created="<%= f.createdAt %>" role="option" aria-selected="<%= activeFolderId === f._id.toString() ? 'true' : 'false' %>">
-            <span class="folder-modal-check" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-            </span>
-            <span class="folder-modal-dot" style="background: var(--folder-<%= f.color %>)"></span>
-            <span class="folder-modal-name"><%= f.name %></span>
-            <span class="folder-modal-count"><%= f.entryCount || 0 %></span>
-          </button>
-          <% }); %>
+        <% folders.forEach(function(f) { %>
+        <button type="button" class="folder-modal-item <%= activeFolderId === f._id.toString() ? 'is-active' : '' %>" data-value="<%= f._id %>" data-name="<%= f.name %>" data-color="<%= f.color %>" data-count="<%= f.entryCount || 0 %>" data-created="<%= f.createdAt %>" role="option" aria-selected="<%= activeFolderId === f._id.toString() ? 'true' : 'false' %>">
+          <span class="folder-modal-check" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          </span>
+          <span class="folder-modal-dot" style="background: var(--folder-<%= f.color %>)"></span>
+          <span class="folder-modal-name"><%= f.name %></span>
+          <span class="folder-modal-count"><%= f.entryCount || 0 %></span>
+        </button>
+        <% }); %>
         <% } %>
       </div>
 
       <div class="folder-modal-empty" id="folderModalEmpty" hidden>
         <svg class="folder-empty-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="52" height="52" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="folderEmptyGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#7dd3fc"></stop>
-                  <stop offset="100%" stop-color="#2563eb"></stop>
-                </linearGradient>
-                <filter id="folderEmptyShadow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.25"/>
-                </filter>
-              </defs>
+          <defs>
+            <linearGradient id="folderEmptyGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7dd3fc"></stop>
+              <stop offset="100%" stop-color="#2563eb"></stop>
+            </linearGradient>
+            <filter id="folderEmptyShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.25" />
+            </filter>
+          </defs>
 
-              <g filter="url(#folderEmptyShadow)">
-                <!-- Folder body -->
-                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z"
-                      fill="url(#folderEmptyGrad)" opacity="0.12"></path>
-                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z"
-                      stroke="url(#folderEmptyGrad)" stroke-width="2.4" stroke-linejoin="round"></path>
+          <g filter="url(#folderEmptyShadow)">
+            <!-- Folder body -->
+            <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z" fill="url(#folderEmptyGrad)" opacity="0.12"></path>
+            <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z" stroke="url(#folderEmptyGrad)" stroke-width="2.4" stroke-linejoin="round"></path>
 
-                <!-- Folder "content" lines -->
-                <line x1="28" y1="52" x2="72" y2="52" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.4"></line>
-                <line x1="28" y1="64" x2="58" y2="64" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.3"></line>
-                <line x1="28" y1="76" x2="64" y2="76" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.2"></line>
+            <!-- Folder "content" lines -->
+            <line x1="28" y1="52" x2="72" y2="52" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.4"></line>
+            <line x1="28" y1="64" x2="58" y2="64" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.3"></line>
+            <line x1="28" y1="76" x2="64" y2="76" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.2"></line>
 
-                <!-- Magnifying glass -->
-                <circle cx="82" cy="66" r="17" fill="#0d1628" stroke="url(#folderEmptyGrad)" stroke-width="3"></circle>
-                <circle cx="82" cy="66" r="17" fill="#38bdf8" opacity="0.1"></circle>
-                <line x1="94.5" y1="78.5" x2="104" y2="88" stroke="url(#folderEmptyGrad)" stroke-width="4" stroke-linecap="round"></line>
-              </g>
-            </svg>
+            <!-- Magnifying glass -->
+            <circle cx="82" cy="66" r="17" fill="#0d1628" stroke="url(#folderEmptyGrad)" stroke-width="3"></circle>
+            <circle cx="82" cy="66" r="17" fill="#38bdf8" opacity="0.1"></circle>
+            <line x1="94.5" y1="78.5" x2="104" y2="88" stroke="url(#folderEmptyGrad)" stroke-width="4" stroke-linecap="round"></line>
+          </g>
+        </svg>
         <div class="folder-modal-empty-title">No matching folders</div>
       </div>
 
       <div class="folder-modal-footer">
         <button type="button" class="folder-modal-create-btn" id="folderModalCreateBtn">
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           <span id="folderModalCreateText">New Folder</span>
         </button>
@@ -515,7 +523,7 @@
 
   <!-- ── Folder select modal ── -->
   <script>
-    (function () {
+    (function() {
       const LS_KEY = "shareinfo_recent_folders";
       const MAX_RECENT = 4;
       const COLORS = ["blue", "purple", "green", "red", "orange", "pink"];
@@ -554,8 +562,12 @@
 
       function escapeHTML(value = "") {
         return String(value).replace(/[&<>"']/g, (ch) => ({
-          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-        }[ch]));
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        } [ch]));
       }
 
       function highlightMatch(text, query) {
@@ -566,9 +578,13 @@
       }
 
       function getRecent() {
-        try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
-        catch { return []; }
+        try {
+          return JSON.parse(localStorage.getItem(LS_KEY)) || [];
+        } catch {
+          return [];
+        }
       }
+
       function saveRecent(id) {
         if (!id) return;
         let recents = getRecent().filter((r) => r !== id);
@@ -584,7 +600,9 @@
         toast.classList.add("is-visible");
         setTimeout(() => {
           toast.classList.remove("is-visible");
-          setTimeout(() => { toast.hidden = true; }, 250);
+          setTimeout(() => {
+            toast.hidden = true;
+          }, 250);
         }, 1600);
       }
 
@@ -595,6 +613,7 @@
         document.body.style.left = "0";
         document.body.style.right = "0";
       }
+
       function unlockScroll() {
         document.body.style.position = "";
         document.body.style.top = "";
@@ -619,7 +638,9 @@
         if (target) {
           target.classList.add("is-highlighted");
           target.setAttribute("aria-selected", "true");
-          target.scrollIntoView({ block: "nearest" });
+          target.scrollIntoView({
+            block: "nearest"
+          });
         }
       }
 
@@ -640,7 +661,9 @@
         document.addEventListener("keydown", onKeydown);
         setTimeout(() => search.focus(), 80);
 
-        history.pushState({ folderModal: true }, "");
+        history.pushState({
+          folderModal: true
+        }, "");
         modalHistoryPushed = true;
         window.addEventListener("popstate", onPopState);
       }
@@ -655,7 +678,9 @@
           overlay.hidden = true;
           unlockScroll();
         }, 200);
-        trigger.focus({ preventScroll: true });
+        trigger.focus({
+          preventScroll: true
+        });
 
         window.removeEventListener("popstate", onPopState);
 
@@ -669,13 +694,27 @@
 
       function onPopState() {
         if (!overlay.classList.contains("is-open")) return;
-        close({ fromPopState: true });
+        close({
+          fromPopState: true
+        });
       }
 
       function onKeydown(e) {
-        if (e.key === "Escape") { e.preventDefault(); close(); return; }
-        if (e.key === "ArrowDown") { e.preventDefault(); moveHighlight(1); return; }
-        if (e.key === "ArrowUp") { e.preventDefault(); moveHighlight(-1); return; }
+        if (e.key === "Escape") {
+          e.preventDefault();
+          close();
+          return;
+        }
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          moveHighlight(1);
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          moveHighlight(-1);
+          return;
+        }
         if (e.key === "Enter") {
           e.preventDefault();
           const visible = getVisible();
@@ -691,8 +730,13 @@
           if (!focusables.length) return;
           const first = focusables[0];
           const last = focusables[focusables.length - 1];
-          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
         }
       }
 
@@ -787,8 +831,13 @@
           const color = COLORS[Math.floor(Math.random() * COLORS.length)];
           const res = await fetch("/api/folders", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: name.trim(), color }),
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              name: name.trim(),
+              color
+            }),
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.message || "Failed to create folder");

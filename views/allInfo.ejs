@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="/css/markdown-content.css" />
   <!-- <link rel="stylesheet" href="css/home.css" /> -->
   <style>
-
     /* ============================================================
    Design System — Share Info Dashboard
    Dark Glassmorphism · Masonry Wall · Linear/Vercel aesthetic
@@ -321,6 +320,7 @@
     }
 
     @media (hover: hover) {
+
       .sort-btn:hover,
       .sort-option:hover {
         color: var(--text);
@@ -736,7 +736,8 @@
     /* ── Card body ───────────────────────────────────── */
     .card-body {
       /* padding: 4px 16px 14px; */
-      padding: 10px 16px 14px; /* after removing avatar icon */
+      padding: 10px 16px 14px;
+      /* after removing avatar icon */
     }
 
     /* ── Skeleton loading state ──────────────────────── */
@@ -746,12 +747,13 @@
 
     .info-card.card-pending .card-text {
       position: relative;
-      min-height: 140px;   /* was 92px — room for 6 bars */
+      min-height: 140px;
+      /* was 92px — room for 6 bars */
       color: transparent;
       overflow: hidden;
     }
 
-    .info-card.card-pending .card-text > * {
+    .info-card.card-pending .card-text>* {
       visibility: hidden;
     }
 
@@ -779,14 +781,12 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(
-        110deg,
-        transparent 35%,
-        rgba(255, 255, 255, 0.05) 43%,
-        rgba(255, 255, 255, 0.28) 50%,
-        rgba(255, 255, 255, 0.05) 57%,
-        transparent 65%
-      );
+      background: linear-gradient(110deg,
+          transparent 35%,
+          rgba(255, 255, 255, 0.05) 43%,
+          rgba(255, 255, 255, 0.28) 50%,
+          rgba(255, 255, 255, 0.05) 57%,
+          transparent 65%);
       background-repeat: no-repeat;
       background-size: 600px 100%;
       background-attachment: fixed;
@@ -812,20 +812,29 @@
       0% {
         background-position: -600px 0;
       }
+
       100% {
         background-position: 100vw 0;
       }
     }
 
     @keyframes skeleton-pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.55; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.55;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
       .info-card.card-pending .card-text::after {
         animation: none;
       }
+
       .info-card.card-pending .card-text::before {
         animation: skeleton-pulse 2.4s ease-in-out infinite;
       }
@@ -1182,6 +1191,7 @@
         opacity: 0;
         transform: translateY(12px) scale(0.98);
       }
+
       to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -1230,8 +1240,13 @@
     }
 
     @keyframes orbitRotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .empty-orbit-ring .particle {
@@ -1243,9 +1258,21 @@
       box-shadow: 0 0 10px #38bdf8, 0 0 20px rgba(56, 189, 248, 0.8);
     }
 
-    .empty-orbit-ring .p1 { top: -3px; left: 50%; transform: translateX(-50%); }
-    .empty-orbit-ring .p2 { bottom: 22%; right: -2px; }
-    .empty-orbit-ring .p3 { bottom: 15%; left: 2%; }
+    .empty-orbit-ring .p1 {
+      top: -3px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .empty-orbit-ring .p2 {
+      bottom: 22%;
+      right: -2px;
+    }
+
+    .empty-orbit-ring .p3 {
+      bottom: 15%;
+      left: 2%;
+    }
 
     .floating-plus {
       position: absolute;
@@ -1258,13 +1285,34 @@
       animation: floatPlus 4s ease-in-out infinite alternate;
     }
 
-    .floating-plus.plus-1 { top: 12px; left: 16px; animation-delay: 0s; }
-    .floating-plus.plus-2 { bottom: 24px; right: 18px; animation-delay: 1.3s; }
-    .floating-plus.plus-3 { top: 50%; right: -8px; animation-delay: 2.5s; }
+    .floating-plus.plus-1 {
+      top: 12px;
+      left: 16px;
+      animation-delay: 0s;
+    }
+
+    .floating-plus.plus-2 {
+      bottom: 24px;
+      right: 18px;
+      animation-delay: 1.3s;
+    }
+
+    .floating-plus.plus-3 {
+      top: 50%;
+      right: -8px;
+      animation-delay: 2.5s;
+    }
 
     @keyframes floatPlus {
-      0% { transform: translateY(0) scale(0.9); opacity: 0.4; }
-      100% { transform: translateY(-7px) scale(1.15); opacity: 0.95; }
+      0% {
+        transform: translateY(0) scale(0.9);
+        opacity: 0.4;
+      }
+
+      100% {
+        transform: translateY(-7px) scale(1.15);
+        opacity: 0.95;
+      }
     }
 
     .empty-graphic-wrapper {
@@ -1320,11 +1368,26 @@
       background: rgba(255, 255, 255, 0.15);
     }
 
-    .doc-line.line-1 { width: 80%; background: rgba(56, 189, 248, 0.45); }
-    .doc-line.line-2 { width: 50%; }
-    .doc-line.line-3 { width: 100%; }
-    .doc-line.line-4 { width: 90%; }
-    .doc-line.line-5 { width: 65%; }
+    .doc-line.line-1 {
+      width: 80%;
+      background: rgba(56, 189, 248, 0.45);
+    }
+
+    .doc-line.line-2 {
+      width: 50%;
+    }
+
+    .doc-line.line-3 {
+      width: 100%;
+    }
+
+    .doc-line.line-4 {
+      width: 90%;
+    }
+
+    .doc-line.line-5 {
+      width: 65%;
+    }
 
     .doc-body {
       display: flex;
@@ -1343,8 +1406,13 @@
     }
 
     @keyframes floatMagnifier {
-      0% { transform: translateY(0) rotate(0deg); }
-      100% { transform: translateY(-7px) rotate(-4deg); }
+      0% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      100% {
+        transform: translateY(-7px) rotate(-4deg);
+      }
     }
 
     .empty-title {
@@ -1660,9 +1728,9 @@
         width: 10px;
         height: 10px;
       }
-      
-     ::-webkit-scrollbar-corner {
-       background: transparent;
+
+      ::-webkit-scrollbar-corner {
+        background: transparent;
       }
 
       .modal-body::-webkit-scrollbar-track {
@@ -1803,10 +1871,11 @@
       }
     }
 
-    @media (max-width: 630px){
+    @media (max-width: 630px) {
       .modal-glass {
         max-height: 100dvh;
       }
+
       .modal-overlay {
         padding: 0px;
       }
@@ -2174,12 +2243,13 @@
         transform: rotate(360deg);
       }
     }
-    
+
     /* Respect user's motion preferences */
     @media (prefers-reduced-motion: reduce) {
       .folder-dropdown {
         animation: folderDropdownFadeIn 0.15s ease-out forwards;
       }
+
       .folder-dropdown-item,
       .folder-dropdown-row,
       .folder-dropdown-create svg,
@@ -2188,6 +2258,7 @@
         animation: none !important;
         transition-duration: 0.05s !important;
       }
+
       .folder-dropdown-item:hover,
       .folder-dropdown-item.is-highlighted {
         transform: none !important;
@@ -2223,6 +2294,7 @@
       position: relative;
       display: inline-block;
     }
+
     .folder-selector-btn {
       display: inline-flex;
       align-items: center;
@@ -2248,6 +2320,7 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
+
     @media (hover: hover) {
       .folder-selector-btn:hover {
         background: rgba(255, 255, 255, 0.07);
@@ -2257,9 +2330,11 @@
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
       }
     }
+
     .folder-selector-btn:active {
       transform: scale(0.97);
     }
+
     .folder-selector-label {
       display: inline-flex;
       align-items: center;
@@ -2271,6 +2346,7 @@
       letter-spacing: 0.02em;
       text-transform: uppercase;
     }
+
     .folder-selector-current {
       display: inline-flex;
       align-items: center;
@@ -2282,15 +2358,18 @@
       border-radius: 6px;
       background: rgba(255, 255, 255, 0.04);
     }
+
     .folder-selector-current .folder-dot {
       width: 7px;
       height: 7px;
     }
+
     .folder-selector-chevron {
       transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
       color: var(--text-3);
       margin-left: 2px;
     }
+
     .folder-selector[aria-expanded="true"] .folder-selector-chevron {
       transform: rotate(180deg);
       color: var(--cyan);
@@ -2319,41 +2398,86 @@
       transform-origin: top right;
       animation: folderDropdownIn 0.17s cubic-bezier(0.2, 0, 0, 1) forwards;
     }
+
     .folder-dropdown[hidden] {
       display: none !important;
       animation: none;
     }
+
     @keyframes folderDropdownIn {
-      0% { opacity: 0; transform: scale(0.96) translateY(2px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
+      0% {
+        opacity: 0;
+        transform: scale(0.96) translateY(2px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
-    
+
     @keyframes folderDropdownOut {
-      0% { opacity: 1; transform: scale(1) translateY(0); }
-      100% { opacity: 0; transform: scale(0.98) translateY(2px); }
+      0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(0.98) translateY(2px);
+      }
     }
-    
+
     @keyframes folderDropdownFadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
+      0% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 1;
+      }
     }
-    
+
     @keyframes folderDropdownFadeOut {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
+      0% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
     }
-    
+
     @keyframes checkPulse {
-      0% { transform: scale(1); }
-      40% { transform: scale(1.35); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
+      0% {
+        transform: scale(1);
+      }
+
+      40% {
+        transform: scale(1.35);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
-    
+
     @keyframes folderItemSelect {
-      0% { background-color: rgba(56, 189, 248, 0.06); }
-      40% { background-color: rgba(56, 189, 248, 0.18); }
-      100% { background-color: rgba(56, 189, 248, 0.06); }
+      0% {
+        background-color: rgba(56, 189, 248, 0.06);
+      }
+
+      40% {
+        background-color: rgba(56, 189, 248, 0.18);
+      }
+
+      100% {
+        background-color: rgba(56, 189, 248, 0.06);
+      }
     }
+
     .folder-dropdown::before {
       content: "";
       position: absolute;
@@ -2366,9 +2490,11 @@
       pointer-events: none;
       z-index: 1;
     }
+
     .dropdown-above.folder-dropdown {
       transform-origin: bottom right;
     }
+
     .dropdown-above.folder-dropdown::before {
       top: auto;
       bottom: 0;
@@ -2389,25 +2515,36 @@
       mask-size: 100% 100%;
       transition: -webkit-mask-image 0.3s, mask-image 0.3s;
     }
+
     .folder-dropdown-list.is-scrolled-top {
       -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
       mask-image: linear-gradient(to bottom, #000 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
     }
+
     .folder-dropdown-list.is-scrolled-bottom {
       -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), #000 100%);
       mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), #000 100%);
     }
+
     .folder-dropdown-list.is-scrolled-both {
       -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
       mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%);
     }
-    .folder-dropdown-list::-webkit-scrollbar { width: 5px; }
-    .folder-dropdown-list::-webkit-scrollbar-track { background: transparent; }
+
+    .folder-dropdown-list::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .folder-dropdown-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
     .folder-dropdown-list::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.12);
       border-radius: 999px;
       transition: background 0.2s;
     }
+
     @media (hover: hover) {
       .folder-dropdown-list::-webkit-scrollbar-thumb:hover {
         background: rgba(255, 255, 255, 0.24);
@@ -2425,18 +2562,22 @@
       position: relative;
       transition: border-color 0.2s ease;
     }
+
     .folder-dropdown-search-wrap svg {
       color: var(--text-3);
       flex-shrink: 0;
       transition: color 0.2s ease, transform 0.2s ease;
     }
+
     .folder-dropdown-search-wrap:focus-within {
       border-color: rgba(56, 189, 248, 0.35);
     }
+
     .folder-dropdown-search-wrap:focus-within svg {
       color: var(--cyan);
       transform: scale(1.08);
     }
+
     .folder-dropdown-search {
       flex: 1;
       background: transparent;
@@ -2448,11 +2589,13 @@
       font-weight: 450;
       padding: 3px 0;
     }
+
     .folder-dropdown-search::placeholder {
       color: var(--text-3);
       font-weight: 400;
       letter-spacing: 0.01em;
     }
+
     .folder-dropdown-clear {
       background: none;
       border: none;
@@ -2466,9 +2609,11 @@
       transition: color 0.15s, background 0.15s, transform 0.15s;
       opacity: 0.7;
     }
+
     .folder-dropdown-clear[hidden] {
       display: none !important;
     }
+
     @media (hover: hover) {
       .folder-dropdown-clear:hover {
         color: var(--text);
@@ -2499,6 +2644,7 @@
       color: rgba(168, 189, 212, 0.55);
       font-family: var(--font-body);
     }
+
     .folder-dropdown-divider {
       height: 1px;
       background: rgba(255, 255, 255, 0.06);
@@ -2513,42 +2659,99 @@
       padding: 1px 6px;
       animation: folderRowIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
+
     /* display:flex above would override the UA [hidden] rule */
-    .folder-dropdown-row[hidden] { display: none; }
-    .folder-dropdown-row:nth-child(1) { animation-delay: 15ms; }
-    .folder-dropdown-row:nth-child(2) { animation-delay: 30ms; }
-    .folder-dropdown-row:nth-child(3) { animation-delay: 45ms; }
-    .folder-dropdown-row:nth-child(4) { animation-delay: 60ms; }
-    .folder-dropdown-row:nth-child(5) { animation-delay: 75ms; }
-    .folder-dropdown-row:nth-child(6) { animation-delay: 90ms; }
-    .folder-dropdown-row:nth-child(7) { animation-delay: 105ms; }
-    .folder-dropdown-row:nth-child(8) { animation-delay: 120ms; }
-    .folder-dropdown-row:nth-child(9) { animation-delay: 135ms; }
-    .folder-dropdown-row:nth-child(10) { animation-delay: 150ms; }
-    .folder-dropdown-row:nth-child(11) { animation-delay: 165ms; }
-    .folder-dropdown-row:nth-child(12) { animation-delay: 180ms; }
-    .folder-dropdown-row:nth-child(13) { animation-delay: 195ms; }
-    .folder-dropdown-row:nth-child(14) { animation-delay: 210ms; }
-    .folder-dropdown-row:nth-child(15) { animation-delay: 225ms; }
+    .folder-dropdown-row[hidden] {
+      display: none;
+    }
+
+    .folder-dropdown-row:nth-child(1) {
+      animation-delay: 15ms;
+    }
+
+    .folder-dropdown-row:nth-child(2) {
+      animation-delay: 30ms;
+    }
+
+    .folder-dropdown-row:nth-child(3) {
+      animation-delay: 45ms;
+    }
+
+    .folder-dropdown-row:nth-child(4) {
+      animation-delay: 60ms;
+    }
+
+    .folder-dropdown-row:nth-child(5) {
+      animation-delay: 75ms;
+    }
+
+    .folder-dropdown-row:nth-child(6) {
+      animation-delay: 90ms;
+    }
+
+    .folder-dropdown-row:nth-child(7) {
+      animation-delay: 105ms;
+    }
+
+    .folder-dropdown-row:nth-child(8) {
+      animation-delay: 120ms;
+    }
+
+    .folder-dropdown-row:nth-child(9) {
+      animation-delay: 135ms;
+    }
+
+    .folder-dropdown-row:nth-child(10) {
+      animation-delay: 150ms;
+    }
+
+    .folder-dropdown-row:nth-child(11) {
+      animation-delay: 165ms;
+    }
+
+    .folder-dropdown-row:nth-child(12) {
+      animation-delay: 180ms;
+    }
+
+    .folder-dropdown-row:nth-child(13) {
+      animation-delay: 195ms;
+    }
+
+    .folder-dropdown-row:nth-child(14) {
+      animation-delay: 210ms;
+    }
+
+    .folder-dropdown-row:nth-child(15) {
+      animation-delay: 225ms;
+    }
 
     @keyframes folderRowIn {
-      0% { opacity: 0; transform: translateY(6px); }
-      100% { opacity: 1; transform: translateY(0); }
+      0% {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    
+
     @keyframes folderRowCreate {
-      0% { 
-        opacity: 0; 
-        transform: translateY(-8px) scale(0.95); 
+      0% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
         background: rgba(52, 211, 153, 0.15);
       }
-      60% { 
+
+      60% {
         transform: translateY(0) scale(1.02);
         background: rgba(52, 211, 153, 0.15);
       }
-      100% { 
-        opacity: 1; 
-        transform: translateY(0) scale(1); 
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
         background: transparent;
       }
     }
@@ -2577,7 +2780,9 @@
         transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
         box-shadow 0.16s ease;
     }
+
     @media (hover: hover) {
+
       .folder-dropdown-item:hover,
       .folder-dropdown-item.is-highlighted {
         background: rgba(255, 255, 255, 0.055);
@@ -2585,12 +2790,14 @@
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
       }
+
       .folder-dropdown-item:hover .folder-dot,
       .folder-dropdown-item.is-highlighted .folder-dot {
         transform: scale(1.25);
         box-shadow: 0 0 10px currentColor;
       }
     }
+
     .folder-dropdown-item:active {
       transform: scale(0.985);
     }
@@ -2601,12 +2808,15 @@
       background: rgba(56, 189, 248, 0.09);
       font-weight: 600;
     }
+
     @media (hover: hover) {
+
       .folder-dropdown-item.is-active:hover,
       .folder-dropdown-item.is-active.is-highlighted {
         background: rgba(56, 189, 248, 0.13);
       }
     }
+
     .folder-dropdown-item.is-active::before {
       content: "";
       position: absolute;
@@ -2619,11 +2829,12 @@
       border-radius: 999px;
       box-shadow: 0 0 10px var(--cyan-glow);
     }
-    
+
     /* Selection animation */
     .folder-dropdown-item.folder-item-selected {
       animation: folderItemSelect 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
     .folder-dropdown-check {
       width: 14px;
       font-size: 0.7rem;
@@ -2634,10 +2845,12 @@
       transform: scale(0.5);
       transition: opacity 0.18s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
     .folder-dropdown-item.is-active .folder-dropdown-check {
       opacity: 1;
       transform: scale(1);
     }
+
     .folder-dot {
       width: 7px;
       height: 7px;
@@ -2646,6 +2859,7 @@
       box-shadow: 0 0 6px rgba(255, 255, 255, 0.05);
       transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
     }
+
     .folder-dropdown-name {
       flex: 1;
       overflow: hidden;
@@ -2655,6 +2869,7 @@
       font-weight: 500;
       letter-spacing: 0.005em;
     }
+
     .folder-dropdown-count {
       font-size: 0.7rem;
       color: var(--text-3);
@@ -2673,6 +2888,7 @@
       border-radius: 100px;
       font-size: 10.5px;
     }
+
     .folder-dropdown-menu-btn {
       /* width: 30px; */
       width: 22px;
@@ -2691,18 +2907,22 @@
       flex-shrink: 0;
       transition: opacity 0.16s, background 0.16s, color 0.16s, transform 0.16s, box-shadow 0.16s;
     }
+
     .folder-dropdown-row:hover .folder-dropdown-menu-btn,
     .folder-dropdown-row:focus-within .folder-dropdown-menu-btn,
     .folder-dropdown-item.is-active .folder-dropdown-menu-btn,
     .folder-dropdown-menu-btn:focus-visible {
       opacity: 0.8;
     }
+
     .folder-dropdown-item.is-active .folder-dropdown-menu-btn {
       opacity: 1;
     }
+
     .folder-dropdown-menu-btn:active {
       transform: scale(0.92);
     }
+
     @media (hover: hover) {
       .folder-dropdown-menu-btn:hover {
         opacity: 1 !important;
@@ -2712,6 +2932,7 @@
         transform: scale(1.06);
       }
     }
+
     .folder-dropdown-menu-btn:focus-visible {
       outline: none;
       box-shadow: 0 0 0 3px rgba(4, 13, 26, 0.9), 0 0 0 5px var(--cyan);
@@ -2735,9 +2956,11 @@
       font-size: 0.82rem;
       animation: emptyFadeIn 0.3s ease;
     }
+
     .folder-dropdown-empty[hidden] {
       display: none !important;
     }
+
     .folder-dropdown-empty .folder-empty-illustration {
       width: 52px;
       height: 52px;
@@ -2745,22 +2968,32 @@
       filter: drop-shadow(0 6px 14px rgba(56, 189, 248, 0.35));
       animation: folderEmptyFloat 2.8s ease-in-out infinite;
     }
+
     .folder-dropdown-empty .folder-empty-title {
       font-weight: 600;
       color: var(--text);
       font-size: 0.86rem;
     }
+
     @keyframes folderEmptyFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-6px);
+      }
     }
+
     @media (prefers-reduced-motion: reduce) {
       .folder-dropdown-empty .folder-empty-illustration {
-        /* animation: none; */ 
+        /* animation: none; */
         /* turning on animation for all */
       }
     }
-    
+
     .folder-dropdown-zero {
       display: flex;
       flex-direction: column;
@@ -2771,22 +3004,25 @@
       font-size: 0.82rem;
       animation: emptyFadeIn 0.3s ease;
     }
+
     .folder-dropdown-zero svg {
       color: var(--text-3);
       opacity: 0.35;
       margin-bottom: 4px;
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
+
     .folder-dropdown-zero:hover svg {
       opacity: 0.5;
       transform: scale(1.05);
     }
+
     .folder-dropdown-zero-hint {
       font-size: 0.72rem;
       color: var(--text-3);
       font-weight: 400;
     }
-    
+
     /* Error state */
     .folder-dropdown-error {
       display: flex;
@@ -2798,17 +3034,21 @@
       font-size: 0.82rem;
       animation: emptyFadeIn 0.3s ease;
     }
+
     .folder-dropdown-error[hidden] {
       display: none !important;
     }
+
     .folder-dropdown-error svg {
       color: var(--danger);
       opacity: 0.7;
     }
+
     .folder-dropdown-error-msg {
       text-align: center;
       line-height: 1.5;
     }
+
     .folder-dropdown-retry-btn {
       margin-top: 4px;
       padding: 7px 14px;
@@ -2822,6 +3062,7 @@
       cursor: pointer;
       transition: all 0.15s ease;
     }
+
     @media (hover: hover) {
       .folder-dropdown-retry-btn:hover {
         background: var(--danger);
@@ -2830,13 +3071,21 @@
         box-shadow: 0 4px 12px rgba(251, 113, 133, 0.25);
       }
     }
+
     .folder-dropdown-retry-btn:active {
       transform: scale(0.97);
     }
-    
+
     @keyframes emptyFadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* ── Footer / Create ── */
@@ -2844,6 +3093,7 @@
       border-top: 1px solid rgba(255, 255, 255, 0.06);
       flex-shrink: 0;
     }
+
     .folder-dropdown-create {
       display: flex;
       align-items: center;
@@ -2859,22 +3109,27 @@
       cursor: pointer;
       transition: background 0.16s, color 0.16s, transform 0.16s;
     }
+
     @media (hover: hover) {
       .folder-dropdown-create:hover {
         background: rgba(56, 189, 248, 0.1);
         color: #7dd3fc;
         transform: translateY(-1px);
       }
+
       .folder-dropdown-create:hover svg {
         transform: rotate(90deg);
       }
     }
+
     .folder-dropdown-create:active {
       transform: scale(0.98);
     }
+
     .folder-dropdown-create svg {
       transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
     .folder-dropdown-create-suggestion {
       display: flex;
       align-items: center;
@@ -2887,7 +3142,9 @@
       transition: background 0.16s, color 0.16s, transform 0.16s, box-shadow 0.16s;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
+
     @media (hover: hover) {
+
       .folder-dropdown-create-suggestion:hover,
       .folder-dropdown-create-suggestion.is-highlighted {
         background: rgba(56, 189, 248, 0.1);
@@ -2896,6 +3153,7 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       }
     }
+
     .folder-dropdown-create-suggestion[hidden] {
       display: none !important;
     }
@@ -2914,6 +3172,7 @@
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
       animation: folderDropdownIn 0.12s ease;
     }
+
     .context-item {
       display: flex;
       align-items: center;
@@ -2931,6 +3190,7 @@
       cursor: pointer;
       transition: background 0.14s, color 0.14s;
     }
+
     .context-item svg {
       flex-shrink: 0;
       width: 14px;
@@ -2938,7 +3198,7 @@
       opacity: 0.85;
     }
 
-    [data-action="copy-link"] > svg {
+    [data-action="copy-link"]>svg {
       width: 14px;
       height: 13px;
     }
@@ -2948,11 +3208,13 @@
       background: var(--border);
       margin: 4px 6px;
     }
+
     @media (hover: hover) {
       .context-item:hover {
         background: rgba(255, 255, 255, 0.06);
         color: var(--text);
       }
+
       .context-danger:hover {
         background: rgba(239, 68, 68, 0.12);
         color: var(--danger);
@@ -2982,6 +3244,7 @@
       position: relative;
       top: -3px;
     }
+
     .card-folder-badge .badge-dot {
       width: 5px;
       height: 5px;
@@ -2994,6 +3257,7 @@
       gap: 8px;
       margin-top: 6px;
     }
+
     .color-swatch {
       width: 28px;
       height: 28px;
@@ -3002,15 +3266,18 @@
       cursor: pointer;
       transition: border-color 0.15s, transform 0.15s;
     }
+
     @media (hover: hover) {
       .color-swatch:hover {
         transform: scale(1.1);
       }
     }
+
     .color-swatch.is-selected {
       border-color: var(--text);
       transform: scale(1.1);
     }
+
     .color-swatch:disabled {
       opacity: 0.55;
       cursor: default;
@@ -3031,6 +3298,7 @@
       letter-spacing: 0.03em;
       justify-content: center;
     }
+
     .folder-dropdown-kbd-hint kbd {
       display: inline-flex;
       align-items: center;
@@ -3039,8 +3307,8 @@
       height: 16px;
       padding: 0 4px;
       border-radius: 3px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       font-family: var(--font-mono);
       font-size: 0.55rem;
       color: var(--text-2);
@@ -3065,13 +3333,17 @@
         /* Prevent content from being hidden by virtual keyboard */
         padding-bottom: env(safe-area-inset-bottom, 0px);
       }
+
       .folder-dropdown.is-open {
         transform: translateY(0);
         box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.55);
       }
+
       .folder-dropdown.is-dragging {
-        transition: none; /* Disable transition during drag for immediate feedback */
+        transition: none;
+        /* Disable transition during drag for immediate feedback */
       }
+
       /* Bottom sheet handle for swipe gesture affordance */
       .folder-dropdown::before {
         content: '';
@@ -3085,15 +3357,17 @@
         position: relative;
         transition: opacity 0.2s, width 0.2s;
       }
+
       .folder-dropdown.is-dragging::before {
         opacity: 0.8;
         width: 48px;
       }
-      
+
       /* Larger touch targets for mobile (44px minimum) */
       .folder-dropdown-row {
         padding: 1px 8px;
       }
+
       .folder-dropdown-item {
         /* padding: 13px 14px; */
         padding: 10px 14px;
@@ -3101,17 +3375,21 @@
         font-size: 0.9rem;
         border-radius: 10px;
       }
+
       .folder-dropdown-section-header {
         padding: 14px 18px 8px;
       }
+
       .folder-dropdown-counter {
         padding: 10px 18px;
       }
+
       .folder-dropdown-create {
         padding: 15px 16px;
         min-height: 48px;
         font-size: 0.9rem;
       }
+
       .folder-dropdown-menu-btn {
         /* min-width: 44px;
         min-height: 44px; */
@@ -3120,25 +3398,29 @@
         padding: 10px;
         opacity: 1;
       }
+
       .folder-context-menu {
         max-width: calc(100vw - 16px);
         max-height: calc(100vh - 16px);
         overflow-y: auto;
       }
+
       .folder-dropdown-clear {
         min-width: 40px;
         min-height: 40px;
       }
-      
+
       /* Optimize search input for mobile */
       .folder-dropdown-search {
-        font-size: 16px; /* Prevents iOS zoom on focus */
+        font-size: 16px;
+        /* Prevents iOS zoom on focus */
         padding: 4px 0;
       }
+
       .folder-dropdown-search-wrap {
         padding: 12px 14px;
       }
-      
+
       /* Body scroll lock when dropdown is open */
       body.folder-dropdown-open {
         overflow: hidden;
@@ -3146,7 +3428,7 @@
         width: 100%;
         height: 100vh;
       }
-      
+
       .folder-sheet-overlay {
         display: none;
         position: fixed;
@@ -3159,17 +3441,19 @@
         transition: opacity 0.3s ease;
         pointer-events: none;
       }
+
       .folder-sheet-overlay.is-visible {
         display: block;
         opacity: 1;
         pointer-events: auto;
       }
-      
+
       /* Better visual feedback for touch */
       .folder-dropdown-item:active {
         transform: scale(0.98);
         background: rgba(255, 255, 255, 0.12);
       }
+
       .folder-dropdown-create:active {
         transform: scale(0.98);
       }
@@ -3273,31 +3557,35 @@
         <button class="folder-selector-btn" id="folderSelectorBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
           <span class="folder-selector-label">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
             Folder
           </span>
           <span class="folder-selector-current" id="folderSelectorCurrent">
             <% if (typeof activeFolderName !== 'undefined' && activeFolderName) { %>
-              <span class="folder-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
-              <%= activeFolderName %>
+            <span class="folder-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
+            <%= activeFolderName %>
             <% } else { %>
-              All
+            All
             <% } %>
           </span>
           <svg class="folder-selector-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m6 9 6 6 6-6"/>
+            <path d="m6 9 6 6 6-6" />
           </svg>
         </button>
 
         <div class="folder-dropdown" id="folderDropdown" hidden>
           <div class="folder-dropdown-search-wrap">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
             <input type="text" class="folder-dropdown-search" id="folderSearch" placeholder="Search folders..." maxlength="255" autocomplete="off" aria-label="Search folders" role="combobox" aria-expanded="true" aria-controls="folderList" aria-autocomplete="list" />
             <button type="button" class="folder-dropdown-clear" id="folderClear" hidden aria-label="Clear search">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
 
@@ -3314,31 +3602,33 @@
             </button>
 
             <% if (typeof folders !== 'undefined' && folders.length > 0) { %>
-              <% folders.forEach(function(folder) { %>
-              <div class="folder-dropdown-row">
-                <div class="folder-dropdown-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-folder="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-created="<%= folder.createdAt %>" data-short-id="<%= folder.shortId || '' %>" role="option" aria-selected="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>" tabindex="-1">
-                  <span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>
-                  <span class="folder-dot" style="background: var(--folder-<%= folder.color %>)"></span>
-                  <span class="folder-dropdown-name"><%= folder.name || 'Untitled' %></span>
-                  <span class="folder-dropdown-count"><%= folder.entryCount %></span>
-                  <button class="folder-dropdown-menu-btn" data-folder-id="<%= folder._id %>" data-folder-name="<%= folder.name || 'Untitled' %>" data-folder-color="<%= folder.color %>" data-folder-short-id="<%= folder.shortId || '' %>" aria-label="<%= folder.name || 'Untitled' %> options" title="Folder options">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
-                    </svg>
-                  </button>
-                </div>
+            <% folders.forEach(function(folder) { %>
+            <div class="folder-dropdown-row">
+              <div class="folder-dropdown-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-folder="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-created="<%= folder.createdAt %>" data-short-id="<%= folder.shortId || '' %>" role="option" aria-selected="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>" tabindex="-1">
+                <span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>
+                <span class="folder-dot" style="background: var(--folder-<%= folder.color %>)"></span>
+                <span class="folder-dropdown-name"><%= folder.name || 'Untitled' %></span>
+                <span class="folder-dropdown-count"><%= folder.entryCount %></span>
+                <button class="folder-dropdown-menu-btn" data-folder-id="<%= folder._id %>" data-folder-name="<%= folder.name || 'Untitled' %>" data-folder-color="<%= folder.color %>" data-folder-short-id="<%= folder.shortId || '' %>" aria-label="<%= folder.name || 'Untitled' %> options" title="Folder options">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="5" r="1" />
+                    <circle cx="12" cy="12" r="1" />
+                    <circle cx="12" cy="19" r="1" />
+                  </svg>
+                </button>
               </div>
-              <% }) %>
+            </div>
+            <% }) %>
             <% } %>
 
             <% if (typeof folders === 'undefined' || folders.length === 0) { %>
-              <div class="folder-dropdown-zero" id="folderZero">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                </svg>
-                <span>No folders yet</span>
-                <span class="folder-dropdown-zero-hint">Create your first folder</span>
-              </div>
+            <div class="folder-dropdown-zero" id="folderZero">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>No folders yet</span>
+              <span class="folder-dropdown-zero-hint">Create your first folder</span>
+            </div>
             <% } %>
           </div>
 
@@ -3350,16 +3640,14 @@
                   <stop offset="100%" stop-color="#2563eb"></stop>
                 </linearGradient>
                 <filter id="folderEmptyShadow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.25"/>
+                  <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.25" />
                 </filter>
               </defs>
 
               <g filter="url(#folderEmptyShadow)">
                 <!-- Folder body -->
-                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z"
-                      fill="url(#folderEmptyGrad)" opacity="0.12"></path>
-                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z"
-                      stroke="url(#folderEmptyGrad)" stroke-width="2.4" stroke-linejoin="round"></path>
+                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z" fill="url(#folderEmptyGrad)" opacity="0.12"></path>
+                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z" stroke="url(#folderEmptyGrad)" stroke-width="2.4" stroke-linejoin="round"></path>
 
                 <!-- Folder "content" lines -->
                 <line x1="28" y1="52" x2="72" y2="52" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.4"></line>
@@ -3375,10 +3663,12 @@
             <span class="folder-empty-title">No folders found</span>
             <!-- <span>Try a different search or create a new folder</span> -->
           </div>
-          
+
           <div class="folder-dropdown-error" id="folderError" hidden>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
             <div class="folder-dropdown-error-msg">
               <div id="folderErrorText">Failed to load folders</div>
@@ -3389,7 +3679,8 @@
           <div class="folder-dropdown-footer">
             <button class="folder-dropdown-create" id="folderDropdownCreate" role="menuitem">
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
               <span id="folderCreateText">New Folder</span>
             </button>
@@ -3403,44 +3694,36 @@
       <div class="folder-context-menu" id="folderContextMenu" hidden>
         <button class="context-item" data-action="rename">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
           </svg>
           Rename
         </button>
         <button class="context-item" data-action="color">
-          <svg xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round">
-            <path d="M12 22a10 10 0 1 1 10-10c0 2.2-1.8 4-4 4h-1.2a1.8 1.8 0 0 0-1.8 1.8 2.2 2.2 0 0 1-2.2 2.2H12z"/>
-            <circle cx="7.5" cy="10.5" r="1"/>
-            <circle cx="10" cy="7.5" r="1"/>
-            <circle cx="14" cy="7.5" r="1"/>
-            <circle cx="16.5" cy="10.5" r="1"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22a10 10 0 1 1 10-10c0 2.2-1.8 4-4 4h-1.2a1.8 1.8 0 0 0-1.8 1.8 2.2 2.2 0 0 1-2.2 2.2H12z" />
+            <circle cx="7.5" cy="10.5" r="1" />
+            <circle cx="10" cy="7.5" r="1" />
+            <circle cx="14" cy="7.5" r="1" />
+            <circle cx="16.5" cy="10.5" r="1" />
           </svg>
           Change Color
         </button>
         <button class="context-item" data-action="copy-link">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
           </svg>
           Copy Short Link
         </button>
         <div class="context-divider"></div>
         <button class="context-item context-danger" data-action="delete">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6"/>
-            <path d="M14 11v6"/>
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6" />
+            <path d="M14 11v6" />
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
           </svg>
           Delete
         </button>
@@ -3457,14 +3740,14 @@
         </a>
         <span class="sep" aria-hidden="true">/</span>
         <% if (typeof activeFolderName !== 'undefined' && activeFolderName) { %>
-          <a href="/">Dashboard</a>
-          <span class="sep" aria-hidden="true">/</span>
-          <span class="current">
-            <span class="folder-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
-            <%= activeFolderName %>
-          </span>
+        <a href="/">Dashboard</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span class="current">
+          <span class="folder-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
+          <%= activeFolderName %>
+        </span>
         <% } else { %>
-          <a href="/" class="current">Dashboard</a>
+        <a href="/" class="current">Dashboard</a>
         <% } %>
       </nav>
       <% if (typeof isMaster === "undefined" || !isMaster) { %>
@@ -3523,13 +3806,13 @@
 
             <div class="empty-magnifier">
               <svg width="60" height="60" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="28" cy="28" r="18" stroke="url(#cyanGlowGrad)" stroke-width="3.5" fill="rgba(13, 22, 40, 0.75)"/>
-                <line x1="41" y1="41" x2="56" y2="56" stroke="url(#cyanGlowGrad)" stroke-width="4.5" stroke-linecap="round"/>
-                <path d="M20 20A12 12 0 0 1 34 16" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="28" cy="28" r="18" stroke="url(#cyanGlowGrad)" stroke-width="3.5" fill="rgba(13, 22, 40, 0.75)" />
+                <line x1="41" y1="41" x2="56" y2="56" stroke="url(#cyanGlowGrad)" stroke-width="4.5" stroke-linecap="round" />
+                <path d="M20 20A12 12 0 0 1 34 16" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" />
                 <defs>
                   <linearGradient id="cyanGlowGrad" x1="10" y1="10" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#38bdf8"/>
-                    <stop offset="1" stop-color="#06b6d4"/>
+                    <stop stop-color="#38bdf8" />
+                    <stop offset="1" stop-color="#06b6d4" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -3539,42 +3822,51 @@
 
         <h2 class="empty-title">
           <% if (currentKeyword) { %>
-            No results found
+          No results found
           <% } else if (currentVis !== 'all') { %>
-            No <%= currentVis.charAt(0).toUpperCase() + currentVis.slice(1) %> entries
+          No <%= currentVis.charAt(0).toUpperCase() + currentVis.slice(1) %> entries
           <% } else { %>
-            Your wall is empty
+          Your wall is empty
           <% } %>
         </h2>
         <p class="empty-desc">
           <% if (currentKeyword) { %>
-            We couldn't find any entries matching<br><span class="query">"<%= currentKeyword %>"</span>
+          We couldn't find any entries matching<br><span class="query">"<%= currentKeyword %>"</span>
           <% } else if (currentVis !== 'all') { %>
-            You don't have any <span class="query"><%= currentVis %></span> entries saved yet.
+          You don't have any <span class="query"><%= currentVis %></span> entries saved yet.
           <% } else { %>
-            Start building your personal info wall. Add links, notes, and data you want to keep.
+          Start building your personal info wall. Add links, notes, and data you want to keep.
           <% } %>
         </p>
         <div class="empty-action-wrap">
           <% if (currentKeyword) { %>
-            <button class="btn-retry" type="button" id="emptyRetryBtn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg> Try a different search
-            </button>
+          <button class="btn-retry" type="button" id="emptyRetryBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg> Try a different search
+          </button>
           <% } else if (currentVis !== 'all') { %>
-            <button class="btn-retry" type="button" id="emptyRetryBtn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16l-6 8v5l-4 2v-7z" /><path d="M3 3l18 18" /></svg> Show all entries
-            </button>
+          <button class="btn-retry" type="button" id="emptyRetryBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 4h16l-6 8v5l-4 2v-7z" />
+              <path d="M3 3l18 18" />
+            </svg> Show all entries
+          </button>
           <% } else { %>
-            <button class="btn-primary" type="button" onclick="window.location.href='/add'">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg> Add your first entry
-            </button>
+          <button class="btn-primary" type="button" onclick="window.location.href='/add'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg> Add your first entry
+          </button>
           <% } %>
         </div>
       </div>
       <!-- ── Masonry wall ── -->
       <div class="masonry-wall" id="masonryWall">
-      <% if (typeof data !== 'undefined' && data.length > 0) { %>
-      <%
+        <% if (typeof data !== 'undefined' && data.length > 0) { %>
+        <%
       const escapeHTML = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
         '<': '&lt;',
@@ -3726,7 +4018,7 @@
         </article>
 
         <% }) %>
-      <% } %>
+        <% } %>
       </div>
 
       <div class="feed-loading" id="load-spinner" role="status" aria-label="Loading more entries" hidden>
@@ -3813,7 +4105,10 @@
         <div class="modal-header">
           <h3 class="modal-name">New Folder</h3>
           <button class="modal-close" id="folderModalClose" aria-label="Close">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
         <div class="modal-divider"></div>
@@ -3847,7 +4142,10 @@
         <div class="modal-header">
           <h3 class="modal-name">Rename Folder</h3>
           <button class="modal-close" id="renameFolderModalClose" aria-label="Close">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
         <div class="modal-divider"></div>
@@ -3869,8 +4167,9 @@
       <div class="confirm-modal">
         <div class="confirm-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
         </div>
         <h2 class="confirm-title">Delete "<span id="folderDeleteName"></span>"?</h2>
@@ -3888,7 +4187,10 @@
         <div class="modal-header">
           <h3 class="modal-name">Change Color</h3>
           <button class="modal-close" id="colorPickerModalClose" aria-label="Close">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
         <div class="modal-divider"></div>
@@ -3937,15 +4239,23 @@
       let activeFolderId = <%- JSON.stringify(typeof activeFolderId !== "undefined" ? activeFolderId : null) %>;
 
       function escapeHTML(value = '') {
-        return String(value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        return String(value).replace(/[&<>"']/g, (ch) => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        } [ch]));
       }
 
       const wall = document.getElementById('masonryWall');
-      document.querySelectorAll('.info-card .card-text.md-content').forEach(function (el) {
+      document.querySelectorAll('.info-card .card-text.md-content').forEach(function(el) {
         var info = (el.closest('.info-card') || {}).dataset || {};
         renderMarkdownInto(el, (info.info || '').replace(/\\n/g, '\n'));
       });
-      requestAnimationFrame(function () { refreshCardOverflowState(); });
+      requestAnimationFrame(function() {
+        refreshCardOverflowState();
+      });
       // Re-measure once when lazy-loaded highlight.js finishes (code blocks change height)
       let highlightReMeasureScheduled = false;
       document.addEventListener('markdown:highlighted', () => {
@@ -4049,8 +4359,11 @@
         if (!exhausted && nextCursor && sentinel) {
           if (observer) observer.disconnect();
           observer = new IntersectionObserver(
-            ([entry]) => { if (entry.isIntersecting) loadMore(); },
-            { rootMargin: '0px 0px 200px 0px' }
+            ([entry]) => {
+              if (entry.isIntersecting) loadMore();
+            }, {
+              rootMargin: '0px 0px 200px 0px'
+            }
           );
           observer.observe(sentinel);
         }
@@ -4135,12 +4448,22 @@
       async function runSearch(keyword) {
         searchKeyword = keyword.trim();
         try {
-          const params = new URLSearchParams({ limit: '20', sort: currentSort });
+          const params = new URLSearchParams({
+            limit: '20',
+            sort: currentSort
+          });
           if (searchKeyword) params.set('keyword', searchKeyword);
           if (activeVisibility !== 'all') params.set('visibility', activeVisibility);
           if (activeFolderId) params.set('folderId', activeFolderId);
-          const response = await fetch(`/api/entries?${params}`, { headers: { Accept: 'application/json' } });
-          if (response.status === 401) { window.location.href = '/login'; return; }
+          const response = await fetch(`/api/entries?${params}`, {
+            headers: {
+              Accept: 'application/json'
+            }
+          });
+          if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+          }
           if (!response.ok) throw new Error('Search request failed');
           const page = await response.json();
           if (typeof page.totalCount === 'number') {
@@ -4160,7 +4483,10 @@
           nextCursor = page.nextCursor || null;
           exhausted = !page.hasMore || !nextCursor;
           if (exhausted) finishFeed();
-          else { const eof = document.getElementById('end-of-feed'); if (eof) eof.hidden = true; }
+          else {
+            const eof = document.getElementById('end-of-feed');
+            if (eof) eof.hidden = true;
+          }
           setupObserver();
           setClearSearchVisibility(searchKeyword);
         } catch (err) {
@@ -4171,12 +4497,16 @@
 
       let searchTimer;
 
-      document.getElementById('searchForm')?.addEventListener('submit', (event) => { event.preventDefault(); });
+      document.getElementById('searchForm')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+      });
 
       document.getElementById('searchInput')?.addEventListener('input', (event) => {
         setClearSearchVisibility(event.target.value);
         clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => { runSearch(event.target.value); }, 500);
+        searchTimer = setTimeout(() => {
+          runSearch(event.target.value);
+        }, 500);
       });
 
       document.getElementById('clearSearch')?.addEventListener('click', () => {
@@ -4184,7 +4514,9 @@
         const input = document.getElementById('searchInput');
         if (input) {
           input.value = '';
-          input.focus({ preventScroll: true });
+          input.focus({
+            preventScroll: true
+          });
         }
         setClearSearchVisibility('');
         runSearch('');
@@ -4195,7 +4527,9 @@
           const input = document.getElementById('searchInput');
           if (input) {
             input.value = '';
-            input.focus({ preventScroll: true });
+            input.focus({
+              preventScroll: true
+            });
           }
           setClearSearchVisibility('');
           runSearch('');
@@ -4358,7 +4692,9 @@
 
         state.openFrame = requestAnimationFrame(() => {
           element.classList.add(activeClass);
-          focusTarget?.focus({ preventScroll: true });
+          focusTarget?.focus({
+            preventScroll: true
+          });
           state.openFrame = null;
         });
       }
@@ -4397,7 +4733,9 @@
           closedCallback?.();
 
           if (shouldRestoreFocus && state.returnFocus?.isConnected) {
-            state.returnFocus.focus({ preventScroll: true });
+            state.returnFocus.focus({
+              preventScroll: true
+            });
           }
 
           state.returnFocus = null;
@@ -4469,7 +4807,9 @@
             }
           }
 
-          (window.folderData || []).forEach(f => { f.isActive = f.id === folderId; });
+          (window.folderData || []).forEach(f => {
+            f.isActive = f.id === folderId;
+          });
           window.refreshFolderDropdown && window.refreshFolderDropdown();
         }
 
@@ -4543,7 +4883,10 @@
           clearTimeout(timer);
           const elapsed = Date.now() - start;
           remaining -= elapsed;
-          if (remaining <= 0) { dismissToast(toast); return; }
+          if (remaining <= 0) {
+            dismissToast(toast);
+            return;
+          }
           bar.style.transition = 'none';
           bar.style.transform = getComputedStyle(bar).transform;
           void bar.offsetWidth;
@@ -4744,7 +5087,7 @@
           card.removeAttribute('aria-label');
         }
 
-        card.classList.remove('card-pending');  // TEMP: skeleton stays for inspection
+        card.classList.remove('card-pending'); // TEMP: skeleton stays for inspection
       }
 
       async function copyToClipboard(text) {
@@ -4769,14 +5112,16 @@
       function canUseNativeShare(text) {
         if (!navigator.share) return false;
         if (!window.matchMedia('(pointer: coarse)').matches) return false;
-        if (navigator.canShare && !navigator.canShare({ text })) return false;
+        if (navigator.canShare && !navigator.canShare({
+            text
+          })) return false;
         return true;
       }
 
       async function shareText(text, id, shortId) {
-        const link = shortId
-          ? `${window.location.origin}/e/${encodeURIComponent(shortId)}`
-          : `${window.location.origin}/entry/${encodeURIComponent(id)}`;
+        const link = shortId ?
+          `${window.location.origin}/e/${encodeURIComponent(shortId)}` :
+          `${window.location.origin}/entry/${encodeURIComponent(id)}`;
 
         try {
           await copyToClipboard(link);
@@ -4792,7 +5137,9 @@
         }
 
         try {
-          await navigator.share({ text: `${text}\n\n━━━━━━━━━━━━━━━━━━━\n\n🌐 Link:\n${link}` });
+          await navigator.share({
+            text: `${text}\n\n━━━━━━━━━━━━━━━━━━━\n\n🌐 Link:\n${link}`
+          });
           showToast('Shared');
         } catch (err) {
           if (err.name === 'AbortError') return;
@@ -4859,7 +5206,9 @@
         try {
           const response = await fetch(`/api/entries/${encodeURIComponent(id)}/favorite`, {
             method: 'PATCH',
-            headers: { Accept: 'application/json' },
+            headers: {
+              Accept: 'application/json'
+            },
           });
 
           if (response.status === 401) {
@@ -4992,7 +5341,7 @@
         badge.textContent = formatCardIndexBadge(displayIndex);
         header.append(badge);
 
-          if (type !== 'master') {
+        if (type !== 'master') {
           const quickActions = document.createElement('div');
           quickActions.className = 'card-quick-actions';
 
@@ -5049,14 +5398,14 @@
             const copyButton = document.createElement('button');
             copyButton.type = 'button';
             copyButton.className = 'action-btn action-copy';
-copyButton.title = 'Share Public Link';
-                appendStaticIcon(copyButton, `
+            copyButton.title = 'Share Public Link';
+            appendStaticIcon(copyButton, `
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                   </svg>
                 `);
-                copyButton.append(document.createTextNode(' Share'));
+            copyButton.append(document.createTextNode(' Share'));
             footer.append(copyButton);
           }
 
@@ -5458,7 +5807,10 @@ copyButton.title = 'Share Public Link';
           }
           const found = getHashTarget(id, isShortId);
           if (found) {
-            found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            found.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
           }
         } finally {
           if (activeHashLoadId === id) {
@@ -5490,7 +5842,10 @@ copyButton.title = 'Share Public Link';
             clearInterval(hashScrollInterval);
             hashScrollInterval = null;
           }
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
           return;
         }
 
@@ -5511,7 +5866,11 @@ copyButton.title = 'Share Public Link';
         scrollToHashedCard();
       });
 
-      const socket = io({ auth: { page: 'dashboard' } });
+      const socket = io({
+        auth: {
+          page: 'dashboard'
+        }
+      });
       let lastActionId = null;
 
       socket.on('entry:created', (data) => {
@@ -5553,9 +5912,9 @@ copyButton.title = 'Share Public Link';
         }
         const wasPublic = card.dataset.isPublic === 'true';
         const nowPublic = data.isPublic === true;
-        const nowFavorite = typeof data.isFavorite === 'boolean'
-          ? data.isFavorite
-          : card.dataset.isFavorite === 'true';
+        const nowFavorite = typeof data.isFavorite === 'boolean' ?
+          data.isFavorite :
+          card.dataset.isFavorite === 'true';
         card.dataset.name = data.name || '';
         card.dataset.info = data.info || '';
         card.dataset.isPublic = nowPublic ? 'true' : 'false';
@@ -5571,7 +5930,7 @@ copyButton.title = 'Share Public Link';
                 const copyButton = document.createElement('button');
                 copyButton.type = 'button';
                 copyButton.className = 'action-btn action-copy';
-            copyButton.title = 'Share Public Link';
+                copyButton.title = 'Share Public Link';
                 appendStaticIcon(copyButton, `
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -5676,7 +6035,7 @@ copyButton.title = 'Share Public Link';
       (() => {
         const LS_KEY = "shareinfo_recent_folders";
         const MAX_RECENT = 4;
-        const COLORS = ["blue","purple","green","red","orange","pink"];
+        const COLORS = ["blue", "purple", "green", "red", "orange", "pink"];
 
         const btn = document.getElementById('folderSelectorBtn');
         if (!btn) return;
@@ -5700,7 +6059,10 @@ copyButton.title = 'Share Public Link';
             createBtnLabel.textContent = mode === 'create' ? `Create Folder "${name}"` : 'New Folder';
           }
         }
-        function getAllItems() { return Array.from(list.querySelectorAll('.folder-dropdown-item[data-folder]:not([data-folder=""])')); }
+
+        function getAllItems() {
+          return Array.from(list.querySelectorAll('.folder-dropdown-item[data-folder]:not([data-folder=""])'));
+        }
         let highlighted = -1;
         let savedScrollTop = 0;
         let folderData = [];
@@ -5754,8 +6116,9 @@ copyButton.title = 'Share Public Link';
           try {
             const raw = JSON.parse(localStorage.getItem(LS_KEY)) || [];
             return raw.filter(id => Boolean(id));
+          } catch {
+            return [];
           }
-          catch { return []; }
         }
 
         function saveRecentFolderId(id) {
@@ -5820,8 +6183,8 @@ copyButton.title = 'Share Public Link';
           if (dropdown.parentElement !== document.body) {
             document.body.appendChild(dropdown);
           }
-          dropdown.style.animation = '';   // clear any leftover close animation
-          closePending = false;            // clear any pending close guard from a prior back() round-trip
+          dropdown.style.animation = ''; // clear any leftover close animation
+          closePending = false; // clear any pending close guard from a prior back() round-trip
 
           dropdown.hidden = false;
           btn.setAttribute('aria-expanded', 'true');
@@ -5835,10 +6198,10 @@ copyButton.title = 'Share Public Link';
           const isMobile = window.innerWidth <= 680;
           if (isMobile) {
             clearPositionStyles();
-            
+
             // Mobile: Body scroll lock to prevent background scrolling (iOS fix)
             document.body.classList.add('folder-dropdown-open');
-            
+
             // Mobile: Create overlay
             let overlay = document.querySelector('.folder-sheet-overlay');
             if (!overlay) {
@@ -5851,7 +6214,9 @@ copyButton.title = 'Share Public Link';
             dropdown.classList.add('is-open');
           } else {
             positionFolderDropdown();
-            search.focus({ preventScroll: true });
+            search.focus({
+              preventScroll: true
+            });
           }
 
           filterOptions(true);
@@ -5859,14 +6224,18 @@ copyButton.title = 'Share Public Link';
           highlighted = getVisibleItems().findIndex(o => o.classList.contains('is-active'));
           highlightOption();
 
-          history.pushState({ [MODAL_HISTORY_STATE_KEY]: modalHistoryCount }, '');
+          history.pushState({
+            [MODAL_HISTORY_STATE_KEY]: modalHistoryCount
+          }, '');
           modalHistoryCount++;
 
           // Performance: Use RAF for smooth scroll fade update
           requestAnimationFrame(updateScrollFade);
         }
 
-        function close({ fromPopstate = false } = {}) {
+        function close({
+          fromPopstate = false
+        } = {}) {
           if (dropdown.hidden) return;
           if (!fromPopstate && modalHistoryCount > 0) {
             if (closePending) return;
@@ -5874,7 +6243,9 @@ copyButton.title = 'Share Public Link';
             history.back();
             // Self-heal: if that popstate gets consumed by another overlay's
             // branch (modal closing on top), never let the guard stick forever
-            setTimeout(() => { closePending = false; }, 400);
+            setTimeout(() => {
+              closePending = false;
+            }, 400);
             return;
           }
           closePending = false;
@@ -5884,14 +6255,14 @@ copyButton.title = 'Share Public Link';
             cancelAnimationFrame(scrollFadeFrame);
             scrollFadeFrame = null;
           }
-          
+
           savedScrollTop = list.scrollTop;
           dropdown.hidden = true;
           btn.setAttribute('aria-expanded', 'false');
-          
+
           // Mobile: Remove body scroll lock
           document.body.classList.remove('folder-dropdown-open');
-          
+
           const overlay = document.querySelector('.folder-sheet-overlay');
           if (overlay) overlay.classList.remove('is-visible');
           dropdown.classList.remove('is-open');
@@ -5901,15 +6272,25 @@ copyButton.title = 'Share Public Link';
         }
 
         // ── Swipe-to-dismiss (mobile bottom sheet) ──
-        let dragStartY = null, dragCurrentY = 0, isDragging = false;
+        let dragStartY = null,
+          dragCurrentY = 0,
+          isDragging = false;
         const DRAG_CLOSE_THRESHOLD = 90;
 
         dropdown.addEventListener('touchstart', (e) => {
-          if (!window.matchMedia('(max-width: 680px)').matches) { dragStartY = null; return; }
-          if (list.scrollTop > 0) { dragStartY = null; return; } // don't hijack list scrolling
+          if (!window.matchMedia('(max-width: 680px)').matches) {
+            dragStartY = null;
+            return;
+          }
+          if (list.scrollTop > 0) {
+            dragStartY = null;
+            return;
+          } // don't hijack list scrolling
           dragStartY = e.touches[0].clientY;
           isDragging = false;
-        }, { passive: true });
+        }, {
+          passive: true
+        });
 
         dropdown.addEventListener('touchmove', (e) => {
           if (dragStartY === null) return;
@@ -5919,10 +6300,15 @@ copyButton.title = 'Share Public Link';
           dragCurrentY = delta;
           dropdown.classList.add('is-dragging');
           dropdown.style.transform = `translateY(${delta}px)`;
-        }, { passive: true });
+        }, {
+          passive: true
+        });
 
         dropdown.addEventListener('touchend', () => {
-          if (!isDragging) { dragStartY = null; return; }
+          if (!isDragging) {
+            dragStartY = null;
+            return;
+          }
           dropdown.classList.remove('is-dragging');
           dropdown.style.transform = '';
           if (dragCurrentY > DRAG_CLOSE_THRESHOLD) {
@@ -5941,17 +6327,30 @@ copyButton.title = 'Share Public Link';
           if (getActiveOverlay() !== dropdown) return;
           const focusables = dropdown.querySelectorAll('button, input, [tabindex]:not([tabindex="-1"])');
           if (!focusables.length) return;
-          const first = focusables[0], last = focusables[focusables.length - 1];
-          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+          const first = focusables[0],
+            last = focusables[focusables.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
         }
         document.addEventListener('keydown', trapFocus);
 
-        window.closeFolderDropdown = () => close({ fromPopstate: true });
+        window.closeFolderDropdown = () => close({
+          fromPopstate: true
+        });
 
-        function toggle() { dropdown.hidden ? open() : close(); }
+        function toggle() {
+          dropdown.hidden ? open() : close();
+        }
 
-        btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggle();
+        });
 
         document.addEventListener('click', (e) => {
           if (!e.target.closest('.folder-selector') && !dropdown.contains(e.target)) {
@@ -5966,17 +6365,23 @@ copyButton.title = 'Share Public Link';
           }
         });
 
-        window.addEventListener('scroll', () => { if (!dropdown.hidden) positionFolderDropdown(); }, { passive: true });
-        window.addEventListener('resize', () => { if (!dropdown.hidden) positionFolderDropdown(); });
+        window.addEventListener('scroll', () => {
+          if (!dropdown.hidden) positionFolderDropdown();
+        }, {
+          passive: true
+        });
+        window.addEventListener('resize', () => {
+          if (!dropdown.hidden) positionFolderDropdown();
+        });
 
         // ── Filter ── Performance optimized
         function filterOptions(immediate = false) {
           const q = search.value.toLowerCase().trim();
-          
+
           // Performance: Skip if query hasn't changed
           if (q === lastFilterQuery && !immediate) return;
           lastFilterQuery = q;
-          
+
           const searching = q.length > 0;
           clearBtn.hidden = !searching;
 
@@ -6041,7 +6446,10 @@ copyButton.title = 'Share Public Link';
                   const html = searching ? highlightMatch(escapeHTML(name), escapeHTML(q)) : escapeHTML(name);
                   if (nameEl.innerHTML !== html) nameEl.innerHTML = html;
                 }
-                visibleRows.push({ row, name });
+                visibleRows.push({
+                  row,
+                  name
+                });
               } else {
                 row.hidden = true;
               }
@@ -6057,9 +6465,13 @@ copyButton.title = 'Share Public Link';
                   const aIdx = a.name.toLowerCase().indexOf(q);
                   const bIdx = b.name.toLowerCase().indexOf(q);
                   if (aIdx !== bIdx) return aIdx - bIdx;
-                  return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+                  return a.name.localeCompare(b.name, undefined, {
+                    sensitivity: 'base'
+                  });
                 })
-                .forEach(({ row }) => list.appendChild(row));
+                .forEach(({
+                  row
+                }) => list.appendChild(row));
             }
 
             const isEmptyResult = searching && visibleCount === 0;
@@ -6080,16 +6492,18 @@ copyButton.title = 'Share Public Link';
             return;
           }
 
-          const matched = searching
-            ? folderData.filter(f => f.name.toLowerCase().includes(q))
-            : folderData;
+          const matched = searching ?
+            folderData.filter(f => f.name.toLowerCase().includes(q)) :
+            folderData;
 
           if (searching) {
             matched.sort((a, b) => {
               const aIdx = a.name.toLowerCase().indexOf(q);
               const bIdx = b.name.toLowerCase().indexOf(q);
               if (aIdx !== bIdx) return aIdx - bIdx;
-              return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+              return a.name.localeCompare(b.name, undefined, {
+                sensitivity: 'base'
+              });
             });
           } else {
             const recentIds = getRecentFolderIds();
@@ -6185,7 +6599,7 @@ copyButton.title = 'Share Public Link';
             empty.hidden = matched.length > 0;
           }
         }
-        
+
         function updateHighlight() {
           const visible = getVisibleItems();
           if (search.value.length > 0) {
@@ -6220,47 +6634,60 @@ copyButton.title = 'Share Public Link';
           search.value = '';
           lastFilterQuery = '';
           filterWithHighlight(true);
-          search.focus({ preventScroll: true });
+          search.focus({
+            preventScroll: true
+          });
         });
 
         // ── Inline Create Folder ──
         async function createFolderInline(name) {
           // Duplicate check
           const dup = folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
-          if (dup) { showToast('A folder with that name already exists', 'error'); return; }
+          if (dup) {
+            showToast('A folder with that name already exists', 'error');
+            return;
+          }
 
           // Performance: Show loading state immediately on the footer button
           createBtn.disabled = true;
           createBtn.style.pointerEvents = 'none';
           createBtn.style.opacity = '0.6';
           if (createBtnLabel) createBtnLabel.textContent = 'Creating...';
-          
+
           try {
             const color = COLORS[Math.floor(Math.random() * COLORS.length)];
             const res = await fetch('/api/folders', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name, color }),
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                name,
+                color
+              }),
             });
             const data = await res.json();
             if (!res.ok) {
               // Duplicate-name races (two tabs / in-flight create + modal)
               // are settled authoritatively by the server's 409 — surface the
               // same friendly copy as the local pre-check for consistency
-              if (res.status === 409) { showToast('A folder with that name already exists', 'error'); return; }
+              if (res.status === 409) {
+                showToast('A folder with that name already exists', 'error');
+                return;
+              }
               showToast(data.message || 'Failed to create folder', 'error');
               return;
             }
 
             const f = data.folder;
-            
+
             // Performance: Update local state first for instant feedback
-            folderData.push({ 
-              id: f._id, 
-              name: f.name, 
-              color: f.color, 
-              count: '0', 
-              isActive: false, 
+            folderData.push({
+              id: f._id,
+              name: f.name,
+              color: f.color,
+              count: '0',
+              isActive: false,
               createdAt: f.createdAt || new Date().toISOString(),
               shortId: f.shortId || null
             });
@@ -6273,7 +6700,9 @@ copyButton.title = 'Share Public Link';
             // URL, then switch to the folder view in place — no page reload,
             // no skeleton flash. enterFolderView() re-renders the dropdown
             // list from folderData (replacing the old manual row build).
-            close({ fromPopstate: true });
+            close({
+              fromPopstate: true
+            });
             if (modalHistoryCount > 0) modalHistoryCount--;
             enterFolderView(f._id, f.name, f.color);
           } catch (err) {
@@ -6302,9 +6731,11 @@ copyButton.title = 'Share Public Link';
             // currently active folder/All (highlight re-runs must not wipe it)
             o.setAttribute('aria-selected', (isHighlighted || o.classList.contains('is-active')) ? 'true' : 'false');
           });
-          
+
           if (items[highlighted]) {
-            items[highlighted].scrollIntoView({ block: 'nearest' });
+            items[highlighted].scrollIntoView({
+              block: 'nearest'
+            });
             // Accessibility: Announce to screen readers which item is focused
             search.setAttribute('aria-activedescendant', items[highlighted].id || `folder-option-${highlighted}`);
             if (!items[highlighted].id) {
@@ -6320,23 +6751,23 @@ copyButton.title = 'Share Public Link';
           isSelecting = true;
           // Micro-interaction: Add success pulse animation
           item.classList.add('folder-item-selected');
-          
+
           // Mobile: Haptic feedback on selection (if supported)
           if ('vibrate' in navigator) {
             navigator.vibrate(10); // Short, subtle vibration
           }
-          
+
           // Micro-interaction: Animate button with success state
           const checkmark = item.querySelector('.folder-dropdown-check');
           if (checkmark) {
             checkmark.style.animation = 'checkPulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
           }
-          
+
           // Animate dropdown close — Material menu style (reduced-motion: opacity only)
-          dropdown.style.animation = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-            ? 'folderDropdownFadeOut 0.12s ease forwards'
-            : 'folderDropdownOut 0.17s cubic-bezier(0.2, 0, 0, 1) forwards';
-          
+          dropdown.style.animation = window.matchMedia('(prefers-reduced-motion: reduce)').matches ?
+            'folderDropdownFadeOut 0.12s ease forwards' :
+            'folderDropdownOut 0.17s cubic-bezier(0.2, 0, 0, 1) forwards';
+
           // Delay navigation to show animation
           setTimeout(() => {
             const folderShortId = item.dataset.shortId || null;
@@ -6344,7 +6775,7 @@ copyButton.title = 'Share Public Link';
             const folderName = item.dataset.name || '';
             const folderColor = item.dataset.color || 'blue';
             saveRecentFolderId(folderId);
-            
+
             const url = new URL(window.location);
             if (folderShortId) {
               url.searchParams.set('folderId', folderShortId);
@@ -6353,10 +6784,10 @@ copyButton.title = 'Share Public Link';
             } else {
               url.searchParams.delete('folderId');
             }
-            
+
             // Update active folder state
             activeFolderId = folderId;
-            
+
             // Update folder selector button display
             const current = document.getElementById('folderSelectorCurrent');
             if (current) {
@@ -6370,13 +6801,13 @@ copyButton.title = 'Share Public Link';
                 current.textContent = 'All';
               }
             }
-            
+
             // Update breadcrumb
             const crumb = document.querySelector('.breadcrumb');
             if (crumb) {
               const dashboardLink = crumb.querySelector('a[href="/"]');
               const currentSpan = crumb.querySelector('.current');
-              
+
               if (folderId) {
                 if (dashboardLink) dashboardLink.classList.remove('current');
                 if (currentSpan && !currentSpan.querySelector('.folder-dot')) {
@@ -6411,22 +6842,26 @@ copyButton.title = 'Share Public Link';
                 }
               }
             }
-            
+
             // Update URL without reloading
             history.pushState(null, '', url.toString());
-            
+
             // Close dropdown properly
-            close({ fromPopstate: true });
+            close({
+              fromPopstate: true
+            });
             if (modalHistoryCount > 0) modalHistoryCount--;
-            
+
             // Update folderData active states and refresh dropdown
-            (window.folderData || []).forEach(f => { f.isActive = f.id === folderId; });
+            (window.folderData || []).forEach(f => {
+              f.isActive = f.id === folderId;
+            });
             window.refreshFolderDropdown && window.refreshFolderDropdown();
-            
+
             // Fetch and render entries for the selected folder
             const input = document.getElementById('searchInput');
             runSearch(input ? input.value : '');
-            
+
             isSelecting = false;
           }, 180);
         }
@@ -6434,28 +6869,31 @@ copyButton.title = 'Share Public Link';
         list.addEventListener('click', e => {
           if (e.target.closest('.folder-dropdown-menu-btn')) return;
           const item = e.target.closest('.folder-dropdown-item');
-          if (item) { e.preventDefault(); selectItem(item); }
+          if (item) {
+            e.preventDefault();
+            selectItem(item);
+          }
         });
 
         btn.addEventListener('keydown', e => {
-          if (e.key === 'Enter' && dropdown.hidden) { 
-            e.preventDefault(); 
-            open(); 
-            return; 
+          if (e.key === 'Enter' && dropdown.hidden) {
+            e.preventDefault();
+            open();
+            return;
           }
           if (dropdown.hidden) return;
           const visible = getVisibleItems();
-          
+
           switch (e.key) {
-            case 'ArrowDown': 
-              e.preventDefault(); 
-              highlighted = Math.min(highlighted + 1, visible.length - 1); 
-              highlightOption(); 
+            case 'ArrowDown':
+              e.preventDefault();
+              highlighted = Math.min(highlighted + 1, visible.length - 1);
+              highlightOption();
               break;
-            case 'ArrowUp': 
-              e.preventDefault(); 
-              highlighted = Math.max(highlighted - 1, 0); 
-              highlightOption(); 
+            case 'ArrowUp':
+              e.preventDefault();
+              highlighted = Math.max(highlighted - 1, 0);
+              highlightOption();
               break;
             case 'Home':
               e.preventDefault();
@@ -6467,14 +6905,14 @@ copyButton.title = 'Share Public Link';
               highlighted = visible.length - 1;
               highlightOption();
               break;
-            case 'Enter': 
-              e.preventDefault(); 
-              if (visible[highlighted]) selectItem(visible[highlighted]); 
+            case 'Enter':
+              e.preventDefault();
+              if (visible[highlighted]) selectItem(visible[highlighted]);
               break;
-            case 'Escape': 
-              close(); 
+            case 'Escape':
+              close();
               break;
-            case 'Tab': 
+            case 'Tab':
               // Allow tab to move focus to search input
               if (!e.shiftKey) {
                 e.preventDefault();
@@ -6489,7 +6927,7 @@ copyButton.title = 'Share Public Link';
         search.addEventListener('keydown', e => {
           const visible = getVisibleItems();
           const maxIdx = visible.length - 1;
-          
+
           switch (e.key) {
             case 'Escape':
               e.stopPropagation();
@@ -6497,24 +6935,24 @@ copyButton.title = 'Share Public Link';
                 search.value = '';
                 lastFilterQuery = '';
                 filterWithHighlight(true);
-              } else { 
-                close(); 
+              } else {
+                close();
               }
               break;
-            case 'ArrowDown': 
-              e.preventDefault(); 
-              highlighted = Math.min(highlighted + 1, maxIdx); 
-              highlightOption(); 
+            case 'ArrowDown':
+              e.preventDefault();
+              highlighted = Math.min(highlighted + 1, maxIdx);
+              highlightOption();
               break;
-            case 'ArrowUp': 
-              e.preventDefault(); 
+            case 'ArrowUp':
+              e.preventDefault();
               if (highlighted <= 0) {
                 // At first item, move focus back to trigger button
                 highlighted = -1;
                 search.removeAttribute('aria-activedescendant');
                 btn.focus();
               } else {
-                highlighted = Math.max(highlighted - 1, 0); 
+                highlighted = Math.max(highlighted - 1, 0);
                 highlightOption();
               }
               break;
@@ -6536,7 +6974,7 @@ copyButton.title = 'Share Public Link';
                 createFolderInline(createButtonPendingName);
               }
               break;
-            case 'Tab': 
+            case 'Tab':
               if (!e.shiftKey) {
                 // Tab forward - move to first folder item
                 e.preventDefault();
@@ -6615,8 +7053,7 @@ copyButton.title = 'Share Public Link';
                   showToast('Failed to copy link', 'error');
                 });
               }
-            }
-            else if (action === 'delete') openFolderDeleteConfirm(contextMenuFolderId);
+            } else if (action === 'delete') openFolderDeleteConfirm(contextMenuFolderId);
             if (cm) cm.hidden = true;
           });
         });
@@ -6626,7 +7063,7 @@ copyButton.title = 'Share Public Link';
           if (scrollFadeFrame) {
             cancelAnimationFrame(scrollFadeFrame);
           }
-          
+
           scrollFadeFrame = requestAnimationFrame(() => {
             const el = list;
             const scrollTop = el.scrollTop;
@@ -6642,7 +7079,9 @@ copyButton.title = 'Share Public Link';
 
         // Performance: Throttled scroll handler
         const throttledScrollFade = rafThrottle(updateScrollFade);
-        list.addEventListener('scroll', throttledScrollFade, { passive: true });
+        list.addEventListener('scroll', throttledScrollFade, {
+          passive: true
+        });
 
         // ── Create Folder (from dropdown footer) ──
         createBtn.addEventListener('click', () => {
@@ -6653,7 +7092,9 @@ copyButton.title = 'Share Public Link';
           // Close synchronously (skip history.back()) so the modal's pushed
           // history entry lands on top of the dropdown's — the back button
           // then closes the modal first, then the dropdown.
-          close({ fromPopstate: true });
+          close({
+            fromPopstate: true
+          });
           openFolderModal();
         });
 
@@ -6680,7 +7121,10 @@ copyButton.title = 'Share Public Link';
       // ── Optimistic UI helpers (rename/delete/color avoid full-page reloads) ──
 
       // Patch every visible card badge belonging to a folder
-      function patchFolderCards(folderId, { name, color } = {}) {
+      function patchFolderCards(folderId, {
+        name,
+        color
+      } = {}) {
         document.querySelectorAll(`.info-card[data-folder-id="${folderId}"] .card-folder-badge`).forEach(badge => {
           if (color) badge.style.setProperty('--badge-color', `var(--folder-${color})`);
           if (name !== undefined) {
@@ -6764,7 +7208,9 @@ copyButton.title = 'Share Public Link';
         activeFolderId = folderId;
 
         // Mark the new folder active in the shared in-memory state
-        (window.folderData || []).forEach(f => { f.isActive = f.id === folderId; });
+        (window.folderData || []).forEach(f => {
+          f.isActive = f.id === folderId;
+        });
 
         // Selector button + breadcrumb trail
         updateActiveFolderDisplay(name, color);
@@ -6811,25 +7257,41 @@ copyButton.title = 'Share Public Link';
 
       document.getElementById('createFolderConfirmBtn')?.addEventListener('click', async () => {
         const name = document.getElementById('folderNameInput').value.trim();
-        if (!name) { showToast('Folder name cannot be empty', 'error'); return; }
+        if (!name) {
+          showToast('Folder name cannot be empty', 'error');
+          return;
+        }
         const dup = window.folderData.some(f => f.name.toLowerCase() === name.toLowerCase());
-        if (dup) { showToast('A folder with that name already exists', 'error'); return; }
+        if (dup) {
+          showToast('A folder with that name already exists', 'error');
+          return;
+        }
         const btn = document.getElementById('createFolderConfirmBtn');
         btn.disabled = true;
         btn.innerHTML = '<svg class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"></path></svg> Creating...';
         try {
           const res = await fetch('/api/folders', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, color: selectedFolderColor }),
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name,
+              color: selectedFolderColor
+            }),
           });
           const data = await res.json();
           if (!res.ok) {
-            if (res.status === 409) { showToast('A folder with that name already exists', 'error'); return; }
+            if (res.status === 409) {
+              showToast('A folder with that name already exists', 'error');
+              return;
+            }
             showToast(data.message || 'Failed', 'error');
             return;
           }
-          closeOverlay(document.getElementById('folderModal'), 'is-open', null, true, { fromPopstate: true });
+          closeOverlay(document.getElementById('folderModal'), 'is-open', null, true, {
+            fromPopstate: true
+          });
           if (modalHistoryCount > 0) modalHistoryCount--;
           showToast(`Created: ${data.folder.name}`);
 
@@ -6847,8 +7309,12 @@ copyButton.title = 'Share Public Link';
             shortId: f.shortId || null
           });
           window.refreshFolderDropdown && window.refreshFolderDropdown();
-        } catch (err) { showToast('Network error', 'error'); }
-        finally { btn.disabled = false; btn.innerHTML = '<span>Create</span>'; }
+        } catch (err) {
+          showToast('Network error', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Create</span>';
+        }
       });
 
       // ── Rename Folder Modal ──
@@ -6876,25 +7342,40 @@ copyButton.title = 'Share Public Link';
         const modal = document.getElementById('renameFolderModal');
         const folderId = modal.dataset.folderId;
         const name = document.getElementById('renameFolderInput').value.trim();
-        if (!name) { showToast('Folder name cannot be empty', 'error'); return; }
+        if (!name) {
+          showToast('Folder name cannot be empty', 'error');
+          return;
+        }
         const dup = window.folderData.some(f => f.id !== folderId && f.name.toLowerCase() === name.toLowerCase());
-        if (dup) { showToast('A folder with that name already exists', 'error'); return; }
+        if (dup) {
+          showToast('A folder with that name already exists', 'error');
+          return;
+        }
         const btn = document.getElementById('renameFolderConfirmBtn');
         btn.disabled = true;
         btn.innerHTML = '<svg class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"></path></svg> Saving...';
         try {
           const res = await fetch(`/api/folders/${folderId}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name }),
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name
+            }),
           });
           const data = await res.json();
           if (!res.ok) {
-            if (res.status === 409) { showToast('A folder with that name already exists', 'error'); return; }
+            if (res.status === 409) {
+              showToast('A folder with that name already exists', 'error');
+              return;
+            }
             showToast(data.message || 'Failed', 'error');
             return;
           }
-          closeOverlay(modal, 'is-open', null, true, { fromPopstate: true });
+          closeOverlay(modal, 'is-open', null, true, {
+            fromPopstate: true
+          });
           if (modalHistoryCount > 0) modalHistoryCount--;
           showToast('Folder renamed');
           // Optimistic: patch in-memory state + visible DOM, no page reload
@@ -6902,12 +7383,18 @@ copyButton.title = 'Share Public Link';
           if (folder) {
             const wasActive = folder.isActive;
             folder.name = name;
-            patchFolderCards(folderId, { name });
+            patchFolderCards(folderId, {
+              name
+            });
             if (wasActive) updateActiveFolderDisplay(name, folder.color);
           }
           window.refreshFolderDropdown && window.refreshFolderDropdown();
-        } catch (err) { showToast('Network error', 'error'); }
-        finally { btn.disabled = false; btn.innerHTML = '<span>Save</span>'; }
+        } catch (err) {
+          showToast('Network error', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Save</span>';
+        }
       });
 
       // ── Folder Delete Confirm ──
@@ -6930,10 +7417,17 @@ copyButton.title = 'Share Public Link';
         btn.disabled = true;
         btn.innerHTML = '<svg class="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"></path></svg> Deleting...';
         try {
-          const res = await fetch(`/api/folders/${folderId}`, { method: 'DELETE' });
+          const res = await fetch(`/api/folders/${folderId}`, {
+            method: 'DELETE'
+          });
           const data = await res.json();
-          if (!res.ok) { showToast(data.message || 'Failed', 'error'); return; }
-          closeOverlay(modal, 'is-active', null, true, { fromPopstate: true });
+          if (!res.ok) {
+            showToast(data.message || 'Failed', 'error');
+            return;
+          }
+          closeOverlay(modal, 'is-active', null, true, {
+            fromPopstate: true
+          });
           if (modalHistoryCount > 0) modalHistoryCount--;
           showToast(`Folder deleted (${data.orphanedEntries} entries unlinked)`);
           const folder = (window.folderData || []).find(f => f.id === folderId);
@@ -6951,8 +7445,12 @@ copyButton.title = 'Share Public Link';
             updateAllCardBadges();
           }
           window.refreshFolderDropdown && window.refreshFolderDropdown();
-        } catch (err) { showToast('Network error', 'error'); }
-        finally { btn.disabled = false; btn.innerHTML = '<span>Delete</span>'; }
+        } catch (err) {
+          showToast('Network error', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Delete</span>';
+        }
       });
 
       // ── Color Picker Modal ──
@@ -6986,11 +7484,20 @@ copyButton.title = 'Share Public Link';
           try {
             const res = await fetch(`/api/folders/${folderId}/color`, {
               method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ color }),
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                color
+              }),
             });
-            if (!res.ok) { showToast('Failed', 'error'); return; }
-            closeOverlay(modal, 'is-open', null, true, { fromPopstate: true });
+            if (!res.ok) {
+              showToast('Failed', 'error');
+              return;
+            }
+            closeOverlay(modal, 'is-open', null, true, {
+              fromPopstate: true
+            });
             if (modalHistoryCount > 0) modalHistoryCount--;
             showToast('Color updated');
             // Optimistic: patch in-memory state + visible DOM, no page reload
@@ -6998,13 +7505,18 @@ copyButton.title = 'Share Public Link';
             if (folder) {
               const wasActive = folder.isActive;
               folder.color = color;
-              patchFolderCards(folderId, { color });
+              patchFolderCards(folderId, {
+                color
+              });
               if (wasActive) updateActiveFolderDisplay(folder.name, color);
             }
             window.refreshFolderDropdown && window.refreshFolderDropdown();
-          } catch (err) { showToast('Network error', 'error'); }
-          finally {
-            document.querySelectorAll('#colorPickerModal .color-swatch').forEach(s => { s.disabled = false; });
+          } catch (err) {
+            showToast('Network error', 'error');
+          } finally {
+            document.querySelectorAll('#colorPickerModal .color-swatch').forEach(s => {
+              s.disabled = false;
+            });
           }
         });
       });
@@ -7012,7 +7524,9 @@ copyButton.title = 'Share Public Link';
       // Close modals on overlay click
       ['folderModal', 'renameFolderModal', 'colorPickerModal'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener('click', (e) => { if (e.target === el) closeOverlay(el, 'is-open'); });
+        if (el) el.addEventListener('click', (e) => {
+          if (e.target === el) closeOverlay(el, 'is-open');
+        });
       });
       document.getElementById('folderDeleteModal')?.addEventListener('click', (e) => {
         if (e.target.id === 'folderDeleteModal') closeOverlay(e.target, 'is-active');
