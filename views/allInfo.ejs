@@ -2253,7 +2253,9 @@
       .folder-dropdown-item,
       .folder-dropdown-row,
       .folder-dropdown-create svg,
-      .folder-dropdown-item.folder-item-selected,
+      .folder-modal-item.folder-item-selected,
+      .folder-modal-item,
+      .folder-modal-check,
       .folder-dot {
         animation: none !important;
         transition-duration: 0.05s !important;
@@ -2321,6 +2323,11 @@
       -webkit-backdrop-filter: blur(8px);
     }
 
+    button.folder-modal-item:not(:first-child){
+      background-clip: padding-box;
+      border-top: 3px solid transparent;
+    } 
+
     @media (hover: hover) {
       .folder-selector-btn:hover {
         background: rgba(255, 255, 255, 0.07);
@@ -2380,7 +2387,8 @@
       position: absolute;
       top: calc(100% + 10px);
       left: 0;
-      min-width: 280px;
+      /* min-width: 280px; */
+      min-width: 300px;
       max-width: 360px;
       background: linear-gradient(180deg, rgba(19, 29, 53, 0.97) 0%, rgba(11, 18, 35, 0.97) 100%);
       border: 1px solid rgba(255, 255, 255, 0.06);
@@ -2505,7 +2513,7 @@
       flex: 1;
       overflow-y: auto;
       overscroll-behavior: contain;
-      padding: 6px;
+      padding: 8px 6px 8px;
       max-height: calc(9 * 48px);
       scrollbar-width: thin;
       scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
@@ -2831,8 +2839,109 @@
     }
 
     /* Selection animation */
-    .folder-dropdown-item.folder-item-selected {
+    .folder-modal-item.folder-item-selected {
       animation: folderItemSelect 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .folder-modal-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      /* padding: 10px 10px; */
+      padding: 8px 10px;
+      border: none;
+      background: none;
+      border-radius: 10px;
+      color: var(--text-2);
+      font: 500 14px var(--font-body);
+      cursor: pointer;
+      text-align: left;
+      position: relative;
+      transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .folder-modal-item:hover,
+    .folder-modal-item.is-highlighted {
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text);
+    }
+
+    .folder-modal-item:active {
+      transform: scale(0.985);
+    }
+
+    .folder-modal-item.is-active {
+      background: rgba(56, 189, 248, 0.09);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .folder-modal-item.is-active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 16px;
+      background: var(--cyan);
+      border-radius: 999px;
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .folder-modal-item[hidden] {
+      display: none;
+    }
+
+    .folder-modal-check {
+      width: 14px;
+      flex-shrink: 0;
+      color: var(--cyan);
+      opacity: 0;
+      transform: scale(0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.18s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .folder-modal-item.is-active .folder-modal-check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .folder-modal-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .folder-modal-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      font-weight: 500;
+      letter-spacing: 0.005em;
+    }
+
+    .folder-modal-count {
+      font: 500 10.5px var(--font-mono);
+      color: var(--text-3);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 8px;
+      border-radius: 100px;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      min-width: 24px;
+      text-align: center;
     }
 
     .folder-dropdown-check {
@@ -2908,14 +3017,14 @@
       transition: opacity 0.16s, background 0.16s, color 0.16s, transform 0.16s, box-shadow 0.16s;
     }
 
-    .folder-dropdown-row:hover .folder-dropdown-menu-btn,
-    .folder-dropdown-row:focus-within .folder-dropdown-menu-btn,
-    .folder-dropdown-item.is-active .folder-dropdown-menu-btn,
+    .folder-modal-item:hover .folder-dropdown-menu-btn,
+    .folder-modal-item:focus-within .folder-dropdown-menu-btn,
+    .folder-modal-item.is-active .folder-dropdown-menu-btn,
     .folder-dropdown-menu-btn:focus-visible {
       opacity: 0.8;
     }
 
-    .folder-dropdown-item.is-active .folder-dropdown-menu-btn {
+    .folder-modal-item.is-active .folder-dropdown-menu-btn {
       opacity: 1;
     }
 
@@ -3376,6 +3485,13 @@
         border-radius: 10px;
       }
 
+      .folder-modal-item {
+        padding: 10px 14px;
+        min-height: 44px;
+        font-size: 0.9rem;
+        border-radius: 10px;
+      }
+
       .folder-dropdown-section-header {
         padding: 14px 18px 8px;
       }
@@ -3594,30 +3710,31 @@
           </div>
 
           <div class="folder-dropdown-list" id="folderList" role="listbox" aria-label="Folders">
-            <div class="folder-dropdown-section-header" id="folderAllHeader">All Folders</div>
-
-            <button class="folder-dropdown-item <%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'is-active' : '' %>" data-folder="" role="option" aria-selected="<%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'true' : 'false' %>">
-              <span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>
-              <span>All</span>
+            <button type="button" class="folder-modal-item <%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'is-active' : '' %>" data-value="" data-name="No folder" role="option" aria-selected="<%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'true' : 'false' %>">
+              <span class="folder-modal-check" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+              </span>
+              <span class="folder-modal-dot" style="background:#64748b"></span>
+              <span class="folder-modal-name">No folder</span>
             </button>
 
             <% if (typeof folders !== 'undefined' && folders.length > 0) { %>
             <% folders.forEach(function(folder) { %>
-            <div class="folder-dropdown-row">
-              <div class="folder-dropdown-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-folder="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-created="<%= folder.createdAt %>" data-short-id="<%= folder.shortId || '' %>" role="option" aria-selected="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>" tabindex="-1">
-                <span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>
-                <span class="folder-dot" style="background: var(--folder-<%= folder.color %>)"></span>
-                <span class="folder-dropdown-name"><%= folder.name || 'Untitled' %></span>
-                <span class="folder-dropdown-count"><%= folder.entryCount %></span>
-                <button class="folder-dropdown-menu-btn" data-folder-id="<%= folder._id %>" data-folder-name="<%= folder.name || 'Untitled' %>" data-folder-color="<%= folder.color %>" data-folder-short-id="<%= folder.shortId || '' %>" aria-label="<%= folder.name || 'Untitled' %> options" title="Folder options">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="5" r="1" />
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="12" cy="19" r="1" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+            <button type="button" class="folder-modal-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-value="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-count="<%= folder.entryCount %>" data-created="<%= folder.createdAt %>" data-short-id="<%= folder.shortId || '' %>" role="option" aria-selected="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>">
+              <span class="folder-modal-check" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+              </span>
+              <span class="folder-modal-dot" style="background: var(--folder-<%= folder.color %>)"></span>
+              <span class="folder-modal-name"><%= folder.name || 'Untitled' %></span>
+              <span class="folder-modal-count"><%= folder.entryCount %></span>
+              <button type="button" class="folder-dropdown-menu-btn" data-folder-id="<%= folder._id %>" data-folder-name="<%= folder.name %>" data-folder-color="<%= folder.color %>" data-folder-short-id="<%= folder.shortId || '' %>" aria-label="<%= folder.name %> options" title="Folder options">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="5" r="1" />
+                  <circle cx="12" cy="12" r="1" />
+                  <circle cx="12" cy="19" r="1" />
+                </svg>
+              </button>
+            </button>
             <% }) %>
             <% } %>
 
@@ -6046,7 +6163,6 @@
         const counterText = document.getElementById('folderCounterText');
         const list = document.getElementById('folderList');
         const empty = document.getElementById('folderEmpty');
-        const allHeader = document.getElementById('folderAllHeader');
         const createBtn = document.getElementById('folderDropdownCreate');
         const createBtnLabel = document.getElementById('folderCreateText');
         let createButtonMode = 'new'; // 'new' | 'create'
@@ -6061,7 +6177,7 @@
         }
 
         function getAllItems() {
-          return Array.from(list.querySelectorAll('.folder-dropdown-item[data-folder]:not([data-folder=""])'));
+          return Array.from(list.querySelectorAll('.folder-modal-item[data-value]:not([data-value=""])'));
         }
         let highlighted = -1;
         let savedScrollTop = 0;
@@ -6096,13 +6212,13 @@
         function initFolderData() {
           folderData = [];
           getAllItems().forEach(opt => {
-            const id = opt.dataset.folder;
+            const id = opt.dataset.value;
             if (!id) return;
             folderData.push({
               id: id,
               name: opt.dataset.name || 'Untitled',
               color: opt.dataset.color || 'blue',
-              count: opt.querySelector('.folder-dropdown-count')?.textContent || '0',
+              count: opt.querySelector('.folder-modal-count')?.textContent || '0',
               isActive: opt.classList.contains('is-active'),
               createdAt: opt.dataset.created || null,
               shortId: opt.dataset.shortId || null
@@ -6391,18 +6507,14 @@
           function renderZeroStateIfNeeded() {
             if (list.querySelector('#folderZero')) return;
             const fragment = document.createDocumentFragment();
-            fragment.append(allHeader);
-            const allRow = document.createElement('div');
-            allRow.className = 'folder-dropdown-row';
             const allBtn = document.createElement('button');
-            allBtn.className = 'folder-dropdown-item is-active';
-            allBtn.dataset.folder = '';
-            allBtn.dataset.name = 'All';
+            allBtn.className = 'folder-modal-item is-active';
+            allBtn.dataset.value = '';
+            allBtn.dataset.name = 'No folder';
             allBtn.setAttribute('role', 'option');
             allBtn.setAttribute('aria-selected', 'true');
-            allBtn.innerHTML = '<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dropdown-name">All</span>';
-            allRow.appendChild(allBtn);
-            fragment.append(allRow);
+            allBtn.innerHTML = '<span class="folder-modal-check" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span><span class="folder-modal-dot" style="background:#64748b"></span><span class="folder-modal-name">No folder</span>';
+            fragment.append(allBtn);
             const zero = document.createElement('div');
             zero.className = 'folder-dropdown-zero';
             zero.id = 'folderZero';
@@ -6416,7 +6528,6 @@
           // or showing the search-empty "No folders found" copy
           if (folderData.length === 0 && !searching) {
             empty.hidden = true;
-            allHeader.hidden = false;
             counter.hidden = true;
             setCreateButtonMode('new');
             renderZeroStateIfNeeded();
@@ -6427,40 +6538,32 @@
           // toggle visibility instead of tearing down and recreating every
           // row (createElement + wireMenuButton per row per keystroke).
           // Full rebuilds (open/clear/refresh) pass immediate=true.
-          if (!immediate && list.querySelector('.folder-dropdown-row')) {
+          if (!immediate && list.querySelector('.folder-modal-item')) {
             let visibleCount = 0;
             let exactMatch = false;
-            const visibleRows = [];
-            list.querySelectorAll('.folder-dropdown-row').forEach(row => {
-              const item = row.querySelector('.folder-dropdown-item[data-folder]');
-              if (!item || !item.dataset.folder) return; // "All" row handled after the loop
-              const f = folderData.find(x => x.id === item.dataset.folder);
+            const visibleItems = [];
+            list.querySelectorAll('.folder-modal-item').forEach(item => {
+              const value = item.dataset.value || '';
+              const f = value ? folderData.find(x => x.id === value) : null;
               const name = f ? f.name : (item.dataset.name || '');
               const match = !searching || name.toLowerCase().includes(q);
               if (match) {
-                row.hidden = false;
+                item.hidden = false;
                 visibleCount++;
                 if (name.toLowerCase() === q) exactMatch = true;
-                const nameEl = item.querySelector('.folder-dropdown-name');
+                const nameEl = item.querySelector('.folder-modal-name');
                 if (nameEl) {
                   const html = searching ? highlightMatch(escapeHTML(name), escapeHTML(q)) : escapeHTML(name);
                   if (nameEl.innerHTML !== html) nameEl.innerHTML = html;
                 }
-                visibleRows.push({
-                  row,
-                  name
-                });
+                visibleItems.push({ item, name });
               } else {
-                row.hidden = true;
+                item.hidden = true;
               }
             });
 
-            // While searching, reorder visible rows by match position first (a name
-            // starting with the query ranks above one where the query is buried mid-word),
-            // then alphabetically as a tiebreaker. Moving existing nodes keeps their
-            // event listeners intact — no recreation needed.
-            if (searching && visibleRows.length > 1) {
-              visibleRows
+            if (searching && visibleItems.length > 1) {
+              visibleItems
                 .sort((a, b) => {
                   const aIdx = a.name.toLowerCase().indexOf(q);
                   const bIdx = b.name.toLowerCase().indexOf(q);
@@ -6469,15 +6572,10 @@
                     sensitivity: 'base'
                   });
                 })
-                .forEach(({
-                  row
-                }) => list.appendChild(row));
+                .forEach(({ item }) => list.appendChild(item));
             }
 
             const isEmptyResult = searching && visibleCount === 0;
-            const allRow = list.querySelector('.folder-dropdown-item[data-folder=""]');
-            if (allRow) allRow.closest('.folder-dropdown-row').hidden = isEmptyResult;
-            allHeader.hidden = visibleCount === 0;
             if (searching) {
               const showCreate = Boolean(q) && !exactMatch;
               counter.hidden = isEmptyResult;
@@ -6519,50 +6617,45 @@
 
           // Performance: Use DocumentFragment for batch DOM updates
           const fragment = document.createDocumentFragment();
-          fragment.append(allHeader);
 
           const isEmptyResult = searching && matched.length === 0;
 
-          // "All" item — skipped when a search has zero matches
-          if (!isEmptyResult) {
-            const isAllActive = matched.length > 0 ? !matched.some(f => f.isActive) : true;
-            const allRow = document.createElement('div');
-            allRow.className = 'folder-dropdown-row';
-            const allBtn = document.createElement('button');
-            allBtn.className = 'folder-dropdown-item';
-            if (isAllActive) allBtn.classList.add('is-active');
-            allBtn.dataset.folder = '';
-            allBtn.dataset.name = 'All';
-            allBtn.setAttribute('role', 'option');
-            allBtn.setAttribute('aria-selected', isAllActive ? 'true' : 'false');
-            allBtn.innerHTML = '<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span><span class="folder-dropdown-name">All</span>';
-            allRow.appendChild(allBtn);
-            fragment.append(allRow);
+          // "No folder" option — included when not searching, or when it matches the query
+          const noFolderName = 'No folder';
+          const noFolderMatches = !searching || noFolderName.toLowerCase().includes(q);
+          if (noFolderMatches) {
+            const isNoFolderActive = matched.length === 0 || !matched.some(f => f.isActive);
+            const noFolderBtn = document.createElement('button');
+            noFolderBtn.className = 'folder-modal-item';
+            if (isNoFolderActive) noFolderBtn.classList.add('is-active');
+            noFolderBtn.dataset.value = '';
+            noFolderBtn.dataset.name = noFolderName;
+            noFolderBtn.setAttribute('role', 'option');
+            noFolderBtn.setAttribute('aria-selected', isNoFolderActive ? 'true' : 'false');
+            noFolderBtn.innerHTML = '<span class="folder-modal-check" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span><span class="folder-modal-dot" style="background:#64748b"></span><span class="folder-modal-name">' + noFolderName + '</span>';
+            fragment.append(noFolderBtn);
           }
 
           // Performance: Reuse template for folder items
           matched.forEach(f => {
-            const row = document.createElement('div');
-            row.className = 'folder-dropdown-row';
-            const btn = document.createElement('div');
-            btn.className = 'folder-dropdown-item';
-            btn.tabIndex = -1;
+            const btn = document.createElement('button');
+            btn.className = 'folder-modal-item';
             if (f.isActive) btn.classList.add('is-active');
-            btn.dataset.folder = f.id;
+            btn.dataset.value = f.id;
             btn.dataset.name = f.name;
             btn.dataset.color = f.color;
+            btn.dataset.count = f.count;
+            btn.dataset.created = f.createdAt || '';
             if (f.shortId) btn.dataset.shortId = f.shortId;
             btn.setAttribute('role', 'option');
             btn.setAttribute('aria-selected', f.isActive ? 'true' : 'false');
 
             const safeName = escapeHTML(f.name);
             const nameDisplay = searching ? highlightMatch(safeName, escapeHTML(q)) : safeName;
-            btn.innerHTML = '<span class="folder-dropdown-check" aria-hidden="true">&#10003;</span>' +
-              '<span class="folder-dot" style="background:var(--folder-' + f.color + ')"></span>' +
-              '<span class="folder-dropdown-name" title="' + safeName + '">' + nameDisplay + '</span>' +
-              '<span class="folder-dropdown-count">' + f.count + '</span>';
-
-            row.appendChild(btn);
+            btn.innerHTML = '<span class="folder-modal-check" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>' +
+              '<span class="folder-modal-dot" style="background:var(--folder-' + f.color + ')"></span>' +
+              '<span class="folder-modal-name" title="' + safeName + '">' + nameDisplay + '</span>' +
+              '<span class="folder-modal-count">' + f.count + '</span>';
 
             const menuBtn = document.createElement('button');
             menuBtn.className = 'folder-dropdown-menu-btn';
@@ -6576,13 +6669,11 @@
             wireMenuButton(menuBtn);
             btn.appendChild(menuBtn);
 
-            fragment.append(row);
+            fragment.append(btn);
           });
 
           // Performance: Single repaint with replaceChildren
           list.replaceChildren(fragment);
-
-          allHeader.hidden = matched.length === 0;
 
           if (searching) {
             const exactMatch = matched.some(f => f.name.toLowerCase() === q);
@@ -6603,7 +6694,7 @@
         function updateHighlight() {
           const visible = getVisibleItems();
           if (search.value.length > 0) {
-            highlighted = visible.findIndex(o => o.dataset.folder);
+            highlighted = visible.findIndex(o => o.dataset.value);
             if (highlighted < 0) highlighted = -1;
           } else {
             highlighted = visible.findIndex(o => o.classList.contains('is-active'));
@@ -6717,9 +6808,7 @@
 
         // ── Highlighting & Selection ── Enhanced for a11y
         function getVisibleItems() {
-          // Skip rows hidden by the search fast-path filter
-          return Array.from(list.querySelectorAll('.folder-dropdown-item'))
-            .filter(o => !o.closest('.folder-dropdown-row[hidden]'));
+          return Array.from(list.querySelectorAll('.folder-modal-item')).filter(o => !o.hidden);
         }
 
         function highlightOption() {
@@ -6758,7 +6847,7 @@
           }
 
           // Micro-interaction: Animate button with success state
-          const checkmark = item.querySelector('.folder-dropdown-check');
+          const checkmark = item.querySelector('.folder-modal-check');
           if (checkmark) {
             checkmark.style.animation = 'checkPulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
           }
@@ -6771,7 +6860,7 @@
           // Delay navigation to show animation
           setTimeout(() => {
             const folderShortId = item.dataset.shortId || null;
-            const folderId = item.dataset.folder || null;
+            const folderId = item.dataset.value || null;
             const folderName = item.dataset.name || '';
             const folderColor = item.dataset.color || 'blue';
             saveRecentFolderId(folderId);
@@ -6868,7 +6957,7 @@
 
         list.addEventListener('click', e => {
           if (e.target.closest('.folder-dropdown-menu-btn')) return;
-          const item = e.target.closest('.folder-dropdown-item');
+          const item = e.target.closest('.folder-modal-item');
           if (item) {
             e.preventDefault();
             selectItem(item);
