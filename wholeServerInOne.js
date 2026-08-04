@@ -17,9 +17,6 @@ const viewsPath = Path.join(__dirname, "views");
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-// ==========================================
-// MIDDLEWARE
-// ==========================================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -31,9 +28,6 @@ app.use(express.static(Path.join(__dirname, "public")));
 app.set("views", viewsPath);
 app.set("view engine", "ejs");
 
-// ==========================================
-// MONGODB
-// ==========================================
 const dbname = process.env.MONGO_DB_NAME || "contacts-api";
 const URI = process.env.MONGO_URI;
 
@@ -46,11 +40,28 @@ let actuallDB;
 async function createIndexes() {
   const infoCollection = actuallDB.collection("anyInformation");
   const usersCollection = actuallDB.collection("users");
+  const foldersCollection = actuallDB.collection("folders");
+
+  try {
+    await infoCollection.dropIndex("shortId_1");
+  } catch {
+    // Index didn't exist yet, ignore
+  }
+
+  try {
+    await foldersCollection.dropIndex("shortId_1");
+  } catch {
+    // Index didn't exist yet, ignore
+  }
 
   await Promise.all([
     infoCollection.createIndex({ email: 1, _id: -1 }),
     infoCollection.createIndex({ isPublic: 1, _id: -1 }),
+    infoCollection.createIndex({ email: 1, folderId: 1, _id: -1 }),
+    infoCollection.createIndex({ shortId: 1 }, { unique: true, sparse: true }),
     usersCollection.createIndex({ email: 1 }, { unique: true }),
+    foldersCollection.createIndex({ email: 1, name: 1 }, { unique: true }),
+    foldersCollection.createIndex({ shortId: 1 }, { unique: true, sparse: true }),
   ]);
 
   console.log("Database indexes are ready");
@@ -86,9 +97,39 @@ function getCollection(collectionName = "anyInformation") {
 
 await connectDB();
 
-// ==========================================
-// MARKDOWN SERVICE
-// ==========================================
+const BASE62_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function base62Encode(buffer) {
+  let num = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    num = (num << 8) | buffer[i];
+  }
+
+  if (num === 0) return "0";
+
+  const chars = [];
+  while (num > 0) {
+    chars.push(BASE62_ALPHABET[num % 62]);
+    num = Math.floor(num / 62);
+  }
+  return chars.reverse().join("");
+}
+
+function generateShortId() {
+  const bytes = new Uint8Array(5);
+  crypto.getRandomValues(bytes);
+  return base62Encode(bytes);
+}
+
+async function ensureUniqueShortId(collection, maxAttempts = 10) {
+  for (let i = 0; i < maxAttempts; i++) {
+    const shortId = generateShortId();
+    const existing = await collection.findOne({ shortId });
+    if (!existing) return shortId;
+  }
+  throw new Error("Failed to generate unique shortId");
+}
+
 marked.setOptions({
   breaks: true,
   gfm: true,
@@ -162,9 +203,6 @@ function renderMarkdown(text = "") {
   });
 }
 
-// ==========================================
-// ERROR HANDLER MIDDLEWARE
-// ==========================================
 const ERROR_PAGES = { 404: "404.html", 500: "500.html" };
 const FILE_READ_ERROR_PAGE = "fserr.html";
 
@@ -226,9 +264,6 @@ function errorHandler(viewsPathLocal) {
   };
 }
 
-// ==========================================
-// SERVICES
-// ==========================================
 const SORT_OPTIONS = new Set(["updated", "created"]);
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
@@ -340,7 +375,6 @@ const getPagedCollection = async ({
   return { items, nextCursor, hasMore, totalCount };
 };
 
-// --- Auth Services ---
 const findUserByEmail = async (email) => {
   const collection = getCollection("users");
   return await collection.findOne({ email });
@@ -377,7 +411,7 @@ const getPagedUserData = async (email, cursor, limit = 20) => {
   return getPagedCollection({ cursor, filter: { email }, limit });
 };
 
-const getPagedUserDataWithVisibility = async (email, cursor, limit = 20, visibility = "all", search = "", sort = "updated") => {
+const getPagedUserDataWithVisibility = async (email, cursor, limit = 20, visibility = "all", search = "", sort = "updated", folderId = null) => {
   const filter = { email };
 
   if (visibility === "favorite") {
@@ -388,6 +422,10 @@ const getPagedUserDataWithVisibility = async (email, cursor, limit = 20, visibil
     filter.isPublic = { $ne: true };
   }
 
+  if (folderId && ObjectId.isValid(folderId)) {
+    filter.folderId = new ObjectId(folderId);
+  }
+
   return getPagedCollection({ cursor, filter, limit, search, sort });
 };
 
@@ -395,7 +433,7 @@ const getPagedAllData = async (cursor, limit = 20) => {
   return getPagedCollection({ cursor, limit });
 };
 
-const getPagedAllDataWithVisibility = async (cursor, limit = 20, visibility = "all", search = "", sort = "updated") => {
+const getPagedAllDataWithVisibility = async (cursor, limit = 20, visibility = "all", search = "", sort = "updated", folderId = null) => {
   const filter = { email: { $ne: "contacts@gmail.com" } };
 
   if (visibility === "favorite") {
@@ -404,6 +442,10 @@ const getPagedAllDataWithVisibility = async (cursor, limit = 20, visibility = "a
     filter.isPublic = true;
   } else if (visibility === "private") {
     filter.isPublic = { $ne: true };
+  }
+
+  if (folderId && ObjectId.isValid(folderId)) {
+    filter.folderId = new ObjectId(folderId);
   }
 
   return getPagedCollection({ cursor, filter, limit, search, sort });
@@ -420,7 +462,21 @@ const getPagedUsers = async (cursor, limit = 20, search = "", sort = "updated") 
   });
 };
 
-// --- Public Services ---
+const findEntryByShortId = async (shortId) => {
+  const collection = getCollection("anyInformation");
+  return collection.findOne({ shortId });
+};
+
+const setShortIdForEntry = async (entryId) => {
+  const collection = getCollection("anyInformation");
+  const shortId = await ensureUniqueShortId(collection);
+  await collection.updateOne(
+    { _id: new ObjectId(entryId) },
+    { $set: { shortId } }
+  );
+  return shortId;
+};
+
 const normalizePublicEntry = (entry = {}) => {
   return {
     _id: entry._id?.toString(),
@@ -431,11 +487,54 @@ const normalizePublicEntry = (entry = {}) => {
     isPublic: entry.isPublic === true,
     createdAt: entry.createdAt || entry._id?.getTimestamp?.() || null,
     updatedAt: entry.updatedAt || null,
+    shortId: entry.shortId || null,
   };
 };
 
+const getPagedPublicEntriesByFilter = async ({
+  cursor = null,
+  filter = {},
+  limit = 20,
+  sort = "updated",
+}) => {
+  const collection = getCollection("anyInformation");
+  const normalizedSort = normalizeSort(sort);
+  const cursorQuery = getSortQuery(cursor);
+  const pipeline = [
+    { $match: filter },
+    { $addFields: { sortDate: getSortDateExpression(normalizedSort) } },
+  ];
+
+  if (Object.keys(cursorQuery).length > 0) {
+    pipeline.push({ $match: cursorQuery });
+  }
+
+  pipeline.push(
+    { $sort: { sortDate: -1, _id: -1 } },
+    { $limit: limit + 1 },
+    { $project: { sortDate: 0 } },
+  );
+
+  const [rawItems, totalCount] = await Promise.all([
+    collection.aggregate(pipeline).toArray(),
+    collection.countDocuments(filter),
+  ]);
+
+  const hasMore = rawItems.length > limit;
+  const items = hasMore ? rawItems.slice(0, limit) : rawItems;
+  const nextCursor =
+    hasMore && items.length > 0 ? encodeCursor(items[items.length - 1], normalizedSort) : null;
+
+  return { items, nextCursor, hasMore, totalCount };
+};
+
 const getPagedPublicEntries = async (cursor, limit = 20, sort = "updated") => {
-  return getPagedCollection({ cursor, filter: { isPublic: true }, limit, sort });
+  return getPagedPublicEntriesByFilter({
+    cursor,
+    filter: { isPublic: true },
+    limit,
+    sort,
+  });
 };
 
 const searchPublicEntries = async (keyword, cursor, limit = 20, sort = "updated") => {
@@ -451,13 +550,25 @@ const searchPublicEntries = async (keyword, cursor, limit = 20, sort = "updated"
     $or: [{ name: regex }, { info: regex }],
   };
 
-  return getPagedCollection({ cursor, filter, limit, sort });
+  return getPagedPublicEntriesByFilter({ cursor, filter, limit, sort });
 };
 
 const findPublicEntryById = async (id) => {
   const collection = getCollection("anyInformation");
 
-  return collection.findOne({ _id: new ObjectId(id), isPublic: true });
+  return collection.findOne({
+    _id: new ObjectId(id),
+    isPublic: true,
+  });
+};
+
+const findPublicEntryByShortId = async (shortId) => {
+  const collection = getCollection("anyInformation");
+
+  return collection.findOne({
+    shortId,
+    isPublic: true,
+  });
 };
 
 const getPublicEntriesForSitemap = async () => {
@@ -466,31 +577,232 @@ const getPublicEntriesForSitemap = async () => {
   return collection
     .find(
       { isPublic: true },
-      { projection: { _id: 1, createdAt: 1, updatedAt: 1 } },
+      {
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          shortId: 1,
+        },
+      },
     )
     .sort({ updatedAt: -1, createdAt: -1, _id: -1 })
     .toArray();
 };
 
-// ==========================================
-// SOCKET HELPERS
-// ==========================================
-const getUserRoom = (email = "") => `user:${String(email).toLowerCase()}`;
+const VALID_COLORS = new Set(["blue", "purple", "green", "red", "orange", "pink"]);
 
-const emitEntryToPrivateAudience = (io, ownerEmail, event, payload) => {
-  io.to(getUserRoom(ownerEmail)).to("admins").emit(event, payload);
+const listFolders = async (email) => {
+  const folders = await getCollection("folders")
+    .find({ email })
+    .sort({ name: 1 })
+    .toArray();
+
+  if (folders.length === 0) return [];
+
+  const folderIds = folders.map((f) => f._id);
+  const counts = await getCollection("anyInformation")
+    .aggregate([
+      { $match: { folderId: { $in: folderIds } } },
+      { $group: { _id: "$folderId", count: { $sum: 1 } } },
+    ])
+    .toArray();
+
+  const countMap = new Map(counts.map((c) => [c._id.toString(), c.count]));
+
+  return folders.map((f) => ({
+    _id: f._id,
+    name: f.name,
+    color: f.color,
+    entryCount: countMap.get(f._id.toString()) || 0,
+    createdAt: f.createdAt,
+    shortId: f.shortId || null,
+  }));
 };
 
-const emitEntryToAudiences = ({ io, ownerEmail, event, payload, isPublic = false }) => {
-  io.to(getUserRoom(ownerEmail)).to("admins").emit(event, payload);
-  if (isPublic) {
-    io.to("public").emit(event, payload);
+const createFolder = async (email, name, color) => {
+  const trimmed = (name || "").trim();
+  if (!trimmed || trimmed.length > 255) {
+    throw { statusCode: 400, message: "Folder name must be 1-255 characters." };
+  }
+  if (!VALID_COLORS.has(color)) {
+    throw { statusCode: 400, message: "Invalid color." };
+  }
+
+  const existing = await getCollection("folders").findOne({ email, name: trimmed });
+  if (existing) {
+    throw { statusCode: 409, message: "A folder with this name already exists." };
+  }
+
+  const folder = { email, name: trimmed, color, createdAt: new Date() };
+  const result = await getCollection("folders").insertOne(folder);
+  const createdFolder = { ...folder, _id: result.insertedId };
+
+  try {
+    const shortId = await ensureUniqueShortId(getCollection("folders"));
+    await getCollection("folders").updateOne(
+      { _id: result.insertedId },
+      { $set: { shortId } }
+    );
+    return { ...createdFolder, shortId };
+  } catch (err) {
+    console.error("Failed to generate shortId for folder:", err);
+    return createdFolder;
   }
 };
 
-// ==========================================
-// AUTH CONTROLLERS
-// ==========================================
+const renameFolder = async (email, folderId, name) => {
+  if (!ObjectId.isValid(folderId)) {
+    throw { statusCode: 400, message: "Invalid folder ID." };
+  }
+
+  const folder = await getCollection("folders").findOne({
+    _id: new ObjectId(folderId),
+    email,
+  });
+  if (!folder) {
+    throw { statusCode: 404, message: "Folder not found." };
+  }
+
+  const trimmed = (name || "").trim();
+  if (!trimmed || trimmed.length > 255) {
+    throw { statusCode: 400, message: "Folder name must be 1-255 characters." };
+  }
+
+  const duplicate = await getCollection("folders").findOne({
+    email,
+    name: trimmed,
+    _id: { $ne: new ObjectId(folderId) },
+  });
+  if (duplicate) {
+    throw { statusCode: 409, message: "A folder with this name already exists." };
+  }
+
+  await getCollection("folders").updateOne(
+    { _id: new ObjectId(folderId) },
+    { $set: { name: trimmed } }
+  );
+
+  await getCollection("anyInformation").updateMany(
+    { folderId: new ObjectId(folderId) },
+    { $set: { folderName: trimmed } }
+  );
+
+  return { _id: folderId, name: trimmed, color: folder.color };
+};
+
+const updateColor = async (email, folderId, color) => {
+  if (!VALID_COLORS.has(color)) {
+    throw { statusCode: 400, message: "Invalid color." };
+  }
+  if (!ObjectId.isValid(folderId)) {
+    throw { statusCode: 400, message: "Invalid folder ID." };
+  }
+
+  const folder = await getCollection("folders").findOne({
+    _id: new ObjectId(folderId),
+    email,
+  });
+  if (!folder) {
+    throw { statusCode: 404, message: "Folder not found." };
+  }
+
+  await getCollection("folders").updateOne(
+    { _id: new ObjectId(folderId) },
+    { $set: { color } }
+  );
+
+  await getCollection("anyInformation").updateMany(
+    { folderId: new ObjectId(folderId) },
+    { $set: { folderColor: color } }
+  );
+
+  return { _id: folderId, name: folder.name, color };
+};
+
+const deleteFolder = async (email, folderId) => {
+  if (!ObjectId.isValid(folderId)) {
+    throw { statusCode: 400, message: "Invalid folder ID." };
+  }
+
+  const folder = await getCollection("folders").findOne({
+    _id: new ObjectId(folderId),
+    email,
+  });
+  if (!folder) {
+    throw { statusCode: 404, message: "Folder not found." };
+  }
+
+  const result = await getCollection("anyInformation").updateMany(
+    { folderId: new ObjectId(folderId) },
+    { $set: { folderId: null, folderName: null, folderColor: null } }
+  );
+
+  await getCollection("folders").deleteOne({ _id: new ObjectId(folderId) });
+
+  return { deletedFolderId: folderId, orphanedEntries: result.modifiedCount };
+};
+
+const moveEntryToFolder = async (email, entryId, folderId) => {
+  if (!ObjectId.isValid(entryId)) {
+    throw { statusCode: 400, message: "Invalid entry ID." };
+  }
+
+  const entry = await getCollection("anyInformation").findOne({
+    _id: new ObjectId(entryId),
+    email,
+  });
+  if (!entry) {
+    throw { statusCode: 404, message: "Entry not found." };
+  }
+
+  let folderName = null;
+  let folderColor = null;
+  let resolvedFolderId = null;
+
+  if (folderId && ObjectId.isValid(folderId)) {
+    const folder = await getCollection("folders").findOne({
+      _id: new ObjectId(folderId),
+      email,
+    });
+    if (!folder) {
+      throw { statusCode: 404, message: "Folder not found." };
+    }
+    resolvedFolderId = folder._id;
+    folderName = folder.name;
+    folderColor = folder.color;
+  }
+
+  await getCollection("anyInformation").updateOne(
+    { _id: new ObjectId(entryId) },
+    { $set: { folderId: resolvedFolderId, folderName, folderColor } }
+  );
+
+  return {
+    _id: entryId,
+    folderId: resolvedFolderId ? resolvedFolderId.toString() : null,
+    folderName,
+    folderColor,
+  };
+};
+
+const findFolderByShortId = async (shortId) => {
+  if (!shortId || typeof shortId !== "string" || shortId.length > 20) {
+    return null;
+  }
+  return getCollection("folders").findOne({ shortId });
+};
+
+const setShortIdForFolder = async (folderId) => {
+  const collection = getCollection("folders");
+  const shortId = await ensureUniqueShortId(collection);
+  await collection.updateOne(
+    { _id: new ObjectId(folderId) },
+    { $set: { shortId } }
+  );
+  return shortId;
+};
+
 const COOKIE_OPTIONS = { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 30 };
 
 const setUserCookies = (res, user) => {
@@ -506,6 +818,26 @@ function clearUserCookies(res) {
     res.clearCookie(cookie);
   });
 }
+
+const getUserRoom = (email = "") => `user:${String(email).toLowerCase()}`;
+
+const emitEntryToPrivateAudience = (io, ownerEmail, event, payload) => {
+  io.to(getUserRoom(ownerEmail)).to("admins").emit(event, payload);
+};
+
+const emitEntryToAudiences = ({ io, ownerEmail, event, payload, isPublic = false }) => {
+  io.to(getUserRoom(ownerEmail)).to("admins").emit(event, payload);
+  if (isPublic) {
+    io.to("public").emit(event, payload);
+  }
+};
+
+const resolveFolderId = async (rawFolderId) => {
+  if (!rawFolderId || typeof rawFolderId !== "string") return null;
+  if (ObjectId.isValid(rawFolderId)) return rawFolderId;
+  const folder = await findFolderByShortId(rawFolderId);
+  return folder ? folder._id.toString() : null;
+};
 
 const getHome = async (req, res, next) => {
   const isLoggedIn = req.cookies.email && req.cookies.password;
@@ -531,16 +863,83 @@ const getHome = async (req, res, next) => {
       ? req.query.sort
       : "updated";
 
+    const rawFolderId = req.query.folderId;
+    const folderId = await resolveFolderId(rawFolderId);
+
     let page;
     let isMaster = false;
 
     if (user.password === "admin" && user.email === "admin@gmail.com") {
-      page = await getPagedAllDataWithVisibility(null, DEFAULT_PAGE_SIZE, visibility, keyword, sort);
-    } else if (user.password === "master" && user.email === "master@gmail.com") {
+      page = await getPagedAllDataWithVisibility(
+        null,
+        DEFAULT_PAGE_SIZE,
+        visibility,
+        keyword,
+        sort,
+        folderId,
+      );
+    } else if (
+      user.password === "master" &&
+      user.email === "master@gmail.com"
+    ) {
       page = await getPagedUsers(null, DEFAULT_PAGE_SIZE, keyword, sort);
       isMaster = true;
     } else {
-      page = await getPagedUserDataWithVisibility(user.email, null, DEFAULT_PAGE_SIZE, visibility, keyword, sort);
+      page = await getPagedUserDataWithVisibility(
+        user.email,
+        null,
+        DEFAULT_PAGE_SIZE,
+        visibility,
+        keyword,
+        sort,
+        folderId,
+      );
+    }
+
+    let foldersWithCounts = [];
+    let activeFolderName = null;
+    let activeFolderColor = null;
+
+    if (!isMaster) {
+      const folders = await getCollection("folders")
+        .find({ email: user.email })
+        .sort({ name: 1 })
+        .toArray();
+
+      if (folders.length > 0) {
+        const foldersWithoutShortId = folders.filter((f) => !f.shortId);
+        for (const folder of foldersWithoutShortId) {
+          try {
+            const shortId = await setShortIdForFolder(folder._id.toString());
+            folder.shortId = shortId;
+          } catch (err) {
+            console.error("Failed to generate shortId for folder:", folder._id, err);
+          }
+        }
+
+        const folderIds = folders.map((f) => f._id);
+        const counts = await getCollection("anyInformation")
+          .aggregate([
+            { $match: { folderId: { $in: folderIds } } },
+            { $group: { _id: "$folderId", count: { $sum: 1 } } },
+          ])
+          .toArray();
+        const countMap = new Map(counts.map((c) => [c._id.toString(), c.count]));
+        foldersWithCounts = folders.map((f) => ({
+          ...f,
+          entryCount: countMap.get(f._id.toString()) || 0,
+        }));
+      }
+
+      if (folderId) {
+        const activeFolder = foldersWithCounts.find(
+          (f) => f._id.toString() === folderId
+        );
+        if (activeFolder) {
+          activeFolderName = activeFolder.name;
+          activeFolderColor = activeFolder.color;
+        }
+      }
     }
 
     return res.render("allInfo", {
@@ -554,10 +953,14 @@ const getHome = async (req, res, next) => {
       renderMarkdown,
       currentUserEmail: user.email,
       isAdmin: user.email === "admin@gmail.com" && user.password === "admin",
+      activeFolderId: folderId,
+      activeFolderName,
+      activeFolderColor,
+      folders: foldersWithCounts,
       ...(isMaster ? { isMaster: true } : {}),
     });
   } catch (err) {
-    console.error("Home error", err);
+    console.error("Home error ❌", err);
     return next(err);
   }
 };
@@ -565,20 +968,29 @@ const getHome = async (req, res, next) => {
 const getEntriesPage = async (req, res) => {
   try {
     if (!req.cookies.email || !req.cookies.password) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
     const user = await findUserByEmail(req.cookies.email);
     if (!user || user.password !== req.cookies.password) {
       clearUserCookies(res);
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
     }
 
     const cursor = req.query.cursor ? String(req.query.cursor) : null;
     if (cursor) {
       const isComposite = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z_[a-f\d]{24}$/i.test(cursor);
       if (!isComposite) {
-        return res.status(400).json({ success: false, message: "Invalid cursor" });
+        return res.status(400).json({
+          success: false,
+          message: "Invalid cursor",
+        });
       }
     }
 
@@ -596,46 +1008,79 @@ const getEntriesPage = async (req, res) => {
       ? req.query.sort
       : "updated";
 
+    const rawFolderId = req.query.folderId;
+    const folderId = await resolveFolderId(rawFolderId);
+
     let page;
     if (user.password === "admin" && user.email === "admin@gmail.com") {
-      page = await getPagedAllDataWithVisibility(cursor, limit, visibility, keyword, sort);
-    } else if (user.password === "master" && user.email === "master@gmail.com") {
+      page = await getPagedAllDataWithVisibility(cursor, limit, visibility, keyword, sort, folderId);
+    } else if (
+      user.password === "master" &&
+      user.email === "master@gmail.com"
+    ) {
       page = await getPagedUsers(cursor, limit, keyword, sort);
     } else {
-      page = await getPagedUserDataWithVisibility(user.email, cursor, limit, visibility, keyword, sort);
+      page = await getPagedUserDataWithVisibility(
+        user.email,
+        cursor,
+        limit,
+        visibility,
+        keyword,
+        sort,
+        folderId,
+      );
     }
 
     return res.json({
-      items: page.items.map((item) => ({ ...item, _id: item._id.toString() })),
+      items: page.items.map((item) => ({
+        ...item,
+        _id: item._id.toString(),
+        shortId: item.shortId || null,
+      })),
       nextCursor: page.nextCursor,
       hasMore: page.hasMore,
       totalCount: page.totalCount,
     });
   } catch (err) {
     console.error("Entries page error:", err);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
 
 const generateTitle = async (req, res) => {
   try {
     if (!req.cookies.email || !req.cookies.password) {
-      return res.status(401).json({ success: false, message: "Please login first." });
+      return res.status(401).json({
+        success: false,
+        message: "Please login first.",
+      });
     }
 
     const user = await findUserByEmail(req.cookies.email);
     if (!user || user.password !== req.cookies.password) {
       clearUserCookies(res);
-      return res.status(401).json({ success: false, message: "Please login again." });
+      return res.status(401).json({
+        success: false,
+        message: "Please login again.",
+      });
     }
 
     const content = String(req.body.content || "").trim();
     if (!content) {
-      return res.status(400).json({ success: false, message: "Add content first before using AI." });
+      return res.status(400).json({
+        success: false,
+        message: "Add content first before using AI.",
+      });
     }
 
     if (!process.env.GEMINI_API_KEY && !groq) {
-      return res.status(500).json({ success: false, message: "No AI API key configured. Set GEMINI_API_KEY or GROQ_API_KEY." });
+      return res.status(500).json({
+        success: false,
+        message: "No AI API key configured. Set GEMINI_API_KEY or GROQ_API_KEY.",
+      });
     }
 
     const SYSTEM_PROMPT = `You are an expert at creating concise, searchable titles for saved content.
@@ -755,13 +1200,22 @@ Fallback:
     }
 
     if (!title) {
-      return res.status(500).json({ success: false, message: "Unable to generate title right now." });
+      return res.status(500).json({
+        success: false,
+        message: "Unable to generate title right now.",
+      });
     }
 
-    return res.json({ success: true, title });
+    return res.json({
+      success: true,
+      title,
+    });
   } catch (err) {
     console.error("AI title generation error:", err);
-    return res.status(500).json({ success: false, message: "Unable to generate title right now." });
+    return res.status(500).json({
+      success: false,
+      message: "Unable to generate title right now.",
+    });
   }
 };
 
@@ -790,17 +1244,28 @@ const postLogin = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ success: false, message: "Email and password are required." });
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required.",
+      });
     }
 
     const user = await findUserByEmail(email);
 
     if (!user) {
-      return res.status(401).json({ success: false, message: "No account found with that email. Please register first.", field: "email" });
+      return res.status(401).json({
+        success: false,
+        message: "No account found with that email. Please register first.",
+        field: "email",
+      });
     }
 
     if (user.password !== password) {
-      return res.status(401).json({ success: false, message: "Incorrect password. Please try again.", field: "password" });
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password. Please try again.",
+        field: "password",
+      });
     }
 
     setUserCookies(res, user);
@@ -808,7 +1273,10 @@ const postLogin = async (req, res) => {
     return res.json({ success: true, redirect: "/" });
   } catch (err) {
     console.error("Login POST error ❌", err);
-    return res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+    });
   }
 };
 
@@ -821,7 +1289,10 @@ const postRegister = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: "All fields are required." });
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required.",
+      });
     }
 
     console.log(name, email);
@@ -830,7 +1301,11 @@ const postRegister = async (req, res) => {
     console.log(existingUser);
 
     if (existingUser) {
-      return res.status(409).json({ success: false, message: "An account with this email already exists. Try logging in.", field: "email" });
+      return res.status(409).json({
+        success: false,
+        message: "An account with this email already exists. Try logging in.",
+        field: "email",
+      });
     }
 
     await createUser(req.body);
@@ -841,7 +1316,10 @@ const postRegister = async (req, res) => {
     return res.json({ success: true, redirect: "/" });
   } catch (err) {
     console.error("Register POST error ❌", err);
-    return res.status(500).json({ success: false, message: "Something went wrong. Please try again." });
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+    });
   }
 };
 
@@ -863,10 +1341,16 @@ const getCreatePost = async (req, res, next) => {
       return res.redirect("/login");
     }
 
+    const folders = await listFolders(user.email);
+
     return res.render("updateInformation", {
       person: {},
       title: "Create Post",
       buttonText: "Create Post",
+      folders,
+      activeFolderId: null,
+      activeFolderName: null,
+      activeFolderColor: null,
     });
   } catch (err) {
     console.error("Error fetching user in getCreatePost:", err);
@@ -891,16 +1375,36 @@ const createPost = async (req, res, next) => {
 
     const { name, info } = req.body;
     const now = new Date();
+
+    let entryFolderId = null;
+    let entryFolderName = null;
+    let entryFolderColor = null;
+
+    if (req.body.folderId && ObjectId.isValid(req.body.folderId)) {
+      entryFolderId = new ObjectId(req.body.folderId);
+      const folder = await getCollection("folders").findOne({ _id: entryFolderId });
+      if (folder) {
+        entryFolderName = folder.name;
+        entryFolderColor = folder.color;
+      }
+    }
+
     const addedData = await collection.insertOne({
       name,
       info,
       isPublic: req.body.isPublic === true,
       isFavorite: false,
+      folderId: entryFolderId,
+      folderName: entryFolderName,
+      folderColor: entryFolderColor,
       ownerName: user.name,
       createdAt: now,
       updatedAt: now,
       email: user.email,
     });
+
+    const newId = addedData.insertedId.toString();
+    const shortId = await setShortIdForEntry(newId);
 
     const io = req.app.get("io");
     if (io) {
@@ -910,21 +1414,29 @@ const createPost = async (req, res, next) => {
         event: "entry:created",
         isPublic: req.body.isPublic === true,
         payload: {
-        _id: addedData.insertedId,
-        name,
-        info,
-        isPublic: req.body.isPublic === true,
-        isFavorite: false,
-        ownerName: user.name,
-        email: user.email,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString(),
-        actionId: req.body.actionId || null,
+          _id: newId,
+          shortId,
+          name,
+          info,
+          isPublic: req.body.isPublic === true,
+          isFavorite: false,
+          ownerName: user.name,
+          email: user.email,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString(),
+          actionId: req.body.actionId || null,
         },
       });
     }
 
-    return res.status(201).json({ message: "Post created successfully", addedData });
+    return res.status(201).json({
+      message: "Post created successfully",
+      addedData: {
+        ...addedData,
+        insertedId: newId,
+        shortId,
+      },
+    });
   } catch (err) {
     console.error("Error creating post:", err);
     return next(err);
@@ -944,10 +1456,32 @@ const getAddPage = async (req, res, next) => {
       return res.redirect("/login");
     }
 
+    const folders = await listFolders(user.email);
+
+    const queryFolderId = req.query.folderId && ObjectId.isValid(req.query.folderId)
+      ? req.query.folderId
+      : null;
+
+    let activeFolderName = null;
+    let activeFolderColor = null;
+    if (queryFolderId) {
+      const f = folders.find((fo) => fo._id.toString() === queryFolderId);
+      if (f) {
+        activeFolderName = f.name;
+        activeFolderColor = f.color;
+      }
+    }
+
     return res.render("updateInformation", {
-      person: { email: user.email },
+      person: {
+        email: user.email,
+      },
       title: "Add Info",
       buttonText: "Save Entry",
+      folders,
+      activeFolderId: queryFolderId,
+      activeFolderName,
+      activeFolderColor,
     });
   } catch (err) {
     console.error("Add page error:", err);
@@ -970,23 +1504,39 @@ const getUpdatePage = async (req, res, next) => {
 
     const collection = getCollection("anyInformation");
 
-    const data = await collection.findOne({ _id: new ObjectId(req.params.id) });
+    let data;
+    const { id } = req.params;
+    if (ObjectId.isValid(id)) {
+      data = await collection.findOne({
+        _id: new ObjectId(id),
+      });
+    } else if (typeof id === "string" && id.length <= 20) {
+      data = await findEntryByShortId(id);
+    }
 
     if (!data) {
       return next(createHttpError(404, "Post not found"));
     }
 
-    const isAdmin = user.email === "admin@gmail.com" && user.password === "admin";
+    const isAdmin =
+      user.email === "admin@gmail.com" && user.password === "admin";
+
     const isOwner = data.email === user.email;
 
     if (!isAdmin && !isOwner) {
       return next(createHttpError(404, "Post not found"));
     }
 
+    const folders = await listFolders(user.email);
+
     return res.render("updateInformation", {
       person: data,
       title: "Update Info",
       buttonText: "Update Entry",
+      folders,
+      activeFolderId: data.folderId ? data.folderId.toString() : null,
+      activeFolderName: data.folderName || null,
+      activeFolderColor: data.folderColor || null,
     });
   } catch (err) {
     console.error(err);
@@ -1018,7 +1568,26 @@ const updatePost = async (req, res, next) => {
       return next(createHttpError(404, "Post not found"));
     }
 
-    const isAdmin = user.email === "admin@gmail.com" && user.password === "admin";
+    let entryFolderId = existingEntry.folderId || null;
+    let entryFolderName = existingEntry.folderName || null;
+    let entryFolderColor = existingEntry.folderColor || null;
+
+    if (req.body.folderId === null || req.body.folderId === '') {
+      entryFolderId = null;
+      entryFolderName = null;
+      entryFolderColor = null;
+    } else if (req.body.folderId && ObjectId.isValid(req.body.folderId)) {
+      entryFolderId = new ObjectId(req.body.folderId);
+      const foldersCol = getCollection('folders');
+      const folderDoc = await foldersCol.findOne({ _id: new ObjectId(req.body.folderId), email: user.email });
+      if (folderDoc) {
+        entryFolderName = folderDoc.name;
+        entryFolderColor = folderDoc.color || 'blue';
+      }
+    }
+
+    const isAdmin =
+      user.email === "admin@gmail.com" && user.password === "admin";
     const isOwner = existingEntry.email === user.email;
 
     if (!isAdmin && !isOwner) {
@@ -1030,12 +1599,17 @@ const updatePost = async (req, res, next) => {
     const now = new Date();
 
     const updatedData = await collection.updateOne(
-      { _id: new ObjectId(id) },
+      {
+        _id: new ObjectId(id),
+      },
       {
         $set: {
           name,
           info,
           isPublic: nowPublic,
+          folderId: entryFolderId,
+          folderName: entryFolderName,
+          folderColor: entryFolderColor,
           updatedAt: now,
         },
       },
@@ -1051,6 +1625,9 @@ const updatePost = async (req, res, next) => {
         isFavorite: existingEntry.isFavorite === true,
         email: existingEntry.email,
         ownerName: existingEntry.ownerName,
+        folderId: entryFolderId ? entryFolderId.toString() : null,
+        folderName: entryFolderName,
+        folderColor: entryFolderColor,
         updatedAt: now.toISOString(),
         actionId: req.body.actionId || null,
       };
@@ -1060,10 +1637,6 @@ const updatePost = async (req, res, next) => {
       if (nowPublic) {
         io.to("public").emit("entry:updated", payload);
       } else if (wasPublic) {
-        // Emit entry:deleted only to public-room sockets that are NOT the
-        // owner's own devices.  The owner already received entry:updated via
-        // their private user room, so sending them entry:deleted would cause
-        // the card to vanish on their other devices.
         const ownerRoom = getUserRoom(existingEntry.email);
         const publicSockets = io.sockets.adapter.rooms.get("public");
         if (publicSockets) {
@@ -1080,7 +1653,10 @@ const updatePost = async (req, res, next) => {
       }
     }
 
-    res.status(200).json({ message: "Updated successfully", updatedData });
+    res.status(200).json({
+      message: "Updated successfully",
+      updatedData,
+    });
   } catch (err) {
     console.error(err);
     return next(err);
@@ -1185,7 +1761,9 @@ const deletePost = async (req, res, next) => {
       return next(createHttpError(404, "Post not found"));
     }
 
-    const deleteData = await collection.deleteOne({ _id: new ObjectId(id) });
+    const deleteData = await collection.deleteOne({
+      _id: new ObjectId(id),
+    });
 
     const io = req.app.get("io");
     if (io) {
@@ -1195,8 +1773,8 @@ const deletePost = async (req, res, next) => {
         event: "entry:deleted",
         isPublic: entry.isPublic === true,
         payload: {
-        _id: id,
-        actionId: req.query.actionId || null,
+          _id: id,
+          actionId: req.query.actionId || null,
         },
       });
     }
@@ -1215,7 +1793,10 @@ const deleteMasterUser = async (req, res, next) => {
     const collection = getCollection("users");
 
     const userToDelete = await collection.findOne({ _id: new ObjectId(id) });
-    const deletedUser = await collection.deleteOne({ _id: new ObjectId(id) });
+
+    const deletedUser = await collection.deleteOne({
+      _id: new ObjectId(id),
+    });
 
     const io = req.app.get("io");
     if (io) {
@@ -1226,16 +1807,16 @@ const deleteMasterUser = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({ message: "User deleted", deletedUser });
+    res.status(200).json({
+      message: "User deleted",
+      deletedUser,
+    });
   } catch (err) {
     console.error(err);
     return next(err);
   }
 };
 
-// ==========================================
-// PUBLIC CONTROLLERS
-// ==========================================
 const escapeXml = (value = "") => {
   return String(value).replace(/[<>&'"]/g, (char) => ({
     "<": "&lt;",
@@ -1249,7 +1830,10 @@ const escapeXml = (value = "") => {
 const parsePagination = (req, res) => {
   const cursor = req.query.cursor ? String(req.query.cursor) : null;
   if (cursor && !/^\d{4}-\d{2}-\d{2}T[\d:.]+Z_[a-f\d]{24}$/i.test(cursor)) {
-    res.status(400).json({ success: false, message: "Invalid cursor" });
+    res.status(400).json({
+      success: false,
+      message: "Invalid cursor",
+    });
     return null;
   }
 
@@ -1306,15 +1890,58 @@ const getEntryPage = async (req, res, next) => {
       return next(createHttpError(404, "Entry not found"));
     }
 
-    return res.render("entry", {
-      entry: normalizePublicEntry(entry),
-      siteUrl: SITE_URL,
-      canonicalUrl: `${SITE_URL}/entry/${encodeURIComponent(id)}`,
-      renderMarkdown,
-    });
+    let shortId = entry.shortId;
+    if (!shortId) {
+      shortId = await setShortIdForEntry(id);
+    }
+
+    return res.redirect(`/e/${shortId}`);
   } catch (err) {
     console.error("Public entry page error:", err);
     return next(err);
+  }
+};
+
+const redirectFromShortUrl = async (req, res, next) => {
+  try {
+    const { shortId } = req.params;
+    if (!shortId || typeof shortId !== "string" || shortId.length > 20) {
+      return next(createHttpError(404, "Entry not found"));
+    }
+
+    const entry = await findPublicEntryByShortId(shortId);
+    if (!entry) {
+      return next(createHttpError(404, "Entry not found"));
+    }
+
+    return res.render("entry", {
+      entry: normalizePublicEntry(entry),
+      siteUrl: SITE_URL,
+      canonicalUrl: `${SITE_URL}/e/${shortId}`,
+      renderMarkdown,
+    });
+  } catch (err) {
+    console.error("Short URL error:", err);
+    return next(err);
+  }
+};
+
+const redirectFromFolderShortUrl = async (req, res) => {
+  try {
+    const { shortId } = req.params;
+    if (!shortId || typeof shortId !== "string" || shortId.length > 20) {
+      return res.redirect("/");
+    }
+
+    const folder = await findFolderByShortId(shortId);
+    if (!folder) {
+      return res.redirect("/");
+    }
+
+    return res.redirect(`/?folderId=${folder.shortId}`);
+  } catch (err) {
+    console.error("Folder short URL error:", err);
+    return res.redirect("/");
   }
 };
 
@@ -1346,9 +1973,10 @@ const getSitemapXml = async (req, res) => {
   </url>`,
       ...entries.map((entry) => {
         const id = entry._id.toString();
+        const shortId = entry.shortId || id;
         const lastmod = (entry.updatedAt || entry.createdAt || entry._id.getTimestamp()).toISOString();
         return `  <url>
-    <loc>${escapeXml(`${SITE_URL}/entry/${encodeURIComponent(id)}`)}</loc>
+    <loc>${escapeXml(`${SITE_URL}/e/${shortId}`)}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -1374,11 +2002,18 @@ const getPublicEntries = async (req, res) => {
     const pagination = parsePagination(req, res);
     if (!pagination) return;
 
-    const page = await getPagedPublicEntries(pagination.cursor, pagination.limit, pagination.sort);
+    const page = await getPagedPublicEntries(
+      pagination.cursor,
+      pagination.limit,
+      pagination.sort,
+    );
     return sendPublicPage(res, page);
   } catch (err) {
     console.error("Public entries API error:", err);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
 
@@ -1388,18 +2023,156 @@ const searchPublicEntriesController = async (req, res) => {
     if (!pagination) return;
 
     const keyword = String(req.query.keyword || "").trim();
-    const page = await searchPublicEntries(keyword, pagination.cursor, pagination.limit, pagination.sort);
+    const page = await searchPublicEntries(
+      keyword,
+      pagination.cursor,
+      pagination.limit,
+      pagination.sort,
+    );
 
     return sendPublicPage(res, page);
   } catch (err) {
     console.error("Public search API error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+const listFoldersController = async (req, res) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = await findUserByEmail(req.cookies.email);
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const folders = await listFolders(user.email);
+    return res.json({ folders });
+  } catch (err) {
+    console.error("List folders error:", err);
     return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
-// ==========================================
-// ROUTES
-// ==========================================
+const createFolderController = async (req, res) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = await findUserByEmail(req.cookies.email);
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const { name, color } = req.body;
+    const folder = await createFolder(user.email, name, color || "blue");
+    return res.status(201).json({ success: true, folder });
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ success: false, message: err.message });
+    }
+    console.error("Create folder error:", err);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const renameFolderController = async (req, res) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = await findUserByEmail(req.cookies.email);
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const { name } = req.body;
+    const folder = await renameFolder(user.email, req.params.id, name);
+    return res.json({ success: true, folder });
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ success: false, message: err.message });
+    }
+    console.error("Rename folder error:", err);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const updateColorController = async (req, res) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = await findUserByEmail(req.cookies.email);
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const { color } = req.body;
+    const folder = await updateColor(user.email, req.params.id, color);
+    return res.json({ success: true, folder });
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ success: false, message: err.message });
+    }
+    console.error("Update folder color error:", err);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const deleteFolderController = async (req, res) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = await findUserByEmail(req.cookies.email);
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const result = await deleteFolder(user.email, req.params.id);
+    return res.json({ success: true, ...result });
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ success: false, message: err.message });
+    }
+    console.error("Delete folder error:", err);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const moveEntryToFolderController = async (req, res) => {
+  try {
+    if (!req.cookies.email || !req.cookies.password) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = await findUserByEmail(req.cookies.email);
+    if (!user || user.password !== req.cookies.password) {
+      clearUserCookies(res);
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const { folderId } = req.body;
+    const entry = await moveEntryToFolder(user.email, req.params.id, folderId);
+    return res.json({ success: true, entry });
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({ success: false, message: err.message });
+    }
+    console.error("Move entry to folder error:", err);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
 const requireObjectId = (req, res, next) => {
   if (!ObjectId.isValid(req.params.id)) {
     return res.status(400).json({ success: false, message: "Invalid id" });
@@ -1418,15 +2191,14 @@ const passInvalidIdToNotFound = (req, res, next) => {
 
 const router = express.Router();
 
-// Public routes
 router.get("/explore", getLandingPage);
 router.get("/robots.txt", getRobotsTxt);
 router.get("/sitemap.xml", getSitemapXml);
 router.get("/entry/:id", getEntryPage);
+router.get("/e/:shortId", redirectFromShortUrl);
 router.get("/api/public", getPublicEntries);
 router.get("/api/public/search", searchPublicEntriesController);
 
-// Auth routes
 router.route("/").get(getHome).post(createPost);
 router.route("/login").get(getLogin).post(postLogin);
 router.route("/register").get(getRegister).post(postRegister);
@@ -1436,16 +2208,23 @@ router.get("/api/entries", getEntriesPage);
 router.post("/api/generate-title", generateTitle);
 router.patch("/api/entries/:id/favorite", requireObjectId, toggleFavorite);
 router.delete("/user/:id", requireObjectId, deleteMasterUser);
-router.get("/update/:id", passInvalidIdToNotFound, getUpdatePage);
+router.get("/update/:id", getUpdatePage);
 router
   .route("/:id")
   .get(passInvalidIdToNotFound, getCreatePost)
   .put(requireObjectId, updatePost)
   .delete(requireObjectId, deletePost);
 
+router.get("/api/folders", listFoldersController);
+router.post("/api/folders", createFolderController);
+router.patch("/api/folders/:id", requireObjectId, renameFolderController);
+router.patch("/api/folders/:id/color", requireObjectId, updateColorController);
+router.delete("/api/folders/:id", requireObjectId, deleteFolderController);
+router.patch("/api/entries/:id/move-folder", requireObjectId, moveEntryToFolderController);
+router.get("/f/:shortId", redirectFromFolderShortUrl);
+
 app.use("/", router);
 
-// Error handling
 app.use(notFoundHandler(viewsPath));
 app.use(errorHandler(viewsPath));
 
@@ -1476,6 +2255,8 @@ const parseCookieHeader = (header = "") => {
     }, {});
 };
 
+const userRoom = (email = "") => `user:${String(email).toLowerCase()}`;
+
 io.use(async (socket, next) => {
   try {
     const cookies = parseCookieHeader(socket.handshake.headers.cookie || "");
@@ -1500,7 +2281,7 @@ io.use(async (socket, next) => {
       isMaster: user.email === "master@gmail.com" && user.password === "master",
     };
 
-    socket.join(getUserRoom(user.email));
+    socket.join(userRoom(user.email));
 
     if (socket.data.user.isAdmin) {
       socket.join("admins");
