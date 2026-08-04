@@ -2622,12 +2622,12 @@
       }, 200);
     }
 
-    async function autoLoadUntilHashFound(id) {
+    async function autoLoadUntilHashFound(id, isShortId) {
       activeHashLoadId = id;
       isAutoLoading = true;
 
       try {
-        while (!document.getElementById(id)) {
+        while (!getHashTarget(id, isShortId)) {
           if (activeHashLoadId !== id || !hasMore || !nextCursor) break;
 
           if (isFetching) {
@@ -2645,13 +2645,23 @@
           clearInterval(hashScrollInterval);
           hashScrollInterval = null;
         }
-        scrollElementToCenter(`#${id}`);
+        const found = getHashTarget(id, isShortId);
+        if (found) {
+          found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       } finally {
         if (activeHashLoadId === id) {
           activeHashLoadId = null;
         }
         isAutoLoading = false;
       }
+    }
+
+    function getHashTarget(id, isShortId) {
+      if (isShortId) {
+        return document.querySelector(`.info-card[data-short-id="${id}"]`);
+      }
+      return document.getElementById(id);
     }
 
     function scrollToHashedCard() {
@@ -2663,19 +2673,24 @@
       const id = window.location.hash.replace(/^#/, '');
       if (!id) return;
 
-      if (scrollElementToCenter(window.location.hash)) return;
+      const isShortId = !/^[a-f\d]{24}$/i.test(id);
+
+      if (scrollElementToCenter(window.location.hash, isShortId)) return;
 
       if (activeHashLoadId === id) return;
 
       startHashPolling(window.location.hash);
-      autoLoadUntilHashFound(id);
+      autoLoadUntilHashFound(id, isShortId);
     }
 
-    function scrollElementToCenter(hash) {
+    function scrollElementToCenter(hash, isShortId) {
       const id = String(hash || '').replace(/^#/, '');
       if (!id) return false;
 
-      const target = document.getElementById(id);
+      let target = document.getElementById(id);
+      if (!target && isShortId) {
+        target = document.querySelector(`.info-card[data-short-id="${id}"]`);
+      }
       if (!target) return false;
 
       target.scrollIntoView({
@@ -2706,8 +2721,9 @@
         const hash = anchor.getAttribute('href');
         if (!hash) return;
 
+        const isShortId = hash !== '#public-notes' && !/^#[a-f\d]{24}$/i.test(hash);
         const scrollFn = hash === '#public-notes' ? scrollElementToStart : scrollElementToCenter;
-        if (!scrollFn(hash)) return;
+        if (!scrollFn(hash, isShortId)) return;
 
         event.preventDefault();
         if (window.location.hash !== hash) {

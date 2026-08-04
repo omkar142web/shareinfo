@@ -5388,7 +5388,10 @@ copyButton.title = 'Share Public Link';
         const id = String(hash || '').replace(/^#/, '');
         if (!id) return false;
 
-        const target = document.getElementById(id);
+        let target = document.getElementById(id);
+        if (!target) {
+          target = document.querySelector(`.info-card[data-short-id="${id}"]`);
+        }
         if (!target) return false;
 
         target.scrollIntoView({
@@ -5439,7 +5442,10 @@ copyButton.title = 'Share Public Link';
             clearInterval(hashScrollInterval);
             hashScrollInterval = null;
           }
-          scrollElementToCenter(`#${id}`);
+          const found = getHashTarget(id, isShortId);
+          if (found) {
+            found.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
         } finally {
           if (activeHashLoadId === id) {
             activeHashLoadId = null;
