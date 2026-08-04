@@ -20,7 +20,7 @@ import {
 
 import { getLandingPage } from "./publicController.js";
 import { renderMarkdown } from "../services/markdown.service.js";
-import { listFolders, setShortIdForFolder } from "../services/folderService.js";
+import { listFolders, setShortIdForFolder, findFolderByShortId } from "../services/folderService.js";
 
 import Path from "path";
 import { fileURLToPath } from "url";
@@ -83,6 +83,17 @@ function clearUserCookies(res) {
 }
 
 //! HOME
+/**
+ * Resolves a folderId that may be either a MongoDB ObjectId or a shortId.
+ * Returns the ObjectId string on success, or null if it cannot be resolved.
+ */
+const resolveFolderId = async (rawFolderId) => {
+  if (!rawFolderId || typeof rawFolderId !== "string") return null;
+  if (ObjectId.isValid(rawFolderId)) return rawFolderId;
+  const folder = await findFolderByShortId(rawFolderId);
+  return folder ? folder._id.toString() : null;
+};
+
 export const getHome = async (req, res, next) => {
   const isLoggedIn = req.cookies.email && req.cookies.password;
 
@@ -107,9 +118,8 @@ export const getHome = async (req, res, next) => {
       ? req.query.sort
       : "updated";
 
-    const folderId = req.query.folderId && ObjectId.isValid(req.query.folderId)
-      ? req.query.folderId
-      : null;
+    const rawFolderId = req.query.folderId;
+    const folderId = await resolveFolderId(rawFolderId);
 
     let page;
     let isMaster = false;
@@ -254,9 +264,8 @@ export const getEntriesPage = async (req, res) => {
       ? req.query.sort
       : "updated";
 
-    const folderId = req.query.folderId && ObjectId.isValid(req.query.folderId)
-      ? req.query.folderId
-      : null;
+    const rawFolderId = req.query.folderId;
+    const folderId = await resolveFolderId(rawFolderId);
 
     let page;
     if (user.password === "admin" && user.email === "admin@gmail.com") {

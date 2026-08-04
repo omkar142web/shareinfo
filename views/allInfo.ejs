@@ -4412,7 +4412,12 @@
         // Handle folder and visibility navigation via back/forward buttons
         const params = new URLSearchParams(window.location.search);
         const rawFolderId = params.get('folderId');
-        const folderId = rawFolderId && /^[a-f\d]{24}$/i.test(rawFolderId) ? rawFolderId : null;
+        let folderId = rawFolderId && /^[a-f\d]{24}$/i.test(rawFolderId) ? rawFolderId : null;
+        // If not a valid ObjectId, try resolving as a shortId via folderData
+        if (!folderId && rawFolderId) {
+          const match = (window.folderData || []).find(f => f.shortId === rawFolderId);
+          if (match) folderId = match.id;
+        }
         const rawVisibility = params.get('visibility');
         const visibility = ['public', 'private', 'favorite'].includes(rawVisibility) ? rawVisibility : 'all';
 
@@ -6314,13 +6319,16 @@ copyButton.title = 'Share Public Link';
           
           // Delay navigation to show animation
           setTimeout(() => {
+            const folderShortId = item.dataset.shortId || null;
             const folderId = item.dataset.folder || null;
             const folderName = item.dataset.name || '';
             const folderColor = item.dataset.color || 'blue';
             saveRecentFolderId(folderId);
             
             const url = new URL(window.location);
-            if (folderId) {
+            if (folderShortId) {
+              url.searchParams.set('folderId', folderShortId);
+            } else if (folderId) {
               url.searchParams.set('folderId', folderId);
             } else {
               url.searchParams.delete('folderId');

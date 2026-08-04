@@ -19,7 +19,7 @@ export const redirectFromFolderShortUrl = async (req, res) => {
       return res.redirect("/");
     }
 
-    return res.redirect(`/?folderId=${folder._id.toString()}`);
+    return res.redirect(`/?folderId=${folder.shortId}`);
   } catch (err) {
     console.error("Folder short URL error:", err);
     return res.redirect("/");
