@@ -423,48 +423,99 @@
       gap: 10px;
     }
 
+    /* ── Toolbar row: folder selector + breadcrumb ── */
+    .dashboard-toolbar-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .dashboard-toolbar-row .folder-selector-btn,
+    .dashboard-toolbar-row .breadcrumb {
+      margin-bottom: 0;
+    }
+
     /* ── Breadcrumb ── */
     .breadcrumb {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 8px;
       background: var(--surface-1);
-      border: 0.5px solid var(--border);
-      border-radius: 99px;
-      padding: 5px 12px;
-      font-size: 13px;
-      color: var(--text-3);
-      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 14px;
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
     }
 
-    .breadcrumb a {
-      color: var(--text-2);
-      text-decoration: none;
-      font-weight: 500;
+    .breadcrumb::-webkit-scrollbar {
+      display: none;
+    }
+
+    .breadcrumb .crumb {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      transition: color 100ms;
+      gap: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: color 150ms ease;
     }
 
-    .breadcrumb a:hover {
+    .breadcrumb .crumb svg {
+      flex-shrink: 0;
+    }
+
+    .breadcrumb .crumb-explore {
+      color: #a78bfa;
+    }
+    @media (hover: hover) {
+      .breadcrumb a.crumb-explore:hover {
+        color: #c4b5fd;
+      }
+    }
+
+    .breadcrumb .crumb-dashboard {
+      color: var(--text-2);
+    }
+    @media (hover: hover) {
+      .breadcrumb a.crumb-dashboard:hover {
+        color: var(--text);
+      }
+    }
+    .breadcrumb .crumb-dashboard.crumb-current {
       color: var(--text);
     }
 
-    .breadcrumb .sep {
+    .breadcrumb .crumb-folder {
+      color: var(--cyan);
+    }
+
+    .breadcrumb .crumb-sep {
       color: var(--text-3);
-    }
-
-    .breadcrumb .current {
-      color: var(--text);
-      font-weight: 500;
-      text-decoration: underline;
+      opacity: 0.55;
+      flex-shrink: 0;
     }
 
     @media (max-width: 480px) {
       .breadcrumb {
         font-size: 12px;
-        padding: 4px 10px;
+        padding: 6px 10px;
+      }
+
+      button.folder-selector-btn{
+        padding: 5px 14px 5px 12px;
+      }
+
+      span.folder-selector-current{
+        font-size: 0.75rem;
+      }
+      span.folder-selector-label{
+        font-size: 0.65rem;
       }
     }
 
@@ -1100,32 +1151,30 @@
 
     .filter-bar {
       display: flex;
-      gap: 6px;
-      margin-bottom: 18px;
+      gap: 10px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
     }
 
     .filter-btn {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 500;
+      font-family: var(--font-body);
+      font-size: 11.5px;
+      letter-spacing: 0.03em;
+      font-weight: 600;
       padding: 5px 12px;
-      border-radius: 100px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-3);
+      border-radius: 8px;
+      border: 1.5px solid var(--border-md);
+      background: rgba(15, 25, 45, 0.4);
+      color: var(--text-2);
       cursor: pointer;
-      transition:
-        background 0.12s,
-        color 0.12s,
-        border-color 0.12s,
-        transform 0.12s;
+      transition: background 0.14s, color 0.14s, border-color 0.14s, box-shadow 0.14s, transform 0.12s;
     }
 
     .filter-btn.active {
       background: var(--cyan-faint);
       color: var(--cyan);
-      border-color: var(--cyan-border);
+      border-color: var(--cyan);
+      /* box-shadow: 0 0 0 1px var(--cyan-border), 0 0 18px var(--cyan-glow); */
     }
 
     @media (hover: hover) {
@@ -1154,9 +1203,13 @@
       }
 
       .filter-btn:hover {
-        color: var(--text-2);
+        color: var(--text);
         border-color: var(--border-hi);
         transform: translateY(-1px);
+      }
+
+      .filter-btn.active:hover {
+        color: var(--cyan);
       }
     }
 
@@ -2302,7 +2355,7 @@
       align-items: center;
       gap: 8px;
       padding: 7px 14px 7px 12px;
-      border-radius: 10px;
+      border-radius: 8px;
       border: 1px solid var(--border);
       background: rgba(15, 25, 45, 0.4);
       color: var(--text-2);
@@ -2316,9 +2369,7 @@
         transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
         box-shadow 0.18s ease;
       white-space: nowrap;
-      margin-bottom: 10px;
       position: relative;
-      top: -2px;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
@@ -3668,146 +3719,197 @@
         </div>
       </form>
 
-      <% if (typeof isMaster === "undefined" || !isMaster) { %>
-      <div class="folder-selector" id="folderSelector">
-        <button class="folder-selector-btn" id="folderSelectorBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-          <span class="folder-selector-label">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-            </svg>
-            Folder
-          </span>
-          <span class="folder-selector-current" id="folderSelectorCurrent">
-            <% if (typeof activeFolderName !== 'undefined' && activeFolderName) { %>
-            <span class="folder-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
-            <%= activeFolderName %>
-            <% } else { %>
-            All
-            <% } %>
-          </span>
-          <svg class="folder-selector-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </button>
-
-        <div class="folder-dropdown" id="folderDropdown" hidden>
-          <div class="folder-dropdown-search-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input type="text" class="folder-dropdown-search" id="folderSearch" placeholder="Search folders..." maxlength="255" autocomplete="off" aria-label="Search folders" role="combobox" aria-expanded="true" aria-controls="folderList" aria-autocomplete="list" />
-            <button type="button" class="folder-dropdown-clear" id="folderClear" hidden aria-label="Clear search">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="folder-dropdown-counter" id="folderCounter" hidden role="status" aria-live="polite" aria-atomic="true">
-            <span id="folderCounterText">0 folders found</span>
-          </div>
-
-          <div class="folder-dropdown-list" id="folderList" role="listbox" aria-label="Folders">
-            <button type="button" class="folder-modal-item <%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'is-active' : '' %>" data-value="" data-name="No folder" role="option" aria-selected="<%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'true' : 'false' %>">
-              <span class="folder-modal-check" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-              </span>
-              <span class="folder-modal-dot" style="background:#64748b"></span>
-              <span class="folder-modal-name">No folder</span>
-            </button>
-
-            <% if (typeof folders !== 'undefined' && folders.length > 0) { %>
-            <% folders.forEach(function(folder) { %>
-            <button type="button" class="folder-modal-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-value="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-count="<%= folder.entryCount %>" data-created="<%= folder.createdAt %>" data-short-id="<%= folder.shortId || '' %>" role="option" aria-selected="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>">
-              <span class="folder-modal-check" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-              </span>
-              <span class="folder-modal-dot" style="background: var(--folder-<%= folder.color %>)"></span>
-              <span class="folder-modal-name"><%= folder.name || 'Untitled' %></span>
-              <span class="folder-modal-count"><%= folder.entryCount %></span>
-              <button type="button" class="folder-dropdown-menu-btn" data-folder-id="<%= folder._id %>" data-folder-name="<%= folder.name %>" data-folder-color="<%= folder.color %>" data-folder-short-id="<%= folder.shortId || '' %>" aria-label="<%= folder.name %> options" title="Folder options">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="5" r="1" />
-                  <circle cx="12" cy="12" r="1" />
-                  <circle cx="12" cy="19" r="1" />
-                </svg>
-              </button>
-            </button>
-            <% }) %>
-            <% } %>
-
-            <% if (typeof folders === 'undefined' || folders.length === 0) { %>
-            <div class="folder-dropdown-zero" id="folderZero">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <div class="dashboard-toolbar-row">
+        <% if (typeof isMaster === "undefined" || !isMaster) { %>
+        <div class="folder-selector" id="folderSelector">
+          <button class="folder-selector-btn" id="folderSelectorBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span class="folder-selector-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
               </svg>
-              <span>No folders yet</span>
-              <span class="folder-dropdown-zero-hint">Create your first folder</span>
-            </div>
-            <% } %>
-          </div>
-
-          <div class="folder-dropdown-empty" id="folderEmpty" hidden>
-            <svg class="folder-empty-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="52" height="52" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="folderEmptyGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#7dd3fc"></stop>
-                  <stop offset="100%" stop-color="#2563eb"></stop>
-                </linearGradient>
-                <filter id="folderEmptyShadow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.25" />
-                </filter>
-              </defs>
-
-              <g filter="url(#folderEmptyShadow)">
-                <!-- Folder body -->
-                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z" fill="url(#folderEmptyGrad)" opacity="0.12"></path>
-                <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z" stroke="url(#folderEmptyGrad)" stroke-width="2.4" stroke-linejoin="round"></path>
-
-                <!-- Folder "content" lines -->
-                <line x1="28" y1="52" x2="72" y2="52" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.4"></line>
-                <line x1="28" y1="64" x2="58" y2="64" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.3"></line>
-                <line x1="28" y1="76" x2="64" y2="76" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.2"></line>
-
-                <!-- Magnifying glass -->
-                <circle cx="82" cy="66" r="17" fill="#0d1628" stroke="url(#folderEmptyGrad)" stroke-width="3"></circle>
-                <circle cx="82" cy="66" r="17" fill="#38bdf8" opacity="0.1"></circle>
-                <line x1="94.5" y1="78.5" x2="104" y2="88" stroke="url(#folderEmptyGrad)" stroke-width="4" stroke-linecap="round"></line>
-              </g>
+              Folder
+            </span>
+            <span class="folder-selector-current" id="folderSelectorCurrent">
+              <% if (typeof activeFolderName !== 'undefined' && activeFolderName) { %>
+              <span class="folder-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
+              <%= activeFolderName %>
+              <% } else { %>
+              All
+              <% } %>
+            </span>
+            <svg class="folder-selector-chevron" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
             </svg>
-            <span class="folder-empty-title">No folders found</span>
-            <!-- <span>Try a different search or create a new folder</span> -->
-          </div>
+          </button>
 
-          <div class="folder-dropdown-error" id="folderError" hidden>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <div class="folder-dropdown-error-msg">
-              <div id="folderErrorText">Failed to load folders</div>
-            </div>
-            <button class="folder-dropdown-retry-btn" id="folderRetryBtn" type="button">Try Again</button>
-          </div>
-
-          <div class="folder-dropdown-footer">
-            <button class="folder-dropdown-create" id="folderDropdownCreate" role="menuitem">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
+          <div class="folder-dropdown" id="folderDropdown" hidden>
+            <div class="folder-dropdown-search-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-              <span id="folderCreateText">New Folder</span>
-            </button>
-          </div>
-          <div class="folder-dropdown-kbd-hint">
-            <kbd>↑</kbd> <kbd>↓</kbd> navigate &middot; <kbd>Enter</kbd> select
+              <input type="text" class="folder-dropdown-search" id="folderSearch" placeholder="Search folders..." maxlength="255" autocomplete="off" aria-label="Search folders" role="combobox" aria-expanded="true" aria-controls="folderList" aria-autocomplete="list" />
+              <button type="button" class="folder-dropdown-clear" id="folderClear" hidden aria-label="Clear search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="folder-dropdown-counter" id="folderCounter" hidden role="status" aria-live="polite" aria-atomic="true">
+              <span id="folderCounterText">0 folders found</span>
+            </div>
+
+            <div class="folder-dropdown-list" id="folderList" role="listbox" aria-label="Folders">
+              <button type="button" class="folder-modal-item <%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'is-active' : '' %>" data-value="" data-name="No folder" role="option" aria-selected="<%= (typeof activeFolderId === 'undefined' || !activeFolderId) ? 'true' : 'false' %>">
+                <span class="folder-modal-check" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                </span>
+                <span class="folder-modal-dot" style="background:#64748b"></span>
+                <span class="folder-modal-name">No folder</span>
+              </button>
+
+              <% if (typeof folders !== 'undefined' && folders.length > 0) { %>
+              <% folders.forEach(function(folder) { %>
+              <button type="button" class="folder-modal-item <%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'is-active' : '' %>" data-value="<%= folder._id %>" data-name="<%= folder.name || 'Untitled' %>" data-color="<%= folder.color %>" data-count="<%= folder.entryCount %>" data-created="<%= folder.createdAt %>" data-short-id="<%= folder.shortId || '' %>" role="option" aria-selected="<%= (typeof activeFolderId !== 'undefined' && activeFolderId === folder._id.toString()) ? 'true' : 'false' %>">
+                <span class="folder-modal-check" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                </span>
+                <span class="folder-modal-dot" style="background: var(--folder-<%= folder.color %>)"></span>
+                <span class="folder-modal-name"><%= folder.name || 'Untitled' %></span>
+                <span class="folder-modal-count"><%= folder.entryCount %></span>
+                <button type="button" class="folder-dropdown-menu-btn" data-folder-id="<%= folder._id %>" data-folder-name="<%= folder.name %>" data-folder-color="<%= folder.color %>" data-folder-short-id="<%= folder.shortId || '' %>" aria-label="<%= folder.name %> options" title="Folder options">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="5" r="1" />
+                    <circle cx="12" cy="12" r="1" />
+                    <circle cx="12" cy="19" r="1" />
+                  </svg>
+                </button>
+              </button>
+              <% }) %>
+              <% } %>
+
+              <% if (typeof folders === 'undefined' || folders.length === 0) { %>
+              <div class="folder-dropdown-zero" id="folderZero">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                </svg>
+                <span>No folders yet</span>
+                <span class="folder-dropdown-zero-hint">Create your first folder</span>
+              </div>
+              <% } %>
+            </div>
+
+            <div class="folder-dropdown-empty" id="folderEmpty" hidden>
+              <svg class="folder-empty-illustration" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="52" height="52" fill="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="folderEmptyGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#7dd3fc"></stop>
+                    <stop offset="100%" stop-color="#2563eb"></stop>
+                  </linearGradient>
+                  <filter id="folderEmptyShadow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.25" />
+                  </filter>
+                </defs>
+
+                <g filter="url(#folderEmptyShadow)">
+                  <!-- Folder body -->
+                  <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z" fill="url(#folderEmptyGrad)" opacity="0.12"></path>
+                  <path d="M14 30a6 6 0 0 1 6-6h24l10 10h46a6 6 0 0 1 6 6v46a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6V30z" stroke="url(#folderEmptyGrad)" stroke-width="2.4" stroke-linejoin="round"></path>
+
+                  <!-- Folder "content" lines -->
+                  <line x1="28" y1="52" x2="72" y2="52" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.4"></line>
+                  <line x1="28" y1="64" x2="58" y2="64" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.3"></line>
+                  <line x1="28" y1="76" x2="64" y2="76" stroke="#7dd3fc" stroke-width="2.4" stroke-linecap="round" opacity="0.2"></line>
+
+                  <!-- Magnifying glass -->
+                  <circle cx="82" cy="66" r="17" fill="#0d1628" stroke="url(#folderEmptyGrad)" stroke-width="3"></circle>
+                  <circle cx="82" cy="66" r="17" fill="#38bdf8" opacity="0.1"></circle>
+                  <line x1="94.5" y1="78.5" x2="104" y2="88" stroke="url(#folderEmptyGrad)" stroke-width="4" stroke-linecap="round"></line>
+                </g>
+              </svg>
+              <span class="folder-empty-title">No folders found</span>
+              <!-- <span>Try a different search or create a new folder</span> -->
+            </div>
+
+            <div class="folder-dropdown-error" id="folderError" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <div class="folder-dropdown-error-msg">
+                <div id="folderErrorText">Failed to load folders</div>
+              </div>
+              <button class="folder-dropdown-retry-btn" id="folderRetryBtn" type="button">Try Again</button>
+            </div>
+
+            <div class="folder-dropdown-footer">
+              <button class="folder-dropdown-create" id="folderDropdownCreate" role="menuitem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span id="folderCreateText">New Folder</span>
+              </button>
+            </div>
+            <div class="folder-dropdown-kbd-hint">
+              <kbd>↑</kbd> <kbd>↓</kbd> navigate &middot; <kbd>Enter</kbd> select
+            </div>
           </div>
         </div>
+        <% } %>
+
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="/explore#public-notes" class="crumb crumb-explore" aria-label="Explore public notes">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+            </svg>
+            Explore
+          </a>
+
+          <svg class="crumb-sep" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 6 15 12 9 18" />
+          </svg>
+
+          <% if (typeof activeFolderName !== 'undefined' && activeFolderName) { %>
+            <a href="/" class="crumb crumb-dashboard">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                <rect x="14" y="14" width="7" height="7" rx="1.5" />
+              </svg>
+              Dashboard
+            </a>
+
+            <svg class="crumb-sep" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+
+            <span class="crumb crumb-folder crumb-current" aria-current="page">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+              <%= activeFolderName %>
+            </span>
+          <% } else { %>
+            <a href="/" class="crumb crumb-dashboard crumb-current" aria-current="page">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                <rect x="14" y="14" width="7" height="7" rx="1.5" />
+              </svg>
+              Dashboard
+            </a>
+          <% } %>
+        </nav>
       </div>
 
+      <% if (typeof isMaster === "undefined" || !isMaster) { %>
       <div class="folder-context-menu" id="folderContextMenu" hidden>
         <button class="context-item" data-action="rename">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -3846,27 +3948,6 @@
         </button>
       </div>
       <% } %>
-
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/explore#public-notes" aria-label="Explore public notes">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-          </svg>
-          Explore
-        </a>
-        <span class="sep" aria-hidden="true">/</span>
-        <% if (typeof activeFolderName !== 'undefined' && activeFolderName) { %>
-        <a href="/">Dashboard</a>
-        <span class="sep" aria-hidden="true">/</span>
-        <span class="current">
-          <span class="folder-dot" style="background: var(--folder-<%= activeFolderColor || 'blue' %>)"></span>
-          <%= activeFolderName %>
-        </span>
-        <% } else { %>
-        <a href="/" class="current">Dashboard</a>
-        <% } %>
-      </nav>
       <% if (typeof isMaster === "undefined" || !isMaster) { %>
       <div class="filter-bar" aria-label="Filter entries by visibility">
         <button class="filter-btn <%= (activeVisibility || 'all') === 'all' ? 'active' : '' %>" data-filter="all" type="button">All</button>
@@ -4901,28 +4982,7 @@
           const folderName = folder ? folder.name : '';
           const folderColor = folder ? folder.color : 'blue';
 
-          if (folderName) {
-            updateActiveFolderDisplay(folderName, folderColor);
-          } else {
-            const current = document.getElementById('folderSelectorCurrent');
-            if (current) current.textContent = 'All';
-
-            const crumb = document.querySelector('.breadcrumb');
-            if (crumb) {
-              const dashboardLink = crumb.querySelector('a[href="/"]');
-              const currentSpan = crumb.querySelector('.current');
-              if (currentSpan && currentSpan.querySelector('.folder-dot')) {
-                const sep = currentSpan.previousElementSibling;
-                if (sep && sep.classList.contains('sep')) {
-                  sep.remove();
-                }
-                currentSpan.remove();
-                if (dashboardLink) dashboardLink.classList.add('current');
-              } else if (currentSpan && currentSpan.tagName === 'A') {
-                currentSpan.classList.add('current');
-              }
-            }
-          }
+          updateActiveFolderDisplay(folderName, folderColor);
 
           (window.folderData || []).forEach(f => {
             f.isActive = f.id === folderId;
@@ -6877,60 +6937,8 @@
             // Update active folder state
             activeFolderId = folderId;
 
-            // Update folder selector button display
-            const current = document.getElementById('folderSelectorCurrent');
-            if (current) {
-              current.replaceChildren();
-              if (folderId) {
-                const dot = document.createElement('span');
-                dot.className = 'folder-dot';
-                dot.style.background = `var(--folder-${folderColor})`;
-                current.append(dot, document.createTextNode(folderName));
-              } else {
-                current.textContent = 'All';
-              }
-            }
-
-            // Update breadcrumb
-            const crumb = document.querySelector('.breadcrumb');
-            if (crumb) {
-              const dashboardLink = crumb.querySelector('a[href="/"]');
-              const currentSpan = crumb.querySelector('.current');
-
-              if (folderId) {
-                if (dashboardLink) dashboardLink.classList.remove('current');
-                if (currentSpan && !currentSpan.querySelector('.folder-dot')) {
-                  const sep = document.createElement('span');
-                  sep.className = 'sep';
-                  sep.setAttribute('aria-hidden', 'true');
-                  sep.textContent = '/';
-                  const newCurrent = document.createElement('span');
-                  newCurrent.className = 'current';
-                  const dot = document.createElement('span');
-                  dot.className = 'folder-dot';
-                  dot.style.background = `var(--folder-${folderColor})`;
-                  newCurrent.append(dot, document.createTextNode(folderName));
-                  currentSpan.after(sep, newCurrent);
-                } else if (currentSpan && currentSpan.querySelector('.folder-dot')) {
-                  currentSpan.replaceChildren();
-                  const dot = document.createElement('span');
-                  dot.className = 'folder-dot';
-                  dot.style.background = `var(--folder-${folderColor})`;
-                  currentSpan.append(dot, document.createTextNode(folderName));
-                }
-              } else {
-                if (currentSpan && currentSpan.querySelector('.folder-dot')) {
-                  const sep = currentSpan.previousElementSibling;
-                  if (sep && sep.classList.contains('sep')) {
-                    sep.remove();
-                  }
-                  currentSpan.remove();
-                  if (dashboardLink) dashboardLink.classList.add('current');
-                } else if (currentSpan && currentSpan.tagName === 'A') {
-                  currentSpan.classList.add('current');
-                }
-              }
-            }
+            // Update folder selector button + breadcrumb display
+            updateActiveFolderDisplay(folderId ? folderName : '', folderColor);
 
             // Update URL without reloading
             history.pushState(null, '', url.toString());
@@ -7222,6 +7230,52 @@
         });
       }
 
+      // Rebuilds the breadcrumb's Dashboard / <folder> trail.
+      function renderBreadcrumb(folderName) {
+        const crumb = document.querySelector('.breadcrumb');
+        if (!crumb) return;
+
+        const chevronSvg = `
+          <svg class="crumb-sep" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 6 15 12 9 18"></polyline>
+          </svg>`;
+        const dashboardSvg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>`;
+        const folderSvg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>`;
+
+        // Keep the static "Explore" crumb, rebuild everything after it
+        const exploreCrumb = crumb.querySelector('.crumb-explore');
+        crumb.replaceChildren();
+        if (exploreCrumb) crumb.append(exploreCrumb);
+        appendStaticIcon(crumb, chevronSvg);
+
+        const dashboardLink = document.createElement('a');
+        dashboardLink.href = '/';
+        dashboardLink.className = folderName ? 'crumb crumb-dashboard' : 'crumb crumb-dashboard crumb-current';
+        if (!folderName) dashboardLink.setAttribute('aria-current', 'page');
+        appendStaticIcon(dashboardLink, dashboardSvg);
+        dashboardLink.append(document.createTextNode('Dashboard'));
+        crumb.append(dashboardLink);
+
+        if (folderName) {
+          appendStaticIcon(crumb, chevronSvg);
+          const folderCrumb = document.createElement('span');
+          folderCrumb.className = 'crumb crumb-folder crumb-current';
+          folderCrumb.setAttribute('aria-current', 'page');
+          appendStaticIcon(folderCrumb, folderSvg);
+          folderCrumb.append(document.createTextNode(folderName)); // textNode — safe against XSS, no innerHTML with user data
+          crumb.append(folderCrumb);
+        }
+      }
+
       // Refresh the folder name/color shown on the selector button and the
       // breadcrumb when the renamed/recolored folder is the one being viewed
       function updateActiveFolderDisplay(name, color) {
@@ -7237,50 +7291,7 @@
             current.textContent = 'All';
           }
         }
-        const crumb = document.querySelector('.breadcrumb');
-        if (crumb) {
-          let crumbCurrent = crumb.querySelector('.current');
-          if (name) {
-            if (crumbCurrent && !crumbCurrent.querySelector('.folder-dot')) {
-              // No folder was active (breadcrumb ends at "Dashboard") — insert
-              // the folder trail after Dashboard, mirroring SSR
-              const sep = document.createElement('span');
-              sep.className = 'sep';
-              sep.setAttribute('aria-hidden', 'true');
-              sep.textContent = '/';
-              const newCurrent = document.createElement('span');
-              newCurrent.className = 'current';
-              const dot = document.createElement('span');
-              dot.className = 'folder-dot';
-              dot.style.background = `var(--folder-${color})`;
-              newCurrent.append(dot, document.createTextNode(name));
-              crumbCurrent.after(sep, newCurrent);
-              crumbCurrent = newCurrent;
-            }
-            if (crumbCurrent) {
-              crumbCurrent.replaceChildren();
-              const dot = document.createElement('span');
-              dot.className = 'folder-dot';
-              dot.style.background = `var(--folder-${color})`;
-              crumbCurrent.append(dot, document.createTextNode(name));
-            }
-          } else {
-            // Reset breadcrumb to Dashboard only
-            const dashboardLink = crumb.querySelector('a[href="/"]');
-            if (crumbCurrent && crumbCurrent.querySelector('.folder-dot')) {
-              const sep = crumbCurrent.previousElementSibling;
-              if (sep && sep.classList.contains('sep')) {
-                sep.remove();
-              }
-              crumbCurrent.remove();
-              if (dashboardLink) dashboardLink.classList.add('current');
-            } else if (dashboardLink && !crumbCurrent) {
-              dashboardLink.classList.add('current');
-            } else if (crumbCurrent && crumbCurrent.tagName === 'A') {
-              crumbCurrent.classList.add('current');
-            }
-          }
-        }
+        renderBreadcrumb(name);
       }
 
       // Switch the dashboard to a folder view in place (no page load) —
