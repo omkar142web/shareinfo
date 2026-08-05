@@ -170,7 +170,12 @@ export const getPagedAllDataWithVisibility = async (
   sort = "updated",
   folderId = null,
 ) => {
-  const filter = { email: { $ne: "contacts@gmail.com" } };
+
+  const filter = {
+    email: {
+    $nin: ["contacts@gmail.com", "private@gmail.com"]
+    }
+  };
 
   if (visibility === "favorite") {
     filter.isFavorite = true;
