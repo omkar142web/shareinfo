@@ -254,7 +254,8 @@
       min-height: calc(100vh - 68px);
       display: grid;
       align-items: center;
-      padding: 72px 0 48px;
+      /* padding: 72px 0 48px; */
+      padding: 42px 0 38px;
     }
 
     .hero-grid {
@@ -1663,7 +1664,8 @@
 
       .hero {
         min-height: auto;
-        padding-top: 46px;
+        /* padding-top: 46px; */
+        padding-top: 32px;
       }
 
       .use-cases {
@@ -1676,49 +1678,64 @@
     }
 
     /* ── Breadcrumb ── */
-
     .breadcrumb {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-
+      gap: 8px;
       background: var(--surface-1);
-      border: 0.5px solid var(--border);
-      border-radius: 99px;
-
-      padding: 5px 12px;
-
-      font-size: 13px;
-      color: var(--text-3);
-
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 18px;
+      font-size: 14px;
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
       margin-bottom: 18px;
     }
 
-    .breadcrumb a {
-      color: var(--text-2);
-      text-decoration: none;
+    .breadcrumb::-webkit-scrollbar {
+      display: none;
+    }
 
-      font-weight: 500;
-
+    .breadcrumb .crumb {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-
-      transition: color 100ms;
+      gap: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: color 150ms ease;
     }
 
-    .breadcrumb a:hover {
+    .breadcrumb .crumb svg {
+      flex-shrink: 0;
+    }
+
+    .breadcrumb .crumb-explore {
+      color: #a78bfa;
+    }
+    @media (hover: hover) {
+      .breadcrumb a.crumb-explore:hover {
+        color: #c4b5fd;
+      }
+    }
+
+    .breadcrumb .crumb-dashboard {
+      color: var(--text-2);
+    }
+    @media (hover: hover) {
+      .breadcrumb a.crumb-dashboard:hover {
+        color: var(--text);
+      }
+    }
+    .breadcrumb .crumb-dashboard.crumb-current {
       color: var(--text);
     }
 
-    .breadcrumb .sep {
+    .breadcrumb .crumb-sep {
       color: var(--text-3);
-    }
-
-    .breadcrumb .current {
-      color: var(--text);
-      font-weight: 500;
-      text-decoration: underline;
+      opacity: 0.55;
+      flex-shrink: 0;
     }
 
     @media (max-width: 560px) {
@@ -1732,11 +1749,10 @@
         bottom: 16px;
         left: 16px;
       }
-    }
 
       .breadcrumb {
         font-size: 12px;
-        padding: 4px 10px;
+        padding: 6px 10px;
       }
     }
 
@@ -1789,24 +1805,26 @@
       <div class="hero-grid">
         <div>
           <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="#public-notes" aria-label="Explore public notes" class="current">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: relative; top: 1px; margin-right: 1px;" aria-hidden="true">
+            <a href="#public-notes" class="crumb crumb-explore" aria-label="Explore public notes">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" />
                 <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
               </svg>
-              <span>Explore</span>
+              Explore
             </a>
-            <span class="sep" aria-hidden="true">/</span>
-            <a href="/" aria-current="page">
-              <!-- <svg xmlns="http://www.w3.org/2000/svg"
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true">
-            <path d="M12 3.2 3.5 10a1 1 0 0 0-.4.8V20a2 2 0 0 0 2 2h4v-6h6v6h4a2 2 0 0 0 2-2v-9.2a1 1 0 0 0-.4-.8L12 3.2Z"/>
-          </svg> -->
-              <span>Dashboard</span>
+
+            <svg class="crumb-sep" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+
+            <a href="/" class="crumb crumb-dashboard crumb-current" aria-current="page">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                <rect x="14" y="14" width="7" height="7" rx="1.5" />
+              </svg>
+              Dashboard
             </a>
           </nav>
           <br>
