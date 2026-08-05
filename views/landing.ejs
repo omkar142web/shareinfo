@@ -2868,6 +2868,20 @@
         updateEmptyState(searchKeyword);
       }, 600);
     });
+
+    document.addEventListener('click', (event) => {
+      const codeBlock = event.target.closest('.md-code-block.language-bash');
+      if (!codeBlock) return;
+
+      const text = codeBlock.textContent || '';
+      if (!text.trim()) return;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Bash code copied to clipboard', 'success');
+      }).catch(() => {
+        showToast('Failed to copy code', 'error');
+      });
+    });
   </script>
 </body>
 
