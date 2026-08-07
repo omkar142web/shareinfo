@@ -92,23 +92,33 @@
       </div>
 
       <div class="field-group field-email">
-        <label>
+        <label for="email">
           <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
             <polyline points="22,6 12,13 2,6" />
           </svg>
           Owner Email
-          <!-- <span class="label-tag">read-only</span> -->
+          <% if (!isAdmin) { %><span class="label-tag">read-only</span><% } %>
         </label>
         <div class="input-wrap">
-          <input class="readonly" disabled type="email" id="email" placeholder="rahul@example.com" value="<%= person?.email || '' %>" autocomplete="off" />
-
+          <input
+            class="<%= isAdmin ? '' : 'readonly' %>"
+            <%= isAdmin ? '' : 'disabled' %>
+            type="email"
+            id="email"
+            name="email"
+            placeholder="rahul@example.com"
+            value="<%= person?.email || '' %>"
+            autocomplete="off"
+          />
+          <% if (!isAdmin) { %>
           <span class="input-lock" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
           </span>
+          <% } %>
         </div>
       </div>
 
@@ -977,6 +987,7 @@
               info: form.elements['info'].value.trim(),
               isPublic: !visCheck.checked,
               folderId: document.getElementById('folderIdInput')?.value || null,
+              email: form.elements['email'].value.trim(),
               actionId: crypto.randomUUID(),
             }),
           });
@@ -1053,6 +1064,7 @@
               info: form.elements['info'].value.trim(),
               isPublic: !visCheck.checked,
               folderId: document.getElementById('folderIdInput')?.value || null,
+              email: form.elements['email'].value.trim(),
               actionId: crypto.randomUUID(),
             }),
           });

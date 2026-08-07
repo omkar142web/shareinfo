@@ -608,6 +608,8 @@ export const getCreatePost = async (req, res, next) => {
     }
 
     const folders = await listFolders(user.email);
+    const isAdmin =
+      user.email === "admin@gmail.com" && user.password === "admin";
 
     return res.render("updateInformation", {
       person: {},
@@ -617,6 +619,7 @@ export const getCreatePost = async (req, res, next) => {
       activeFolderId: null,
       activeFolderName: null,
       activeFolderColor: null,
+      isAdmin,
     });
   } catch (err) {
     console.error("Error fetching user in getCreatePost:", err);
@@ -639,9 +642,28 @@ export const createPost = async (req, res, next) => {
     }
 
     const collection = getCollection("anyInformation");
-
     const { name, info } = req.body;
     const now = new Date();
+
+    const isAdmin =
+      user.email === "admin@gmail.com" && user.password === "admin";
+    let ownerEmail = user.email;
+    let ownerName = user.name;
+
+    if (isAdmin && typeof req.body.email === "string") {
+      const trimmedEmail = req.body.email.trim();
+      if (trimmedEmail && trimmedEmail !== user.email) {
+        const targetUser = await findUserByEmail(trimmedEmail);
+        if (!targetUser) {
+          return res.status(400).json({
+            success: false,
+            message: "No user found with that email.",
+          });
+        }
+        ownerEmail = targetUser.email;
+        ownerName = targetUser.name;
+      }
+    }
 
     let entryFolderId = null;
     let entryFolderName = null;
@@ -664,10 +686,10 @@ export const createPost = async (req, res, next) => {
       folderId: entryFolderId,
       folderName: entryFolderName,
       folderColor: entryFolderColor,
-      ownerName: user.name,
+      ownerName,
       createdAt: now,
       updatedAt: now,
-      email: user.email, // trusted email from backend
+      email: ownerEmail,
     });
 
     const newId = addedData.insertedId.toString();
@@ -677,21 +699,21 @@ export const createPost = async (req, res, next) => {
     if (io) {
       emitEntryToAudiences({
         io,
-        ownerEmail: user.email,
+        ownerEmail,
         event: "entry:created",
         isPublic: req.body.isPublic === true,
         payload: {
-        _id: newId,
-        shortId,
-        name,
-        info,
-        isPublic: req.body.isPublic === true,
-        isFavorite: false,
-        ownerName: user.name,
-        email: user.email,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString(),
-        actionId: req.body.actionId || null,
+          _id: newId,
+          shortId,
+          name,
+          info,
+          isPublic: req.body.isPublic === true,
+          isFavorite: false,
+          ownerName,
+          email: ownerEmail,
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString(),
+          actionId: req.body.actionId || null,
         },
       });
     }
@@ -732,6 +754,8 @@ export const getAddPage = async (req, res, next) => {
     }
 
     const folders = await listFolders(user.email);
+    const isAdmin =
+      user.email === "admin@gmail.com" && user.password === "admin";
 
     const queryFolderId = req.query.folderId && ObjectId.isValid(req.query.folderId)
       ? req.query.folderId
@@ -757,6 +781,7 @@ export const getAddPage = async (req, res, next) => {
       activeFolderId: queryFolderId,
       activeFolderName,
       activeFolderColor,
+      isAdmin,
     });
   } catch (err) {
     console.error("Add page error:", err);
@@ -828,6 +853,7 @@ export const getUpdatePage = async (req, res, next) => {
       activeFolderId: data.folderId ? data.folderId.toString() : null,
       activeFolderName: data.folderName || null,
       activeFolderColor: data.folderColor || null,
+      isAdmin,
     });
   } catch (err) {
     console.error(err);
@@ -851,12 +877,37 @@ export const updatePost = async (req, res, next) => {
     }
 
     const collection = getCollection("anyInformation");
-
     const { name, info } = req.body;
     const existingEntry = await collection.findOne({ _id: new ObjectId(id) });
 
     if (!existingEntry) {
       return next(createHttpError(404, "Post not found"));
+    }
+
+    const isAdmin =
+      user.email === "admin@gmail.com" && user.password === "admin";
+    const isOwner = existingEntry.email === user.email;
+
+    if (!isAdmin && !isOwner) {
+      return next(createHttpError(404, "Post not found"));
+    }
+
+    let entryEmail = existingEntry.email;
+    let entryOwnerName = existingEntry.ownerName;
+
+    if (isAdmin && typeof req.body.email === "string") {
+      const trimmedEmail = req.body.email.trim();
+      if (trimmedEmail && trimmedEmail !== existingEntry.email) {
+        const targetUser = await findUserByEmail(trimmedEmail);
+        if (!targetUser) {
+          return res.status(400).json({
+            success: false,
+            message: "No user found with that email.",
+          });
+        }
+        entryEmail = targetUser.email;
+        entryOwnerName = targetUser.name;
+      }
     }
 
     let entryFolderId = existingEntry.folderId || null;
@@ -877,22 +928,12 @@ export const updatePost = async (req, res, next) => {
       }
     }
 
-    const isAdmin =
-      user.email === "admin@gmail.com" && user.password === "admin";
-    const isOwner = existingEntry.email === user.email;
-
-    if (!isAdmin && !isOwner) {
-      return next(createHttpError(404, "Post not found"));
-    }
-
     const wasPublic = existingEntry.isPublic === true;
     const nowPublic = req.body.isPublic === true;
     const now = new Date();
 
     const updatedData = await collection.updateOne(
-      {
-        _id: new ObjectId(id),
-      },
+      { _id: new ObjectId(id) },
       {
         $set: {
           name,
@@ -901,6 +942,8 @@ export const updatePost = async (req, res, next) => {
           folderId: entryFolderId,
           folderName: entryFolderName,
           folderColor: entryFolderColor,
+          email: entryEmail,
+          ownerName: entryOwnerName,
           updatedAt: now,
         },
       },
@@ -914,8 +957,8 @@ export const updatePost = async (req, res, next) => {
         info,
         isPublic: nowPublic,
         isFavorite: existingEntry.isFavorite === true,
-        email: existingEntry.email,
-        ownerName: existingEntry.ownerName,
+        email: entryEmail,
+        ownerName: entryOwnerName,
         folderId: entryFolderId ? entryFolderId.toString() : null,
         folderName: entryFolderName,
         folderColor: entryFolderColor,
@@ -923,16 +966,19 @@ export const updatePost = async (req, res, next) => {
         actionId: req.body.actionId || null,
       };
 
-      emitEntryToPrivateAudience(io, existingEntry.email, "entry:updated", payload);
+      if (entryEmail !== existingEntry.email) {
+        io.to(getUserRoom(existingEntry.email)).emit("entry:deleted", {
+          _id: id,
+          actionId: req.body.actionId || null,
+        });
+      }
+
+      emitEntryToPrivateAudience(io, entryEmail, "entry:updated", payload);
 
       if (nowPublic) {
         io.to("public").emit("entry:updated", payload);
       } else if (wasPublic) {
-        // Emit entry:deleted only to public-room sockets that are NOT the
-        // owner's own devices.  The owner already received entry:updated via
-        // their private user room, so sending them entry:deleted would cause
-        // the card to vanish on their other devices.
-        const ownerRoom = getUserRoom(existingEntry.email);
+        const ownerRoom = getUserRoom(entryEmail);
         const publicSockets = io.sockets.adapter.rooms.get("public");
         if (publicSockets) {
           for (const socketId of publicSockets) {
