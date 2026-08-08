@@ -2097,6 +2097,11 @@
           searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
+
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'a') {
+        event.preventDefault();
+        window.location.href = '/add';
+      }
     });
 
     function escapeHTML(value = '') {
