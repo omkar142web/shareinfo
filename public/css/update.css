@@ -433,6 +433,10 @@ input {
   line-height: 1.25;
 }
 
+.ai-title-status:empty {
+  display: none;
+}
+
 .ai-title-status.error {
   color: var(--danger);
 }
