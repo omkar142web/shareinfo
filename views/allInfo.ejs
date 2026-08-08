@@ -4445,6 +4445,13 @@
           event.preventDefault();
           window.location.href = '/add';
         }
+
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+          event.preventDefault();
+          if (typeof window.toggleFolderDropdown === 'function') {
+            window.toggleFolderDropdown();
+          }
+        }
       });
 
       function escapeHTML(value = '') {
@@ -6547,6 +6554,7 @@
         function toggle() {
           dropdown.hidden ? open() : close();
         }
+        window.toggleFolderDropdown = toggle;
 
         btn.addEventListener('click', (e) => {
           e.stopPropagation();

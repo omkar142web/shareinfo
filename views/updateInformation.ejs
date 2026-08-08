@@ -98,7 +98,7 @@
             <polyline points="22,6 12,13 2,6" />
           </svg>
           Owner Email
-          <% if (!isAdmin) { %><span class="label-tag">read-only</span><% } %>
+          <!-- <% if (!isAdmin) { %><span class="label-tag">read-only</span><% } %> -->
         </label>
         <div class="input-wrap">
           <input
@@ -917,6 +917,17 @@
       closeBtn.addEventListener("click", close);
       overlay.addEventListener("click", (e) => {
         if (e.target === overlay) close();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+          e.preventDefault();
+          if (overlay.classList.contains("is-open")) {
+            close();
+          } else {
+            open();
+          }
+        }
       });
     })();
   </script>
