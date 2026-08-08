@@ -3685,7 +3685,7 @@
     <main class="main-content">
       <form class="search-row" id="searchForm">
         <div class="search-input-wrap">
-          <input id="searchInput" type="text" placeholder="Search your entries..." autocomplete="off" value="<%= typeof activeKeyword !== 'undefined' ? activeKeyword : '' %>" />
+          <input id="searchInput" type="text" placeholder="Search your entries...  Ctrl+K" autocomplete="off" value="<%= typeof activeKeyword !== 'undefined' ? activeKeyword : '' %>" />
           <button class="search-clear" id="clearSearch" <%= typeof activeKeyword !== 'undefined' && activeKeyword ? '' : 'hidden' %> type="button" aria-label="Clear search">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -4429,6 +4429,18 @@
       let currentSort = '<%= typeof activeSort !== "undefined" ? activeSort : "updated" %>';
       // Mutable: enterFolderView() (inline folder create) switches it in place
       let activeFolderId = <%- JSON.stringify(typeof activeFolderId !== "undefined" ? activeFolderId : null) %>;
+
+      document.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+          event.preventDefault();
+          const searchInput = document.getElementById('searchInput');
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+            searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      });
 
       function escapeHTML(value = '') {
         return String(value).replace(/[&<>"']/g, (ch) => ({
