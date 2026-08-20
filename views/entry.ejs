@@ -282,7 +282,6 @@
     }
 
     .article-body {
-      /* padding: 36px; */
       padding: 32px;
     }
 
@@ -607,10 +606,29 @@
       }
     }
 
-    @media (max-width: 825px) {
+    /* @media (max-width: 825px) {
+    } */
+    
+    @media (max-width: 930px) {
+      .shell {
+        width: 100%;
+        padding-bottom: 0px;
+      }
+      
       .article {
-        border-left:  none;
-        border-right:  none;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        border-bottom-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+      }
+      
+      .article-body {
+        padding-bottom: 69px;
+      }
+      
+      body {
+        padding-bottom: 0px;
       }
     }
 
